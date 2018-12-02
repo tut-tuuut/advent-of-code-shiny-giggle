@@ -18,8 +18,10 @@ function differByOneCharacter($string1, $string2) {
     return $numberOfDifferences === 1;
 }
 
+$size = count($input);
 foreach ($input as $k1 => $row1) {
-    foreach ($input as $k2 => $row2) {
+    for ($k2 = $k1+1; $k2 < $size; $k2++) {
+        $row2 = $input[$k2];
         if (differByOneCharacter($row1, $row2)) {
             say('id 1: '.$row1);
             say('id 2: '.$row2);
