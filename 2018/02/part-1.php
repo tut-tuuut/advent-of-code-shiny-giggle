@@ -1,7 +1,5 @@
 <?php
 
-// What is the resulting frequency?
-
 include('../utils.php');
 include('input.php');
 
