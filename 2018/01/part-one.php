@@ -1,5 +1,8 @@
 <?php
 
+// What is the resulting frequency?
+
+include('../utils.php');
 include('input.php');
 
 $input = explode(PHP_EOL, $inputString);
@@ -14,8 +17,8 @@ foreach ($input as $inputRow) {
     } elseif ($sign === '-') {
         $frequency -= $value;
     } else {
-        echo 'Uh ???'.PHP_EOL;
+        say('Uh???');
     }
 }
 
-echo "Resulting frequency: " . $frequency . PHP_EOL;
+say("Resulting frequency: " . $frequency);
