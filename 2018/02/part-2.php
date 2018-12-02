@@ -7,8 +7,8 @@ $input = explode(PHP_EOL, $inputString);
 
 function differByOneCharacter($string1, $string2) {
     $numberOfDifferences = 0;
-    for ($i = strlen($string)-1; $i >= 0; $i--) {
-        if ($string1[$i] !== $string1[$i]) {
+    for ($i = strlen($string1)-1; $i >= 0; $i--) {
+        if ($string1[$i] !== $string2[$i]) {
             $numberOfDifferences += 1;
         }
         if ($numberOfDifferences > 1) {
