@@ -7,7 +7,7 @@
 include(__DIR__.'/../../utils.php');
 include(__DIR__.'/input.php');
 
-$input = 'pbga (66)
+/*$input = 'pbga (66)
 xhth (57)
 ebii (61)
 havc (66)
@@ -19,7 +19,7 @@ tknk (41) -> ugml, padx, fwft
 jptl (61)
 ugml (68) -> gyxo, ebii, jptl
 gyxo (61)
-cntj (57)';
+cntj (57)';*/
 
 // regex to get name, weight and children of programs
 $regexParent = '/^(?<name>\w+) \((?<weight>\d+)\) -> (?<children>.+)/';
@@ -121,10 +121,6 @@ function findChildren($parentName, $parentsNamesByChildren) {
     foreach ($parentsNamesByChildren as $child => $parent) {
         if ($parent === $parentName) {
             $children[] = $child;
-            if (count($children) === 7) {
-                // no program in the list has more than 7 children
-                return $children;
-            }
         }
     }
     return $children;
@@ -136,15 +132,23 @@ function checkChildrenAreBalanced($children) {
 
 function findSolutionForPart2($childrenCombinedWeights, $invididualWeights)
 {
-    // keep a trace of the "maybe correct" weight somewhere
-    $correctWeight = $childrenCombinedWeights[key($childrenCombinedWeights)];
+    $firstChild = key($childrenCombinedWeights);
+    $firstWeight = array_shift($childrenCombinedWeights);
+    if (checkChildrenAreBalanced($childrenCombinedWeights)) {
+        $correctWeight = array_shift($childrenCombinedWeights);
+        say("$firstChild is unbalanced, its total weight is $firstWeight and we expected $correctWeight.");
+        say("it weights ".$invididualWeights[$child]." alone.");
+        $correctIndividualWeight = $invididualWeights[$firstChild] + $correctWeight - $firstWeight;
+        say("it should weight $correctIndividualWeight instead.");
+        return;
+    }
+    // keep a trace of the "correct" weight somewhere
+    $correctWeight = $firstWeight;
+    $weight = $correctWeight;
     // find which one is the unbalanced child
-    while(!checkChildrenAreBalanced($childrenCombinedWeights)) {
+    while ($weight == $correctWeight) {
         $child = key($childrenCombinedWeights);
         $weight = array_shift($childrenCombinedWeights);
-    }
-    if ($weight === $correctWeight) {
-        $correctWeight = array_pop($childrenCombinedWeights);
     }
     say("$child is unbalanced, its total weight is $weight and we expected $correctWeight.");
     // find what its wheight should be
@@ -152,4 +156,4 @@ function findSolutionForPart2($childrenCombinedWeights, $invididualWeights)
     say("it weights ".$invididualWeights[$child]." alone.");
     say("it should weight $correctIndividualWeight instead.");
 }
-//findSolutionForPart2(['titi' => 67, 'tata' => 68, 'tutu' => 67], ['tata' => 23]);
+//findSolutionForPart2(['titi' => 67, 'tata' => 67, 'tutu' => 69], ['tata' => 23, 'tutu' => 22, 'titi' => 34]);
