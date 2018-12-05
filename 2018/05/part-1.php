@@ -35,3 +35,14 @@ function fullReaction($polymer) {
 
 say("part 1 : ". fullReaction($input));
 
+$bestLength = strlen($input);
+
+foreach (generateAlphabet() as $letter) {
+    $reducedInput = str_replace([strtolower($letter), strtoupper($letter)], '', $input);
+    $reducedLength = fullReaction($reducedInput);
+    if ($reducedLength < $bestLength) {
+        $bestLength = $reducedLength;
+        say ($letter . ' is a good candidate with a reduced length of '.$bestLength);
+    }
+}
+say("part 2 $bestLength");
