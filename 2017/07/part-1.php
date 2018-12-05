@@ -66,14 +66,14 @@ if (count($parentProgSet) > 1) {
 say('[PART 1] the root is: '.key($parentProgSet));
 unset($parentProgSet);
 
-say('number of elements in combined weights before: '.count($combinedWeights));
-for ($i = 0; $i < 120 && is_array($combinedWeights); $i++) {
+say('---- - number of elements in combined weights before: '.count($combinedWeights));
+for ($i = 0; $i < 3 && is_array($combinedWeights); $i++) {
     $combinedWeights = calculateWeightFromTheLeaves(
         $combinedWeights,
         $parentsByChild,
         $individualWeights
     );
-    say('number of elements in combined weights: '.count($combinedWeights));
+    say(str_pad($i, 4).' - number of elements in combined weights: '.count($combinedWeights));
 }
 
 // part 2 : calculate the weight from the leaves
@@ -84,17 +84,30 @@ function calculateWeightFromTheLeaves($combinedWeights, $parentsByChild, $indivi
         if (isset($combinedWeights[$parent])) {
             continue;
         }
+        $skipParent = false;
+        //say("analyzing $parent's children…");
         $parentWeight = $individualWeights[$parent];
         $childrenWeights = [];
         foreach (findChildren($parent, $parentsByChild) as $child) {
             // here, maybe, deal with case in which one of the children
-            // has no combinedWeight yet?
+            // has no combinedWeight yet? ---> yes.
+            if (!isset($combinedWeights[$child])) {
+                $skipParent = true;
+                //say("$child has no combined weight yet => skip $parent");
+                continue;
+            }
             $childrenWeights[$child] = $combinedWeights[$child];
-            unset($combinedWeights[$child]);
+            //say("     $child weights ".$combinedWeights[$child]);
+        }
+        if ($skipParent) {
+            //say('not every child has its combined weight calculated: skipping '.$parent);
+            continue;
         }
         if (checkChildrenAreBalanced($childrenWeights)) {
             $parentWeight += array_sum($childrenWeights);
             $combinedWeights[$parent] = $parentWeight;
+            //say("$parent's children are balanced : ".implode(' ', $childrenWeights));
+            // unset($combinedWeights[$child]); in case of memory/perf issues
         } else {
             findSolutionForPart2($childrenWeights, $individualWeights);
             return true;
