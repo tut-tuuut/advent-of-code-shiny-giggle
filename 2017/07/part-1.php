@@ -66,30 +66,41 @@ if (count($parentProgSet) > 1) {
 say('[PART 1] the root is: '.key($parentProgSet));
 unset($parentProgSet);
 
+say('number of elements in combined weights before: '.count($combinedWeights));
+for ($i = 0; $i < 120 && is_array($combinedWeights); $i++) {
+    $combinedWeights = calculateWeightFromTheLeaves(
+        $combinedWeights,
+        $parentsByChild,
+        $individualWeights
+    );
+    say('number of elements in combined weights: '.count($combinedWeights));
+}
+
 // part 2 : calculate the weight from the leaves
-$newWeights = [];
-foreach ($combinedWeights as $leaf => $weight) {
-    $parent = $parentsByChild[$leaf];
-    say($parent);
-    if (isset($newWeights[$parent])) {
-        continue;
+function calculateWeightFromTheLeaves($combinedWeights, $parentsByChild, $individualWeights) {
+    $newWeights = [];
+    foreach ($combinedWeights as $leaf => $weight) {
+        $parent = $parentsByChild[$leaf];
+        if (isset($combinedWeights[$parent])) {
+            continue;
+        }
+        $parentWeight = $individualWeights[$parent];
+        $childrenWeights = [];
+        foreach (findChildren($parent, $parentsByChild) as $child) {
+            // here, maybe, deal with case in which one of the children
+            // has no combinedWeight yet?
+            $childrenWeights[$child] = $combinedWeights[$child];
+            unset($combinedWeights[$child]);
+        }
+        if (checkChildrenAreBalanced($childrenWeights)) {
+            $parentWeight += array_sum($childrenWeights);
+            $combinedWeights[$parent] = $parentWeight;
+        } else {
+            findSolutionForPart2($childrenWeights, $individualWeights);
+            return true;
+        }
     }
-    $parentWeight = $individualWeights[$parent];
-    $childrenWeights = [];
-    foreach (findChildren($parent, $parentsByChild) as $child) {
-        // here, maybe, deal with case in which one of the children
-        // has no combinedWeight yet
-        $childrenWeights[$child] = $combinedWeights[$child];
-    }
-    if (checkChildrenAreBalanced($childrenWeights)) {
-        $parentWeight += array_sum($childrenWeights);
-        $newWeights[$parent] = $parentWeight;
-        say("$parent's weight: $parentWeight");
-    } else {
-        findSolutionForPart2($childrenWeights, $individualWeights);
-        break;
-    }
-    say($childrenWeights);
+    return $combinedWeights;
 }
 
 function findChildren($parentName, $parentsNamesByChildren) {
@@ -125,6 +136,7 @@ function findSolutionForPart2($childrenCombinedWeights, $invididualWeights)
     say("$child is unbalanced, its total weight is $weight and we expected $correctWeight.");
     // find what its wheight should be
     $correctIndividualWeight = $invididualWeights[$child] + $correctWeight - $weight;
+    say("it weights ".$invididualWeights[$child]." alone.");
     say("it should weight $correctIndividualWeight instead.");
 }
-findSolutionForPart2(['titi' => 67, 'tata' => 68, 'tutu' => 67], ['tata' => 23]);
+//findSolutionForPart2(['titi' => 67, 'tata' => 68, 'tutu' => 67], ['tata' => 23]);
