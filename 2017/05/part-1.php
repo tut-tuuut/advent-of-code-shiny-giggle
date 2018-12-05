@@ -1,15 +1,11 @@
 <?php
 
-include('../utils.php');
-include('input.php');
+include(__DIR__.'/../../utils.php');
+include(__DIR__.'/input.php');
 
 // ---------------------------------------------------
 
 $intInput = array_map('parseInt', explode(PHP_EOL, $input));
-
-function parseInt($str) {
-    return (int)$str;
-}
 
 // ---------------------------------------------------
 

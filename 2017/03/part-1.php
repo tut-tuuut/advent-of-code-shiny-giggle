@@ -1,6 +1,6 @@
 <?php
 
-include('../utils.php');
+include(__DIR__.'/../../utils.php');
 
 $nb = 289326;
 

@@ -1,7 +1,7 @@
 <?php
 
-include('../utils.php');
-include('input.php');
+include(__DIR__.'/../../utils.php');
+include(__DIR__.'/input.php');
 
 
 function generatePairs()
@@ -15,13 +15,6 @@ function generatePairs()
         $needle[] = $low.$up;
     }
     return $needle;
-}
-
-function generateAlphabet()
-{
-    for ($letter = 'a'; $letter != 'aa'; $letter++) {
-        yield $letter;
-    }
 }
 
 function fullReaction($polymer) {

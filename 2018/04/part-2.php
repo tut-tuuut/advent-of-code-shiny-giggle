@@ -1,7 +1,7 @@
 <?php
 
-include('../utils.php');
-include('input.php');
+include(__DIR__.'/../../utils.php');
+include(__DIR__.'/input.php');
 
 // --- extract and sort input
 $data = explode(PHP_EOL, $input);
@@ -66,10 +66,3 @@ foreach ($formattedPlanning as $guardId => $hour) {
 }
 
 say('result is:' . $guardCandidate*$minuteCandidate);
-
-
-function getMaxValueAndKey($array) {
-    $maxValue = max($array);
-    $maxKey = array_search($maxValue, $array);
-    return [$maxKey, $maxValue];
-}

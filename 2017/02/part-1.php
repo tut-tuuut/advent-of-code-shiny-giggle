@@ -1,21 +1,7 @@
 <?php
 
-include('../utils.php');
-include('input.php');
-
-function extractMinAndMax($values) {
-    $min = (int)$values[0];
-    $max = (int)$values[0];
-    foreach ($values as $value) {
-        $value = (int)$value;
-        if ($value > $max) {
-            $max = $value;
-        } elseif ($value < $min) {
-            $min = $value;
-        }
-    }
-    return [$min, $max];
-}
+include(__DIR__.'/../../utils.php');
+include(__DIR__.'/input.php');
 
 $rows = explode(PHP_EOL, $input);
 $checksum = 0;

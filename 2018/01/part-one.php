@@ -2,8 +2,8 @@
 
 // What is the resulting frequency?
 
-include('../utils.php');
-include('input.php');
+include(__DIR__.'/../../utils.php');
+include(__DIR__.'/input.php');
 
 $input = explode(PHP_EOL, $inputString);
 

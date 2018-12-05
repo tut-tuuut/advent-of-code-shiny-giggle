@@ -1,7 +1,7 @@
 <?php
 
-include('../utils.php');
-include('input.php');
+include(__DIR__.'/../../utils.php');
+include(__DIR__.'/input.php');
 
 // --- extract and sort input
 $data = explode(PHP_EOL, $input);
@@ -56,10 +56,3 @@ list($maxGuardId, $maxMinutesSlept) = getMaxValueAndKey($totalsByGuard);
 list($betterMinute, $maxMinutesSleptAtThatTime) = getMaxValueAndKey($formattedPlanning[$maxGuardId]); 
 
 say('result is:' . $maxGuardId*$betterMinute);
-
-
-function getMaxValueAndKey($array) {
-    $maxValue = max($array);
-    $maxKey = array_search($maxValue, $array);
-    return [$maxKey, $maxValue];
-}

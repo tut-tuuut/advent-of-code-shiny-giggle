@@ -1,7 +1,7 @@
 <?php
 
-include('../utils.php');
-include('input.php');
+include(__DIR__.'/../../utils.php');
+include(__DIR__.'/input.php');
 
 function isValidPassphrase($string) {
     $words = [];

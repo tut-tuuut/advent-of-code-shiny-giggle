@@ -1,7 +1,7 @@
 <?php
 
-include('../utils.php');
-include('input.php');
+include(__DIR__.'/../../utils.php');
+include(__DIR__.'/input.php');
 
 function isValidPassphrase($string) {
     $words = [];
@@ -14,12 +14,6 @@ function isValidPassphrase($string) {
         }
     }
     return true;
-}
-
-function sortString($string) {
-    $chars = str_split($string);
-    sort($chars);
-    return implode('', $chars);
 }
 
 $valids = 0;
