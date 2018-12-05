@@ -4,12 +4,12 @@ include('../utils.php');
 include('input.php');
 
 
-function generateNeedle()
+function generatePairs()
 {
     $letter = 'a';
     $needle = [];
-    for ($letter = 'a'; $letter != 'aa'; $letter++) {
-        $low = $letter;
+    foreach(generateAlphabet() as $letter) {
+        $low = strtolower($letter);
         $up = strtoupper($letter);
         $needle[] = $up.$low;
         $needle[] = $low.$up;
@@ -17,16 +17,21 @@ function generateNeedle()
     return $needle;
 }
 
-$find = generateNeedle();
-
-say("length of input: ". strlen($input));
-$previousChecksum = '';
-$newChecksum = md5($input);
-while($newChecksum != $previousChecksum) {
-    $previousChecksum = $newChecksum;
-    $input = str_replace($find, '', $input);
-    $newChecksum = md5($input);
-    say("length of input: ". strlen($input));
+function generateAlphabet()
+{
+    for ($letter = 'a'; $letter != 'aa'; $letter++) {
+        yield $letter;
+    }
 }
 
-//str_replace($needle, $replace, $input);
+function fullReaction($polymer) {
+    $count = 1;
+    $pairs = generatePairs();
+    do {
+        $polymer = str_replace($pairs, '', $polymer, $count);
+    } while ($count > 0);
+    return strlen($polymer);
+}
+
+say("part 1 : ". fullReaction($input));
+
