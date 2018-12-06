@@ -30,17 +30,29 @@ foreach (explode(PHP_EOL, $input) as $index => $row) {
 }
 
 $im = imagecreate(($maxJ - $minJ)*3 + 3, ($maxI - $minI)*3 + 3);
+$im2 = imagecreate(($maxJ - $minJ)*3 + 3, ($maxI - $minI)*3 + 3);
 $colors = [];
 $colors[''] = imagecolorallocate($im, 255, 255, 255);
+$black2 = imagecolorallocate($im2, 48,42,106);
+
+// generate colors for both images
 foreach (array_keys($areaSizes) as $index) {
     $colors[$index] = imagecolorallocate($im, rand(40,235), rand(40,235), rand(40,235));
 }
+$blue2 = imagecolorallocate($im2, 135,137,224);
+$green2 = imagecolorallocate($im2, 206,220,255);
 
 // generate grid and image <3
+$goodArea = 0;
 for ($i = $minI - 1; $i <= $maxI + 1; $i++) {
     for ($j = $minJ - 1; $j <= $maxJ + 1; $j++) {
         if (!isset($grid[$i][$j])) {
             $grid[$i][$j] = findClosestPoint([$i, $j], $points);
+        }
+        $totalDistance = getTotalDistance([$i, $j], $points);
+        if ($totalDistance <= 10000) {
+            $goodArea += 1;
+            imagefilledrectangle($im2, ($j - $minJ)*3, ($i - $minI)*3, ($j - $minJ)*3 + 2, ($i - $minI)*3 + 2, $blue2);
         }
         $index = $grid[$i][$j];
         if ($index) {
@@ -56,6 +68,7 @@ foreach ($points as $point) {
     $i = $point[0];
     $j = $point[1];
     imagefilledrectangle($im, ($j - $minJ)*3, ($i - $minI)*3, ($j - $minJ)*3 + 2, ($i - $minI)*3 + 2, $black);
+    imagefilledrectangle($im2, ($j - $minJ)*3, ($i - $minI)*3, ($j - $minJ)*3 + 2, ($i - $minI)*3 + 2, $green2);
 }
 
 // remove infinite areas from the count: I suppose the areas which touch the borders are infinite
@@ -91,16 +104,18 @@ foreach ($points as $index => $point) {
 $baryI = (int)$iSum/count($points);
 $baryJ = (int)$jSum/count($points);
 say("barycenter could be at: $baryI, $baryJ");
+say(getTotalDistance([$baryI, $baryJ], $points));
 imagerectangle($im, ($baryJ - $minJ)*3 - 2, ($baryI - $minI)*3 - 2, ($baryJ - $minJ)*3 + 4, ($baryI - $minI)*3 + 4, $black);
+imagerectangle($im2, ($baryJ - $minJ)*3 - 2, ($baryI - $minI)*3 - 2, ($baryJ - $minJ)*3 + 4, ($baryI - $minI)*3 + 4, $green2);
 
 $index = $grid[$baryI][$baryJ];
 $size = $areaSizes[$index];
-say("barycenter is in region $index.");
-say("this region has a size of $size.");
+
+say('[PART 2] the result is '.$goodArea);
 // save image
 imagepng($im, 'image.png');
+imagepng($im2, 'image2.png');
 
-//var_dump($areaSizes);
 
 function generateHexCode($i) {
     return substr(md5($i), 0, 6);
@@ -123,4 +138,12 @@ function findClosestPoint($a, $points) {
         }
     }
     return $closestPoint;
+}
+
+function getTotalDistance($a, $points) {
+    $sum = 0;
+    foreach ($points as $index => $point) {
+        $sum += manhattanDistance($a, $point);
+    }
+    return $sum;
 }
