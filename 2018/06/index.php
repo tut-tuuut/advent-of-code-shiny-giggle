@@ -63,29 +63,40 @@ for ($i = $minI - 1; $i <= $maxI + 1; $i++) {
     $index = $grid[$i][$minJ];
     if (isset($areaSizes[$index])) {
         unset($areaSizes[$index]);
-        say('unsetting area size of '.$index);
     }
     $index = $grid[$i][$maxJ];
     if (isset($areaSizes[$index])) {
         unset($areaSizes[$index]);
-        say('unsetting area size of '.$index);
     }
 }
 for ($j = $minJ - 1; $j <= $maxJ + 1; $j++) {
     $index = $grid[$minI][$j];
     if (isset($areaSizes[$index])) {
         unset($areaSizes[$index]);
-        say('unsetting area size of '.$index);
     }
     $index = $grid[$maxI][$j];
     if (isset($areaSizes[$index])) {
         unset($areaSizes[$index]);
-        say('unsetting area size of '.$index);
     }
 }
 
-say('the largest area has a size of '.max($areaSizes));
+say('[PART 1] the largest area has a size of '.max($areaSizes));
 
+// Calculating the barycenter
+$iSum = $jSum = 0;
+foreach ($points as $index => $point) {
+    $iSum += $point[0];
+    $jSum += $point[1];
+}
+$baryI = (int)$iSum/count($points);
+$baryJ = (int)$jSum/count($points);
+say("barycenter could be at: $baryI, $baryJ");
+imagerectangle($im, ($baryJ - $minJ)*3 - 2, ($baryI - $minI)*3 - 2, ($baryJ - $minJ)*3 + 4, ($baryI - $minI)*3 + 4, $black);
+
+$index = $grid[$baryI][$baryJ];
+$size = $areaSizes[$index];
+say("barycenter is in region $index.");
+say("this region has a size of $size.");
 // save image
 imagepng($im, 'image.png');
 
