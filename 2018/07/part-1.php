@@ -26,9 +26,37 @@ foreach (explode(PHP_EOL, $input) as $row) {
     $steps[$before]->mustBeCompletedBefore($steps[$after]);
 }
 
+foreach ($steps as $step) {
+    $step->debug();
+}
+
+while (count($steps) > 0) {
+    doNextStep($steps);
+}
+
+function doNextStep(&$steps) {
+    $next = min(findReadySteps($steps));
+    $steps[$next]->do();
+    unset($steps[$next]);
+    return true;
+}
+
+function findReadySteps(&$steps) {
+    $ready = [];
+    foreach ($steps as $step) {
+        if ($step->isReady()) {
+            $ready[] = $step->getLetter();
+        }
+    }
+    return $ready;
+}
+
 class Step
 {
+    private static $sequence = '';
+
     private $letter = '';
+    private $done = false;
 
     /**
      * @var Step[]
@@ -53,5 +81,44 @@ class Step
     public function mustBeCompletedBefore(Step $step) {
         $this->after[] = $step;
         $step->dependsOn($this);
+    }
+
+    public function isReady()
+    {
+        if ($this->done) {
+            return true;
+        }
+        foreach ($this->before as $step) {
+            if (!$step->isDone()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function do()
+    {
+        self::$sequence .= $this->letter;
+        say(self::$sequence);
+    }
+
+    public function isDone()
+    {
+        return $this->done;
+    }
+
+    public function getLetter()
+    {
+        return $this->letter;
+    }
+
+    public function debug()
+    {
+        $str = '(';
+        $str .= implode(', ', array_map(function($e) { return $e->getLetter(); }, $this->before));
+        $str .= ') -> ' . $this->letter . ' -> (';
+        $str .= implode(', ', array_map(function($e) { return $e->getLetter(); }, $this->after));
+        $str .= ')';
+        say($str);
     }
 }
