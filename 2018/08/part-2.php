@@ -9,10 +9,15 @@ Node::setInput(array_map('parseInt', explode(' ', $input))); // save this in Nod
 
 $node = new Node(0, 1);
 say('PART2: ' . $node->getMetadataValue());
+say('depth: '.Node::getTreeDepth());
+say('width: '.count(explode(' ', $input)));
+say('nb of nodes: '.Node::getNumberOfNodes());
 
 class Node
 {
     private static $input = [];
+    private static $depth = 0; // tree depth
+    private static $nbOfNodes = 0;
 
     /** @var int */
     private $index; // place of the node header in $input
@@ -24,6 +29,20 @@ class Node
         //say("constructing node at index $index and level $level");
         $this->index = $index;
         $this->level = $level;
+        if ($this->level > self::$depth) {
+            self::$depth = $this->level;
+        }
+        self::$nbOfNodes++;
+    }
+
+    public static function getTreeDepth()
+    {
+        return self::$depth;
+    }
+
+    public static function getNumberOfNodes()
+    {
+        return self::$nbOfNodes;
     }
 
     public function getChildren()
