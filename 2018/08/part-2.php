@@ -4,6 +4,7 @@ include(__DIR__.'/../../utils.php');
 include(__DIR__.'/input.php');
 
 //$input = '2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2';
+const IMG_WIDTH = 1000;
 
 Node::setInput(array_map('parseInt', explode(' ', $input))); // save this in Node::somethingStatic
 
@@ -12,10 +13,15 @@ say('PART2: ' . $node->getMetadataValue());
 say('depth: '.Node::getTreeDepth());
 say('width: '.count(explode(' ', $input)));
 say('nb of nodes: '.Node::getNumberOfNodes());
+$image = imagecreatetruecolor(IMG_WIDTH, 600);
+imagecolorallocate($image, 0, 0, 0);
+$node->draw($image);
+imagepng($image, 'tree.png');
 
 class Node
 {
     private static $input = [];
+    private static $treeWidth = 0;
     private static $depth = 0; // tree depth
     private static $nbOfNodes = 0;
 
@@ -33,6 +39,33 @@ class Node
             self::$depth = $this->level;
         }
         self::$nbOfNodes++;
+    }
+
+    public function draw($image, $parentNode = null)
+    {
+        foreach ($this->children as $child) {
+            if (count($this->children) > 1 and rand(1,20) === 7) {
+                $child->draw($image, $this);
+            } else {
+                $child->draw($image);
+            }
+        }
+        list($cx, $cy) = $this->getXY($childIndex);
+        $color = imagecolorallocate($image, rand(50,250), rand(50, 250), rand(50, 250));
+        if (!is_null($parentNode)) {
+            list($px, $py) = $parentNode->getXY($childIndex);
+            imageline($image , $cx , $cy , $px , $py , $color);
+        }
+        imageellipse($image, $cx , $cy , 4, 4, $color);
+    }
+
+    public function getXY($childIndex = 0)
+    {
+        if (is_null($this->cx)) {
+            $this->cx = (int)(($this->index + $this->getLength() / 2) * IMG_WIDTH / self::$treeWidth + rand(0, $childIndex+$this->level) * 10 / $this->level);
+            $this->cy = (int)(13 + $this->level * 70 + $cx/IMG_WIDTH*100 + 70*rand(0, $this->level)/$this->level);
+        }
+        return [$this->cx, $this->cy];
     }
 
     public static function getTreeDepth()
@@ -104,6 +137,7 @@ class Node
     public static function setInput($input)
     {
         self::$input = $input;
+        self::$treeWidth = count($input);
     }
 }
 /*
