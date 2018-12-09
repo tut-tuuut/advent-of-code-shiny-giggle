@@ -17,8 +17,8 @@ list($nbOfPlayers, $lastMarbleWOrth, $expectedHS) = [429, 70901, null];
 $circle = new CircleOfMarbles();
 list($turn, $marble) = $circle->addFirstTwoMarbles();
 
-while($turn < 20) {
-    list($turn, $marble) = $circle->makeTurn($turn, $marble);
+while($turn < 50) {
+    list($turn, $marble, $score) = $circle->makeTurn($turn, $marble);
 }
 
 class CircleOfMarbles
@@ -40,10 +40,18 @@ class CircleOfMarbles
         $newMarble = new Marble();
         if ($newMarble->value%23 > 0) {
             $marble->after->insertAfter($newMarble);
-            $marble->debug($newMarble->value);
-            return [$turn, $newMarble];
+            //$newMarble->debug($newMarble->value);
+            return [$turn, $newMarble, 0];
         } else {
-
+            $score = $newMarble->value;
+            Marble::$activeMarbleCount--; // no insertion of new marble
+            $sevenCounterClockwise = $marble->before->before->before->before->before->before->before;
+            $score += $sevenCounterClockwise->value;
+            $marble = $sevenCounterClockwise->after;
+            $sevenCounterClockwise->remove();
+            unset($sevenCounterClockwise);
+            //$marble->debug($marble->value);
+            return [$turn, $marble, $score];
         }
         return ;
     }
@@ -55,10 +63,12 @@ class Marble
     public $before;
     public $after;
     public static $marbleCount = 0;
+    public static $activeMarbleCount = 0;
 
     public function __construct()
     {
         $this->value = self::$marbleCount++;
+        self::$activeMarbleCount++;
     }
 
     public function insertAfter(Marble $m)
@@ -73,10 +83,17 @@ class Marble
         $this->after = $m;
     }
 
+    public function remove()
+    {
+        $this->before->after = $this->after;
+        $this->after->before = $this->before;
+        self::$activeMarbleCount--;
+    }
+
     public function debug($value = null)
     {
         $marble = $this;
-        for ($i = 0; $i < self::$marbleCount; $i++) {
+        for ($i = 0; $i < self::$activeMarbleCount; $i++) {
             say($marble->value . ' ', ($marble->value === $value ? COLOR_NICE_PINK : null), false);
             $marble = $marble->after;
         }
