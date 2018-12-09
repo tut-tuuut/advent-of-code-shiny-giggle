@@ -1,11 +1,24 @@
 <?php
 
-function say($something) {
+const COLOR_NICE_PINK = 197;
+const COLOR_NICE_BLUE = 69;
+
+function say($something, $color = null) {
     if (is_array($something)) {
-        say (implode(' ', $something));
-        return;
+        $something = (implode(' ', $something));
+    }
+    if (!is_null($color) && is_int($color) && $color <= 256) {
+        $something = bashColor($color).$something.bashColorReset();
     }
     echo $something . PHP_EOL;
+}
+
+function bashColor($color) {
+    return "\e[38;5;${color}m";
+}
+
+function bashColorReset() {
+    return "\e[39m";
 }
 
 function getMaxValueAndKey($array) {
