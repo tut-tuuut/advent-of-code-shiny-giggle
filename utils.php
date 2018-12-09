@@ -3,22 +3,18 @@
 const COLOR_NICE_PINK = 197;
 const COLOR_NICE_BLUE = 69;
 
-function say($something, $color = null) {
+function say($something, $color = null, $withEol = true) {
     if (is_array($something)) {
         $something = (implode(' ', $something));
     }
     if (!is_null($color) && is_int($color) && $color <= 256) {
-        $something = bashColor($color).$something.bashColorReset();
+        $something = bashColor($color, $something);
     }
-    echo $something . PHP_EOL;
+    echo $something . ($withEol ? PHP_EOL : '');
 }
 
-function bashColor($color) {
-    return "\e[38;5;${color}m";
-}
-
-function bashColorReset() {
-    return "\e[39m";
+function bashColor($color, $string) {
+    return "\e[38;5;${color}m".$string."\e[39m";
 }
 
 function getMaxValueAndKey($array) {
