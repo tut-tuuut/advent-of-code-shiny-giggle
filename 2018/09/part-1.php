@@ -13,6 +13,9 @@ include(__DIR__.'/../../utils.php');
 
 // question for part 1
 list($nbOfPlayers, $lastMarbleWOrth, $expectedHS) = [429, 70901, null];
+// question for part2
+list($nbOfPlayers, $lastMarbleWOrth, $expectedHS) = [429, 7090100, null];
+// aaaand… this is a segfault
 
 $circle = new CircleOfMarbles();
 list($turn, $marble) = $circle->addFirstTwoMarbles();
