@@ -5,11 +5,11 @@ include(__DIR__.'/../../utils.php');
 
 // examples
 
-list($nbOfPlayers, $lastMarbleWOrth, $expectedHS) = [10, 1618, 8317];
-list($nbOfPlayers, $lastMarbleWOrth, $expectedHS) = [13, 7999, 146373];
-list($nbOfPlayers, $lastMarbleWOrth, $expectedHS) = [17, 1104, 2764];
-list($nbOfPlayers, $lastMarbleWOrth, $expectedHS) = [21, 6111, 54718];
-list($nbOfPlayers, $lastMarbleWOrth, $expectedHS) = [30, 5807, 37305];
+//list($nbOfPlayers, $lastMarbleWOrth, $expectedHS) = [10, 1618, 8317];
+//list($nbOfPlayers, $lastMarbleWOrth, $expectedHS) = [13, 7999, 146373];
+//list($nbOfPlayers, $lastMarbleWOrth, $expectedHS) = [17, 1104, 2764];
+//list($nbOfPlayers, $lastMarbleWOrth, $expectedHS) = [21, 6111, 54718];
+//list($nbOfPlayers, $lastMarbleWOrth, $expectedHS) = [30, 5807, 37305];
 
 // question for part 1
 list($nbOfPlayers, $lastMarbleWOrth, $expectedHS) = [429, 70901, null];
@@ -17,8 +17,14 @@ list($nbOfPlayers, $lastMarbleWOrth, $expectedHS) = [429, 70901, null];
 $circle = new CircleOfMarbles();
 list($turn, $marble) = $circle->addFirstTwoMarbles();
 
-while($turn < 50) {
+$playersScores = array_fill(0, $nbOfPlayers, 0);
+while($turn < $lastMarbleWOrth) {
     list($turn, $marble, $score) = $circle->makeTurn($turn, $marble);
+    $playersScores[$turn%$nbOfPlayers] += $score;
+}
+say(bashColor(COLOR_NICE_BLUE, '[PART 1] ').max($playersScores));
+if(!is_null($expectedHS)) {
+    say('expected was '.$expectedHS);
 }
 
 class CircleOfMarbles
