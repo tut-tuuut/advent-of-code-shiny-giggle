@@ -40,6 +40,7 @@ for ($j = 0; $j < 10500; $j++) {
         $width = $minWidth;
     } else {
         say('min width reached:'.$minWidth);
+        say('at '.$j.' seconds!');
         list($width, $height, $minX, $minY) = moveEveryPointAndGetDimensions($points, -1);
         drawEveryPoint($points, $width, $height, $minX, $minY);
         break;
@@ -48,6 +49,7 @@ for ($j = 0; $j < 10500; $j++) {
         $minHeight = $height;
     } else {
         say('min height reached:'.$minHeight);
+        say('at '.$j.' seconds!');
         list($width, $height, $minX, $minY) = moveEveryPointAndGetDimensions($points, -1);
         drawEveryPoint($points, $width, $height, $minX, $minY);
         break;
