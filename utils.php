@@ -1,7 +1,9 @@
 <?php
 
 const COLOR_NICE_PINK = 197;
+const COLOR_NICE_RED = 196;
 const COLOR_NICE_BLUE = 69;
+const COLOR_NICE_GREEN = 46;
 
 function say($something, $color = null, $withEol = true) {
     if (is_array($something)) {
@@ -15,6 +17,18 @@ function say($something, $color = null, $withEol = true) {
 
 function bashColor($color, $string) {
     return "\e[38;5;${color}m".$string."\e[39m";
+}
+
+function checkEquals($expected, $actual, $message = '')
+{
+    if (!$message) {
+        $message = "$expected == $actual";
+    }
+    if ($expected == $actual) {
+        say(bashColor(COLOR_NICE_GREEN, "[OK] ").$message);
+    } else {
+        say(bashColor(COLOR_NICE_RED, "[KO] ").$message);
+    }
 }
 
 function getMaxValueAndKey($array) {
