@@ -21,14 +21,10 @@ foreach (explode(PHP_EOL, INPUT) as $inputRow) {
 // Make situation evolute
 say($state);
 $pot = 0;
-list($state, $pot) = spendTime($state, $pot, $evolutions);
-say($state.' '.$pot);
-list($state, $pot) = spendTime($state, $pot, $evolutions);
-say($state.' '.$pot);
-list($state, $pot) = spendTime($state, $pot, $evolutions);
-say($state.' '.$pot);
-list($state, $pot) = spendTime($state, $pot, $evolutions);
-say($state.' '.$pot);
+foreach (integers(20) as $number) {
+    list($state, $pot) = spendTime($state, $pot, $evolutions);
+}
+say($state); say($pot);
 
 // Check everything is ok
 // say($state);
@@ -36,24 +32,26 @@ say($state.' '.$pot);
 
 function spendTime($state, $numberOfFirstPot, $evolutions)
 {
-    $newNumberOfFirstPot = $numberOfFirstPot;
+    $newNumberOfFirstPot = $numberOfFirstPot - 2;
     $newState = '';
     // deal with extreme left pots
     for ($i = 1; $i <= 4; $i++) {
         $pot = $i - 3;
         $situation = str_repeat('.', 5 - $i) . substr($state, 0, $i);
         $result = isset($evolutions[$situation]) ? $evolutions[$situation] : '.';
-        if ($result === '#' || $newNumberOfFirstPot < $numberOfFirstPot) {
-            $newState .= $result;
-            if ($newNumberOfFirstPot === $numberOfFirstPot) {
-                $newNumberOfFirstPot = $pot;
-            }
-        }
+        $newState .= $result;
     }
     // deal with pots we already know
     foreach (integers(strlen($state) - 2, 2) as $index) {
         $situation = substr($state, $index - 2, 5);
         $newState .= isset($evolutions[$situation]) ? $evolutions[$situation] : '.';
+    }
+    // deal with extreme right pots
+    for ($i = 1; $i <= 4; $i++) {
+        $pot = strlen($state) - 2 + $i;
+        $situation = substr($state, -$i, $i) . str_repeat('.', 5 - $i);
+        $newState .= isset($evolutions[$situation]) ? $evolutions[$situation] : '.';
+       // say("last $i characters: $situation");
     }
     return [$newState, $newNumberOfFirstPot];
 }
