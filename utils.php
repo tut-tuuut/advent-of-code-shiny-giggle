@@ -41,6 +41,12 @@ function parseInt($str) {
     return (int)$str;
 }
 
+function integers(int $number, $start = 0) {
+    for ($i = 0 ; $i < $number ; $i++) {
+        yield $i => $i + $start;
+    }
+}
+
 function extractMinAndMax($values) {
     $min = (int)$values[0];
     $max = (int)$values[0];
