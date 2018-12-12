@@ -48,6 +48,38 @@ foreach (integers(200) as $idx => $number) {
 }
 imagepng($img, 'evolution.png');
 
+// Now we are here, let's make a linear regression
+$sum = 0;
+foreach(integers(strlen($state), $pot) as $strIdx => $potIdx) {
+    if ($state[$strIdx] == '#') {
+        $sum += $potIdx;
+    }
+}
+say('generation 220:'.$sum);
+list($state, $pot) = spendTime($state, $pot, $evolutions);
+$sum = 0;
+foreach(integers(strlen($state), $pot) as $strIdx => $potIdx) {
+    if ($state[$strIdx] == '#') {
+        $sum += $potIdx;
+    }
+}
+say('generation 221:'.$sum);
+list($state, $pot) = spendTime($state, $pot, $evolutions);
+$lastSum = $sum;
+$sum = 0;
+foreach(integers(strlen($state), $pot) as $strIdx => $potIdx) {
+    if ($state[$strIdx] == '#') {
+        $sum += $potIdx;
+    }
+}
+say('generation 222:'.$sum);
+say('we are gaining '.($sum-$lastSum).' at each iteration now...');
+
+$targetIteration = 50000000000; // wow that's big
+$finalSum = $sum + ($targetIteration - 222) * 21;
+
+say(bashColor(COLOR_NICE_BLUE, '[PART 2] ').$finalSum);
+
 function spendTime($state, $numberOfFirstPot, $evolutions)
 {
     $newNumberOfFirstPot = $numberOfFirstPot - 2;
