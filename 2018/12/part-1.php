@@ -22,7 +22,7 @@ foreach (explode(PHP_EOL, INPUT) as $inputRow) {
 say($state);
 
 $pot = 0;
-$img = imagecreatetruecolor(1300, 500);
+$img = imagecreatetruecolor(1700, 2000);
 $black = imagecolorallocate($img, 0, 0, 0);
 $green = imageColorAllocate($img, 0, 240, 90);
 
@@ -32,7 +32,6 @@ foreach (integers(20) as $idx => $number) {
     list($state, $pot) = spendTime($state, $pot, $evolutions);
     drawState($img, $state, $pot, $idx + 1, $green);
 }
-imagepng($img, 'evolution.png');
 
 // Count number of pots with a plant inside
 $sum = 0;
@@ -42,6 +41,12 @@ foreach(integers(strlen($state), $pot) as $strIdx => $potIdx) {
     }
 }
 say(bashColor(COLOR_NICE_BLUE, '[PART 1] ').$sum);
+
+foreach (integers(200) as $idx => $number) {
+    list($state, $pot) = spendTime($state, $pot, $evolutions);
+    drawState($img, $state, $pot, $idx + 21, $green);
+}
+imagepng($img, 'evolution.png');
 
 function spendTime($state, $numberOfFirstPot, $evolutions)
 {
@@ -82,12 +87,12 @@ function drawState($image, $state, $initialPot, $generation, $color)
     foreach(integers(strlen($state), $initialPot) as $strIdx => $potIdx) {
         $cx = $potIdx * 5 + 30;
         $cy = 17 + $generation * 10;
-        if ($potIdx%10 === 0) {
+        /*if ($potIdx%10 === 0) {
             imageline($image, $cx, 0, $cx, 1000, $white);
         }
         if ($generation%10 === 0) {
             imageline($image, 0, $cy, 1900, $cy, $white);
-        }
+        }*/
         if ($state[$strIdx] !== '#') { continue; }
 
         imagefilledellipse($image, $cx, $cy, 4, 7, $color);
