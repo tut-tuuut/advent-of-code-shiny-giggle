@@ -9,18 +9,18 @@ const WEST = 8;  // 1000
 
 $map = [];
 $carts = [];
-foreach(explode(PHP_EOL, file_get_contents(__DIR__.'/input.txt')) as $x => $inputRow) {
+foreach(explode(PHP_EOL, file_get_contents(__DIR__.'/input.txt')) as $y => $inputRow) {
     $mapRow = [];
-    foreach(str_split($inputRow) as $index => $char) {
+    foreach(str_split($inputRow) as $x => $char) {
         if ($char === '-' || $char === '<' || $char === '>') {
             $mapRow[] = EAST+WEST;
             if ($char !== '-') {
-                $carts[] = new MineCart($x, $index, $char);
+                $carts[] = new MineCart($x, $y, $char);
             }
         } elseif ($char === '|' || $char === '^' || $char === 'v') {
             $mapRow[] = NORTH+SOUTH;
-            if ($char !== '-') {
-                $carts[] = new MineCart($x, $index, $char);
+            if ($char !== '|') {
+                $carts[] = new MineCart($x, $y, $char);
             }
         } elseif ($char === '+') {
             $mapRow[] = NORTH+SOUTH+EAST+WEST;
@@ -29,7 +29,7 @@ foreach(explode(PHP_EOL, file_get_contents(__DIR__.'/input.txt')) as $x => $inpu
             //               /----            |
             //               |            ----/
             // we can determine which one it is by looking only at previous character!
-            if (isset($mapRow[$index - 1]) && (($mapRow[$index - 1] & EAST) > 0)) {
+            if (isset($mapRow[$x - 1]) && (($mapRow[$x - 1] & EAST) > 0)) {
                 // previous character is open on the east, it's a NW loop
                 $mapRow[] = NORTH+WEST;
             } else {
@@ -40,7 +40,7 @@ foreach(explode(PHP_EOL, file_get_contents(__DIR__.'/input.txt')) as $x => $inpu
             //            ---\            |
             //               |            \----
             // we can determine which one it is by looking only at previous character!
-            if (isset($mapRow[$index - 1]) && (($mapRow[$index - 1] & EAST) > 0)) {
+            if (isset($mapRow[$x - 1]) && (($mapRow[$x - 1] & EAST) > 0)) {
                 // previous character is open on the east, it's a SW loop
                 $mapRow[] = SOUTH+WEST;
             } else {
@@ -54,17 +54,22 @@ foreach(explode(PHP_EOL, file_get_contents(__DIR__.'/input.txt')) as $x => $inpu
 }
 
 $d = new MapDrawer();
-$d->drawMap($map);
+$d->drawMapAndCarts($map, $carts);
 
 class MineCart
 {
     private $x;
     private $y;
 
-    public function construct($x, $y, $char)
+    public function __construct($x, $y, $char)
     {
         $this->x = $x;
         $this->y = $y;
+    }
+
+    public function getXY()
+    {
+        return [$this->x, $this->y];
     }
 }
 
@@ -80,13 +85,33 @@ class MapDrawer
         NORTH+SOUTH+EAST+WEST => '+',
         0 => ' ',
     ];
-    public function drawMap(array $map)
+
+    private $img;
+    private $bg;
+    private $rails;
+    private $cartColors = [];
+
+    public function drawMapAndCarts($map, $carts)
     {
         $height = count($map)*7 + 10;
         $width = count($map[0])*7 + 10;
-        $img = imagecreate($width, $height);
-        $white = imagecolorallocate($img, 240, 240, 240);
-        $dark = imagecolorallocate($img, 12, 12, 12);
+        $this->img = $img = imagecreate($width, $height);
+        $this->bg = imagecolorallocate($img, 240, 240, 240);
+        $this->rails = imagecolorallocate($img, 12, 12, 12);
+        if (empty($cartColors)) {
+            foreach ($carts as $cartNb => $cart) {
+                $this->cartColors[$cartNb] = imagecolorallocate($img, rand(100,200), rand(100,200), rand(100,200));
+            }
+        }
+        $this->drawMap($map);
+        $this->drawCarts($carts);
+        imagepng($img, 'map.png');
+    }
+
+    private function drawMap(array $map)
+    {
+        $dark = $this->rails;
+        $img = $this->img;
         foreach ($map as $y => $row) {
             $output = '';
             foreach ($row as $x => $int) {
@@ -115,6 +140,16 @@ class MapDrawer
                 }
             }
         }
-        imagepng($img, 'map.png');
+    }
+
+    private function drawCarts(array $carts)
+    {
+        foreach ($carts as $index => $cart) {
+            list($x, $y) = $cart->getXY();
+            say("cart at $x, $y");
+            $cx = $x*7 + 4 + 5;
+            $cy = $y*7 + 4 + 6;
+            imagefilledrectangle($this->img, $cx-3, $cy - 2, $cx + 3, $cy + 3, $this->cartColors[$index]);
+        }
     }
 }
