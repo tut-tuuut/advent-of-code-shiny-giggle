@@ -20,40 +20,113 @@ foreach (explode(PHP_EOL, INPUT) as $inputRow) {
 
 // Make situation evolute
 say($state);
-$pot = 0;
-list($state, $pot) = spendTime($state, $pot, $evolutions);
-say($state.' '.$pot);
-list($state, $pot) = spendTime($state, $pot, $evolutions);
-say($state.' '.$pot);
-list($state, $pot) = spendTime($state, $pot, $evolutions);
-say($state.' '.$pot);
-list($state, $pot) = spendTime($state, $pot, $evolutions);
-say($state.' '.$pot);
 
-// Check everything is ok
-// say($state);
-// var_dump($evolutions);
+$pot = 0;
+$img = imagecreatetruecolor(1700, 2000);
+$black = imagecolorallocate($img, 0, 0, 0);
+$green = imageColorAllocate($img, 0, 240, 90);
+
+drawState($img, $state, 0, 0, $green);
+
+foreach (integers(20) as $idx => $number) {
+    list($state, $pot) = spendTime($state, $pot, $evolutions);
+    drawState($img, $state, $pot, $idx + 1, $green);
+}
+
+// Count number of pots with a plant inside
+$sum = 0;
+foreach(integers(strlen($state), $pot) as $strIdx => $potIdx) {
+    if ($state[$strIdx] == '#') {
+        $sum += $potIdx;
+    }
+}
+say(bashColor(COLOR_NICE_BLUE, '[PART 1] ').$sum);
+
+foreach (integers(200) as $idx => $number) {
+    list($state, $pot) = spendTime($state, $pot, $evolutions);
+    drawState($img, $state, $pot, $idx + 21, $green);
+}
+imagepng($img, 'evolution.png');
+
+// Now we are here, let's make a linear regression
+$sum = 0;
+foreach(integers(strlen($state), $pot) as $strIdx => $potIdx) {
+    if ($state[$strIdx] == '#') {
+        $sum += $potIdx;
+    }
+}
+say('generation 220:'.$sum);
+list($state, $pot) = spendTime($state, $pot, $evolutions);
+$sum = 0;
+foreach(integers(strlen($state), $pot) as $strIdx => $potIdx) {
+    if ($state[$strIdx] == '#') {
+        $sum += $potIdx;
+    }
+}
+say('generation 221:'.$sum);
+list($state, $pot) = spendTime($state, $pot, $evolutions);
+$lastSum = $sum;
+$sum = 0;
+foreach(integers(strlen($state), $pot) as $strIdx => $potIdx) {
+    if ($state[$strIdx] == '#') {
+        $sum += $potIdx;
+    }
+}
+say('generation 222:'.$sum);
+say('we are gaining '.($sum-$lastSum).' at each iteration now...');
+
+$targetIteration = 50000000000; // wow that's big
+$finalSum = $sum + ($targetIteration - 222) * 21;
+
+say(bashColor(COLOR_NICE_BLUE, '[PART 2] ').$finalSum);
 
 function spendTime($state, $numberOfFirstPot, $evolutions)
 {
-    $newNumberOfFirstPot = $numberOfFirstPot;
+    $newNumberOfFirstPot = $numberOfFirstPot - 2;
     $newState = '';
     // deal with extreme left pots
+    //say('left');
     for ($i = 1; $i <= 4; $i++) {
         $pot = $i - 3;
         $situation = str_repeat('.', 5 - $i) . substr($state, 0, $i);
         $result = isset($evolutions[$situation]) ? $evolutions[$situation] : '.';
-        if ($result === '#' || $newNumberOfFirstPot < $numberOfFirstPot) {
-            $newState .= $result;
-            if ($newNumberOfFirstPot === $numberOfFirstPot) {
-                $newNumberOfFirstPot = $pot;
-            }
-        }
+        //say($situation . ' -> '.$result);
+        $newState .= $result;
     }
     // deal with pots we already know
-    foreach (integers(strlen($state) - 2, 2) as $index) {
+    //say('middle');
+    foreach (integers(strlen($state) - 4, 2) as $index) {
         $situation = substr($state, $index - 2, 5);
+        $result = isset($evolutions[$situation]) ? $evolutions[$situation] : '.';
+        //say($situation . ' -> '.$result);
         $newState .= isset($evolutions[$situation]) ? $evolutions[$situation] : '.';
     }
+    // deal with extreme right pots
+    //say('to the right');
+    for ($i = 4; $i >= 1; $i--) {
+        $pot = strlen($state) - 2 + $i;
+        $situation = substr($state, -$i, $i) . str_repeat('.', 5 - $i);
+        $result = isset($evolutions[$situation]) ? $evolutions[$situation] : '.';
+        //say($situation.' -> '.$result);
+        $newState .= $result;
+    }
     return [$newState, $newNumberOfFirstPot];
+}
+
+function drawState($image, $state, $initialPot, $generation, $color)
+{
+    $white = imagecolorallocate($image, 100,120,100);
+    foreach(integers(strlen($state), $initialPot) as $strIdx => $potIdx) {
+        $cx = $potIdx * 5 + 30;
+        $cy = 17 + $generation * 10;
+        /*if ($potIdx%10 === 0) {
+            imageline($image, $cx, 0, $cx, 1000, $white);
+        }
+        if ($generation%10 === 0) {
+            imageline($image, 0, $cy, 1900, $cy, $white);
+        }*/
+        if ($state[$strIdx] !== '#') { continue; }
+
+        imagefilledellipse($image, $cx, $cy, 4, 7, $color);
+    }
 }
