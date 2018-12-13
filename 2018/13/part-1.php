@@ -8,13 +8,20 @@ const SOUTH = 4; // 0100
 const WEST = 8;  // 1000
 
 $map = [];
-foreach(explode(PHP_EOL, file_get_contents(__DIR__.'/input.txt')) as $inputRow) {
+$carts = [];
+foreach(explode(PHP_EOL, file_get_contents(__DIR__.'/input.txt')) as $x => $inputRow) {
     $mapRow = [];
     foreach(str_split($inputRow) as $index => $char) {
-        if ($char === '-') {
+        if ($char === '-' || $char === '<' || $char === '>') {
             $mapRow[] = EAST+WEST;
-        } elseif ($char === '|') {
+            if ($char !== '-') {
+                $carts[] = new MineCart($x, $index, $char);
+            }
+        } elseif ($char === '|' || $char === '^' || $char === 'v') {
             $mapRow[] = NORTH+SOUTH;
+            if ($char !== '-') {
+                $carts[] = new MineCart($x, $index, $char);
+            }
         } elseif ($char === '+') {
             $mapRow[] = NORTH+SOUTH+EAST+WEST;
         } elseif ($char === '/') {
@@ -48,6 +55,18 @@ foreach(explode(PHP_EOL, file_get_contents(__DIR__.'/input.txt')) as $inputRow) 
 
 $d = new MapDrawer();
 $d->drawMap($map);
+
+class MineCart
+{
+    private $x;
+    private $y;
+
+    public function construct($x, $y, $char)
+    {
+        $this->x = $x;
+        $this->y = $y;
+    }
+}
 
 class MapDrawer
 {
