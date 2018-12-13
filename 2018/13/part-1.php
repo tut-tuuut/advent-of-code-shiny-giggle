@@ -82,12 +82,39 @@ class MapDrawer
     ];
     public function drawMap(array $map)
     {
-        foreach ($map as $row) {
+        $height = count($map)*7 + 10;
+        $width = count($map[0])*7 + 10;
+        $img = imagecreate($width, $height);
+        $white = imagecolorallocate($img, 240, 240, 240);
+        $dark = imagecolorallocate($img, 12, 12, 12);
+        foreach ($map as $y => $row) {
             $output = '';
-            foreach ($row as $int) {
-                $output .= $this->directions[$int];
+            foreach ($row as $x => $int) {
+                $cx = $x*7 + 4 + 5;
+                $cy = $y*7 + 4 + 6;
+
+                if (($int & WEST) > 0) {
+                    $x2 = $cx - 4;
+                    $y2 = $cy;
+                    imageline($img, $cx, $cy, $x2, $y2, $dark);
+                }
+                if (($int & EAST) > 0) {
+                    $x2 = $cx + 4;
+                    $y2 = $cy;
+                    imageline($img, $cx, $cy, $x2, $y2, $dark);
+                }
+                if (($int & SOUTH) > 0) {
+                    $x2 = $cx;
+                    $y2 = $cy + 4;
+                    imageline($img, $cx, $cy, $x2, $y2, $dark);
+                }
+                if (($int & NORTH) > 0) {
+                    $x2 = $cx;
+                    $y2 = $cy - 4;
+                    imageline($img, $cx, $cy, $x2, $y2, $dark);
+                }
             }
-            say($output);
         }
+        imagepng($img, 'map.png');
     }
 }
