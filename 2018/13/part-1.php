@@ -22,7 +22,7 @@ foreach(explode(PHP_EOL, file_get_contents(__DIR__.'/input.txt')) as $inputRow) 
             //               /----            |
             //               |            ----/
             // we can determine which one it is by looking only at previous character!
-            if (isset($mapRow[$index - 1]) && $mapRow[$index - 1]&EAST > 0) {
+            if (isset($mapRow[$index - 1]) && (($mapRow[$index - 1] & EAST) > 0)) {
                 // previous character is open on the east, it's a NW loop
                 $mapRow[] = NORTH+WEST;
             } else {
@@ -33,7 +33,7 @@ foreach(explode(PHP_EOL, file_get_contents(__DIR__.'/input.txt')) as $inputRow) 
             //            ---\            |
             //               |            \----
             // we can determine which one it is by looking only at previous character!
-            if (isset($mapRow[$index - 1]) && $mapRow[$index - 1]&EAST > 0) {
+            if (isset($mapRow[$index - 1]) && (($mapRow[$index - 1] & EAST) > 0)) {
                 // previous character is open on the east, it's a SW loop
                 $mapRow[] = SOUTH+WEST;
             } else {
@@ -63,7 +63,6 @@ class MapDrawer
     ];
     public function drawMap(array $map)
     {
-        var_dump($this->directions);
         foreach ($map as $row) {
             $output = '';
             foreach ($row as $int) {
