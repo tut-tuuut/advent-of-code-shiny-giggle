@@ -59,14 +59,11 @@ $d->drawMapAndCarts($map, $carts, 'map-initial.png');
 foreach(integers(1200) as $integer) {
     foreach ($carts as $cart) {
         $cart->move($map);
+        if (detectCrash($carts)) {
+            say($integer); 
+            break;
+        }
     }
-    if ($integer > 600) {
-        $d->drawMapAndCarts($map, $carts, "map-$integer.png");
-    }
-    if (detectCrash($carts)) {
-        say($integer);
-        break;
-    };
 }
 
 function detectCrash($carts)
@@ -85,7 +82,7 @@ function detectCrash($carts)
     if (count($crashes)) {
         ksort($crashes);
         var_dump($crashes);
-        say('FIRST CRASH:'.array_shift($crashes));
+        say('FIRST CRASH:'.array_shift($crashes)); // expected 26,92
         return true;
     }
     return false;
