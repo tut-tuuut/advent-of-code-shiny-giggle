@@ -134,7 +134,11 @@ class MineCart
 
     private function crossIntersection()
     {
-        // calculate direction change, then
+        // calculate direction change
+        $turnToDo = self::$turns[$this->numberOfIntersections % 3];
+        $currentDirectionIndex = array_search($this->direction, self::$clockWiseDirections);
+        $this->direction = self::$clockWiseDirections[($turnToDo + $currentDirectionIndex) % 4];
+        // and now move in the right direction
         $this->moveInDirection();
     }
 
