@@ -61,6 +61,30 @@ foreach(integers(20) as $integer) {
         $cart->move($map);
     }
     $d->drawMapAndCarts($map, $carts, "map-$integer.png");
+    if (detectCrash($carts)) {
+        break;
+    };
+}
+
+function detectCrash($carts)
+{
+    $cartCoordinates = [];
+    $crashes = [];
+    foreach ($carts as $cart) {
+        $coordinates = implode(',', $cart->getXY());
+        if (in_array($coordinates, $cartCoordinates)) {
+            $crashes[implode('-',array_reverse($cart->getXY()))] = $coordinates;
+        } else {
+            $cartCoordinates[] = $coordinates;
+        }
+    }
+
+    if (count($crashes)) {
+        ksort($crashes);
+        say('FIRST CRASH:'.array_shift($crashes));
+        return true;
+    }
+    return false;
 }
 
 class MineCart
