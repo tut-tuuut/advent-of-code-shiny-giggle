@@ -56,33 +56,62 @@ foreach(explode(PHP_EOL, file_get_contents(__DIR__.'/input.txt')) as $y => $inpu
 
 $d = new MapDrawer();
 $d->drawMapAndCarts($map, $carts, 'map-initial.png');
-foreach(integers(1200) as $integer) {
-    foreach ($carts as $cart) {
+foreach(integers(57400) as $tick) {
+    $nbOfCarts = count($carts);
+    $activeCarts = $carts;
+    usort($carts, function($a, $b) {
+        list($ax, $ay) = $a->getXY();
+        list($bx, $by) = $b->getXY();
+        if ($ay != $by) {
+            return ($ay < $by) ? -1 : 1;
+        }
+        if ($ax != $bx) {
+            return ($ax < $bx) ? -1 : 1;
+        }
+    });
+    foreach ($carts as $i => $cart) {
         $cart->move($map);
-        if (detectCrash($carts)) {
-            say($integer); 
-            break;
+        if (detectCrash($activeCarts)) {
+            say('CRASH AT '.$tick.' s');
+            $nbOfCarts -= 2;
+            $activeCarts = array_filter($carts, function($cart) {
+                return !$cart->hasCollided();
+            });
+            say(count($activeCarts).' carts left');
+            if (count($activeCarts) === 1) {
+                break;
+            }
         }
     }
+    //$d->drawMapAndCarts($map, $carts, 'map-'.$tick.'.png');
+    $carts = array_filter($carts, function($cart) {
+        return !$cart->hasCollided();
+    });
+    if (count($carts) === 1) {
+        $cart = array_pop($carts);
+        say('LAST CART: '.implode(',', $cart->getXY()));
+        break;
+    }
+    
 }
 
 function detectCrash($carts)
 {
     $cartCoordinates = [];
-    $crashes = [];
+    $crashes = 0;
     foreach ($carts as $cart) {
         $coordinates = implode(',', $cart->getXY());
-        if (in_array($coordinates, $cartCoordinates)) {
-            $crashes[implode('-',array_reverse($cart->getXY()))] = $coordinates;
+        if (isset($cartCoordinates[$coordinates])) {
+            $cart->markCollision();
+            $cartCoordinates[$coordinates]->markCollision();
+            $crashes++;
         } else {
-            $cartCoordinates[] = $coordinates;
+            $cartCoordinates[$coordinates] = $cart;
         }
     }
 
-    if (count($crashes)) {
-        ksort($crashes);
-        var_dump($crashes);
-        say('FIRST CRASH:'.array_shift($crashes)); // expected 26,92
+    if ($crashes > 0) {
+        say('CRASH at '.implode(',', $cart->getXY()));
         return true;
     }
     return false;
@@ -106,6 +135,7 @@ class MineCart
     private $y;
     private $direction;
     private $numberOfIntersections = 0;
+    private $collided;
 
     public function __construct($x, $y, $char)
     {
@@ -142,6 +172,16 @@ class MineCart
     public function getXY()
     {
         return [$this->x, $this->y];
+    }
+
+    public function markCollision()
+    {
+        $this->collided = true;
+    }
+
+    public function hasCollided()
+    {
+        return $this->collided;
     }
 
     private function moveInDirection()
