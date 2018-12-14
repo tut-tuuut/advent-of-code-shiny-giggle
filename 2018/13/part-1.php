@@ -60,11 +60,26 @@ class MineCart
 {
     private $x;
     private $y;
+    private $direction;
 
     public function __construct($x, $y, $char)
     {
         $this->x = $x;
         $this->y = $y;
+        if ($char === '<') {
+            $this->direction = WEST;
+        } elseif ($char === '>') {
+            $this->direction = EAST;
+        } elseif ($char === '^') {
+            $this->direction = NORTH;
+        } elseif ($char === 'v') {
+            $this->direction = SOUTH;
+        }
+    }
+
+    public function getDirection()
+    {
+        return $this->direction;
     }
 
     public function getXY()
@@ -149,7 +164,32 @@ class MapDrawer
             say("cart at $x, $y");
             $cx = $x*7 + 4 + 5;
             $cy = $y*7 + 4 + 6;
-            imagefilledrectangle($this->img, $cx-3, $cy - 2, $cx + 3, $cy + 3, $this->cartColors[$index]);
+            if ($cart->getDirection() === NORTH) {
+                $points = [
+                    $cx, $cy - 4,
+                    $cx-4, $cy+3,
+                    $cx+4, $cy+3,
+                ];
+            } elseif ($cart->getDirection() === SOUTH) {
+                $points = [
+                    $cx, $cy + 4,
+                    $cx-4, $cy-3,
+                    $cx+4, $cy-3,
+                ];
+            } elseif ($cart->getDirection() === EAST) {
+                $points = [
+                    $cx + 4, $cy,
+                    $cx - 3, $cy + 4,
+                    $cx - 3, $cy - 4,
+                ];
+            } elseif ($cart->getDirection() === WEST) {
+                $points = [
+                    $cx - 4, $cy,
+                    $cx + 3, $cy + 4,
+                    $cx + 3, $cy - 4,
+                ];
+            }
+            imagefilledpolygon($this->img, $points, 3, $this->cartColors[$index]);
         }
     }
 }
