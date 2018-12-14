@@ -56,12 +56,15 @@ foreach(explode(PHP_EOL, file_get_contents(__DIR__.'/input.txt')) as $y => $inpu
 
 $d = new MapDrawer();
 $d->drawMapAndCarts($map, $carts, 'map-initial.png');
-foreach(integers(20) as $integer) {
+foreach(integers(1200) as $integer) {
     foreach ($carts as $cart) {
         $cart->move($map);
     }
-    $d->drawMapAndCarts($map, $carts, "map-$integer.png");
+    if ($integer > 600) {
+        $d->drawMapAndCarts($map, $carts, "map-$integer.png");
+    }
     if (detectCrash($carts)) {
+        say($integer);
         break;
     };
 }
@@ -81,6 +84,7 @@ function detectCrash($carts)
 
     if (count($crashes)) {
         ksort($crashes);
+        var_dump($crashes);
         say('FIRST CRASH:'.array_shift($crashes));
         return true;
     }
