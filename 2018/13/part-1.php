@@ -6,6 +6,7 @@ const NORTH = 1; // 0001
 const EAST = 2;  // 0010
 const SOUTH = 4; // 0100
 const WEST = 8;  // 1000
+const INTERSECTION = 15; // 1111
 
 $map = [];
 $carts = [];
@@ -54,13 +55,32 @@ foreach(explode(PHP_EOL, file_get_contents(__DIR__.'/input.txt')) as $y => $inpu
 }
 
 $d = new MapDrawer();
-$d->drawMapAndCarts($map, $carts);
+$d->drawMapAndCarts($map, $carts, 'map-initial.png');
+foreach(integers(20) as $integer) {
+    foreach ($carts as $cart) {
+        $cart->move($map);
+    }
+    $d->drawMapAndCarts($map, $carts, "map-$integer.png");
+}
 
 class MineCart
 {
+    static private $clockWiseDirections = [
+        NORTH,
+        EAST,
+        SOUTH,
+        WEST
+    ];
+    static private $turns = [
+        -1, // turn left : from N you go to W
+        +0, // no direction change
+        +1, // turn right : from N you go to E
+    ];
+
     private $x;
     private $y;
     private $direction;
+    private $numberOfIntersections = 0;
 
     public function __construct($x, $y, $char)
     {
@@ -77,6 +97,18 @@ class MineCart
         }
     }
 
+    public function move($map)
+    {
+        $place = $map[$this->y][$this->x];
+        if ($place === INTERSECTION) {
+            $this->crossIntersection();
+        } elseif (($place & $this->direction) > 0) {
+            $this->moveInDirection();
+        } else {
+            $this->followLoop($place);
+        }
+    }
+
     public function getDirection()
     {
         return $this->direction;
@@ -85,6 +117,31 @@ class MineCart
     public function getXY()
     {
         return [$this->x, $this->y];
+    }
+
+    private function moveInDirection()
+    {
+        if ($this->direction === NORTH) {
+            $this->y -= 1;
+        } elseif ($this->direction === SOUTH) {
+            $this->y += 1;
+        } elseif ($this->direction === EAST) {
+            $this->x += 1;
+        } elseif ($this->direction === WEST) {
+            $this->x -= 1;
+        }
+    }
+
+    private function crossIntersection()
+    {
+        // calculate direction change, then
+        $this->moveInDirection();
+    }
+
+    private function followLoop($place)
+    {
+        // calculate direction change, then
+        $this->moveInDirection();
     }
 }
 
@@ -106,7 +163,7 @@ class MapDrawer
     private $rails;
     private $cartColors = [];
 
-    public function drawMapAndCarts($map, $carts)
+    public function drawMapAndCarts($map, $carts, $outputFile = 'map.png')
     {
         $height = count($map)*7 + 10;
         $width = count($map[0])*7 + 10;
@@ -120,7 +177,7 @@ class MapDrawer
         }
         $this->drawMap($map);
         $this->drawCarts($carts);
-        imagepng($img, 'map.png');
+        imagepng($img,$outputFile);
     }
 
     private function drawMap(array $map)
