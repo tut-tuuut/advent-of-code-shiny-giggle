@@ -137,14 +137,20 @@ class MineCart
         // calculate direction change
         $turnToDo = self::$turns[$this->numberOfIntersections % 3];
         $currentDirectionIndex = array_search($this->direction, self::$clockWiseDirections);
-        $this->direction = self::$clockWiseDirections[($turnToDo + $currentDirectionIndex) % 4];
+        $this->direction = self::$clockWiseDirections[(4 + $currentDirectionIndex + $turnToDo) % 4];
+        $this->numberOfIntersections += 1;
         // and now move in the right direction
         $this->moveInDirection();
     }
 
     private function followLoop($place)
     {
-        // calculate direction change, then
+        // calculate direction change
+        if (($this->direction & NORTH+SOUTH) > 0) {
+            $this->direction = ($place & (EAST+WEST));
+        } elseif (($this->direction & EAST+WEST) > 0) {
+            $this->direction = ($place & (NORTH+SOUTH));
+        }
         $this->moveInDirection();
     }
 }
@@ -222,7 +228,6 @@ class MapDrawer
     {
         foreach ($carts as $index => $cart) {
             list($x, $y) = $cart->getXY();
-            say("cart at $x, $y");
             $cx = $x*7 + 4 + 5;
             $cy = $y*7 + 4 + 6;
             if ($cart->getDirection() === NORTH) {
