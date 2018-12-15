@@ -6,13 +6,7 @@ include(__DIR__.'/../../utils.php');
 
 $climate = new League\CLImate\CLImate;
 
-$climate->out('This prints to the terminal.');
-
-$climate->red('Whoa now this text is red.');
-$climate->blue('Blue? Wow!');
-$climate->lightGreen('It is not easy being (light) green.');
-
-$input = file_get_contents(__DIR__.'/input.txt');
+$input = file_get_contents(__DIR__.'/input-2.txt');
 
 $input = str_replace('G', '<red>G</red>', $input);
 $input = str_replace('E', '<green>E</green>', $input);
@@ -21,14 +15,37 @@ $climate->clear();
 
 $climate->out($input);
 
+$grid = [];
+foreach (explode(PHP_EOL, $input) as $y => $inputrow) {
+    foreach (str_split($inputrow) as $x => $char) {
+        if ($char === '#' || $char === '.') {
+            $grid[$y][$x] = $char;
+        } elseif ($char === 'G') {
+            $grid[$y][$x] = new Goblin($x, $y);
+        } elseif ($char === 'E') {
+            $grid[$y][$x] = new Elf($x, $y);
+        }
+    }
+}
+draw($grid, $climate);
 
+function draw($grid, $cli) {
+    $cli->clear();
+    foreach ($grid as $row) {
+        $str = implode('', $row);
+        $str = str_replace('G', '<red>G</red>', $str);
+        $str = str_replace('E', '<green>E</green>', $str);
+        $str = str_replace('.', ' ', $str);
+
+        $cli->out($str);
+    }
+}
 abstract class Unit
 {
     private $x;
     private $y;
     private $hp;
     private $attack;
-    private $type;
 
     public function construct($x, $y)
     {
@@ -47,14 +64,19 @@ abstract class Unit
     {
         $this->hp -= $damage;
     }
+
+    public function __toString()
+    {
+        return $this->type;
+    }
 }
 
 class Elf extends Unit
 {
-    private $type = 'elf';
+    protected $type = 'E';
 }
 
 class Goblin extends Unit
 {
-    private $type = 'goblin';
+    protected $type = 'G';
 }
