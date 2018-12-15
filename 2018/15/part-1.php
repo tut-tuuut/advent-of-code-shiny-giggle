@@ -94,17 +94,14 @@ abstract class Unit
     public function move(&$grid)
     {
         if ($this->isNearAnEnemy($this->x, $this->y, $grid)) {
-            say('STOP');
             return false;
         }
-        say($this->type.' let’s move!');
         list($targetX, $targetY) = $this->findWhereToMove($grid);
         $this->moveTo($targetX, $targetY, $grid);
     }
 
     private function moveTo($targetX, $targetY, &$grid)
     {
-        say('I move to '.$targetX.'-'.$targetY);
         $grid[$targetY][$targetX] = $this;
         $grid[$this->y][$this->x] = '.';
         $this->x = $targetX;
@@ -128,24 +125,52 @@ abstract class Unit
 
     private function findWhereToMove(&$grid)
     {
-        // for the moment, move randomly to a free neighbour,
-        // we will see later for intelligence.
-        // I just want to know if my unit can move.
+        // let's breadth-first-search the ideal spot
+        $visited = [$this->x.'-'.$this->y => true];
+        $toVisit = [];
+        // Fill the initial queue
         foreach ($this->findNeighbours($this->x, $this->y, $grid) as $neighbourInfo) {
             list($x, $y, $neighbour) = $neighbourInfo;
-            if (is_string($neighbour) && $neighbour === '.') {
-                return[$x, $y];
+            $visited[$x.'-'.$y] = true;
+            if (!(is_string($neighbour) && $neighbour === '.')) {
+                continue;
+            }
+            $toVisit[] = [
+                'initial' => [$x, $y],
+                'distance' => 1,
+                'node' => [$x, $y],
+            ];
+        }
+        while (count($toVisit) > 0) {
+            $info = array_shift($toVisit);
+            list($x, $y) = $info['node'];
+            if ($this->isNearAnEnemy($x, $y, $grid)) {
+                return $info['initial'];
+            }
+            foreach ($this->findNeighbours($x, $y, $grid) as $neighbourInfo) {
+                list($nx, $ny, $nneighbour) = $neighbourInfo;
+                $signature = $nx.'-'.$ny;
+                if (isset($visited[$signature])) {
+                    continue;
+                }
+                $visited[$signature] = true;
+                $toVisit[] = [
+                    'initial' => $info['initial'],
+                    'distance' => $info['distance'] + 1,
+                    'node' => [$ny, $ny],
+                ];
             }
         }
+        return false;
     }
 
     private function findNeighbours($x, $y, &$grid)
     {
         foreach ([
-            [$this->y, $this->x - 1],
-            [$this->y, $this->x + 1],
-            [$this->y - 1, $this->x],
-            [$this->y + 1, $this->x],
+            [$y - 1, $x],
+            [$y, $x - 1],
+            [$y, $x + 1],
+            [$y + 1, $x],
         ] as $neighbourCoordinates) {
             list($y, $x) = $neighbourCoordinates;
             if (isset($grid[$y][$x])) {
