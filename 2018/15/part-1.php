@@ -22,8 +22,10 @@ foreach (explode(PHP_EOL, $input) as $y => $inputrow) {
         }
     }
 }
+$climate->clear();
 draw($grid, $climate);
 $grid = makeTurn($grid);
+draw($grid, $climate);
 
 function makeTurn($grid) {
     $activeGrid = $grid;
@@ -40,7 +42,6 @@ function makeTurn($grid) {
 }
 
 function draw($grid, $cli) {
-    $cli->clear();
     foreach ($grid as $row) {
         $str = implode('', $row);
         $str = str_replace('G', '<red>G</red>', $str);
@@ -92,18 +93,50 @@ abstract class Unit
 
     public function move(&$grid)
     {
+        if ($this->isNearAnEnemy($this->x, $this->y, $grid)) {
+            say('STOP');
+            return false;
+        }
+        say($this->type.' let’s move!');
+        list($targetX, $targetY) = $this->findWhereToMove($grid);
+        $this->moveTo($targetX, $targetY, $grid);
+    }
+
+    private function moveTo($targetX, $targetY, &$grid)
+    {
+        say('I move to '.$targetX.'-'.$targetY);
+        $grid[$targetY][$targetX] = $this;
+        $grid[$this->y][$this->x] = '.';
+        $this->x = $targetX;
+        $this->y = $targetY;
+    }
+
+    private function isNearAnEnemy($x, $y, &$grid)
+    {
         foreach (
-            $this->findNeighbours($this->x, $this->y, $grid)
+            $this->findNeighbours($x, $y, $grid)
             as $neighbourInfo
         ) {
             $neighbour = $neighbourInfo[2];
             if ($neighbour instanceof Unit
             && $this->isEnemy($neighbour)) {
-                say($this->type.' stop!');
-                return false;
+                return true;
             }
         }
-        say($this->type.' let’s move!');
+        return false;
+    }
+
+    private function findWhereToMove(&$grid)
+    {
+        // for the moment, move randomly to a free neighbour,
+        // we will see later for intelligence.
+        // I just want to know if my unit can move.
+        foreach ($this->findNeighbours($this->x, $this->y, $grid) as $neighbourInfo) {
+            list($x, $y, $neighbour) = $neighbourInfo;
+            if (is_string($neighbour) && $neighbour === '.') {
+                return[$x, $y];
+            }
+        }
     }
 
     private function findNeighbours($x, $y, &$grid)
