@@ -3,10 +3,44 @@
 include(__DIR__.'/../../vendor/autoload.php');
 include(__DIR__.'/../../utils.php');
 
+$inputs = [
+    [
+        'file' => 'input-2.txt',
+        'turns' => 47,
+        'remaining' => 590
+    ],
+    [
+        'file' => 'input-3.txt',
+        'turns' => 37,
+        'remaining' => 982
+    ],
+    [
+        'file' => 'input-4.txt',
+        'turns' => 46,
+        'remaining' => 859
+    ],
+    [
+        'file' => 'input-5.txt',
+        'turns' => 35,
+        'remaining' => 793
+    ],
+    [
+        'file' => 'input-7.txt',
+        'turns' => 54,
+        'remaining' => 536
+    ],
+    [
+        'file' => 'input-6.txt',
+        'turns' => 20,
+        'remaining' => 937
+    ],
+];
 
 $climate = new League\CLImate\CLImate;
 
-$input = file_get_contents(__DIR__.'/input-4.txt');
+$inputInfo = $inputs[1];
+
+$input = file_get_contents(__DIR__.'/'.$inputInfo['file']);
 
 $grid = [];
 foreach (explode(PHP_EOL, $input) as $y => $inputrow) {
@@ -31,6 +65,8 @@ foreach (integers(100, 1) as $completedTurns) {
         draw($grid, $climate);
         say('hps remaining: '.$isOver);
         say('turns completed: '.$completedTurns);
+        checkEquals($inputInfo['turns'],$completedTurns, 'completed turns');
+        checkEquals($inputInfo['remaining'],$isOver, 'hp remaining');
         die;
     }
 }
