@@ -24,8 +24,42 @@ foreach (explode(PHP_EOL, $input) as $y => $inputrow) {
 }
 $climate->clear();
 draw($grid, $climate);
-$grid = makeTurn($grid);
-draw($grid, $climate);
+foreach (integers(100, 1) as $completedTurns) {
+    list($grid, $isOver) = makeTurn($grid);
+    if ($isOver !== false) {
+        $climate->clear();
+        draw($grid, $climate);
+        say('hps remaining: '.$isOver);
+        say('turns completed: '.$completedTurns);
+        die;
+    }
+}
+
+function checkPopulation($grid) {
+    $goblinsLeft = false;
+    $goblinsHp = 0;
+    $elvesLeft = false;
+    $elvesHp = 0;
+    foreach ($grid as $row) {
+        foreach ($row as $cell) {
+            if (!($cell instanceof Unit)) {
+                continue;
+            }
+            if ($cell instanceof Goblin) {
+                $goblinsLeft = true;
+                $goblinsHp += $cell->getHp();
+            }
+            if ($cell instanceof Elf) {
+                $elvesLeft = true;
+                $elvesHp += $cell->getHp();
+            }
+            if ($elvesLeft && $goblinsLeft) {
+                return false;
+            }
+        }
+    }
+    return max($goblinsHp, $elvesHp);
+}
 
 function makeTurn($grid) {
     $activeGrid = $grid;
@@ -36,18 +70,27 @@ function makeTurn($grid) {
             }
             $place->move($activeGrid);
             $place->attack($activeGrid);
+            $hps = checkPopulation($activeGrid);
+            if ($hps !== false) {
+                return [$activeGrid, $hps];
+            }
         }
     }
-    return $activeGrid;
+    return [$activeGrid, false];
 }
 
 function draw($grid, $cli) {
     foreach ($grid as $row) {
         $str = implode('', $row);
+        foreach ($row as $cell) {
+            if (!($cell instanceof Unit)) {
+                continue;
+            }
+            $str .= ' ' . $cell->sayStatus();
+        }
         $str = str_replace('G', '<red>G</red>', $str);
         $str = str_replace('E', '<green>E</green>', $str);
         $str = str_replace('.', ' ', $str);
-
         $cli->out($str);
     }
 }
@@ -66,14 +109,32 @@ abstract class Unit
         $this->attack = 3;
     }
 
-    public function hit(Unit $unit)
+    public function sayStatus()
     {
-        $unit->takeDamage($this->attack);
+        return $this->type.'('.$this->hp.')';
     }
 
-    public function takeDamage(int $damage)
+    public function getHp()
+    {
+        return $this->hp;
+    }
+
+    public function hit(Unit $unit, &$grid)
+    {
+        $unit->takeDamage($this->attack, $grid);
+    }
+
+    public function takeDamage(int $damage, &$grid)
     {
         $this->hp -= $damage;
+        if ($this->hp <= 0) {
+            $this->dieSadly($grid);
+        }
+    }
+
+    private function dieSadly(&$grid)
+    {
+        $grid[$this->y][$this->x] = '.';
     }
 
     public function __toString()
@@ -102,6 +163,11 @@ abstract class Unit
 
     private function moveTo($targetX, $targetY, &$grid)
     {
+        if (!isset($grid[$targetY][$targetX])) {
+            return;
+        } elseif ($grid[$targetY][$targetX] !== '.') {
+            return;
+        }
         $grid[$targetY][$targetX] = $this;
         $grid[$this->y][$this->x] = '.';
         $this->x = $targetX;
@@ -110,6 +176,11 @@ abstract class Unit
 
     private function isNearAnEnemy($x, $y, &$grid)
     {
+        return ($this->findEnemyToHit($x, $y, $grid) instanceof Unit);
+    }
+
+    private function findEnemyToHit($x, $y, &$grid)
+    {
         foreach (
             $this->findNeighbours($x, $y, $grid)
             as $neighbourInfo
@@ -117,7 +188,7 @@ abstract class Unit
             $neighbour = $neighbourInfo[2];
             if ($neighbour instanceof Unit
             && $this->isEnemy($neighbour)) {
-                return true;
+                return $neighbour;
             }
         }
         return false;
@@ -173,6 +244,10 @@ abstract class Unit
             }
         }
         $candidates = $found['candidates'];
+        if (count($candidates) === 0) {
+            say($this->x.'-'.$this->y.': could not find where to move');
+            //die;
+        }
         usort($candidates, function($a, $b) {
             list($xa, $ya) = $a;
             list($xb, $yb) = $b;
@@ -204,8 +279,12 @@ abstract class Unit
 
     public function attack(&$grid)
     {
+        $enemyToHit = $this->findEnemyToHit($this->x, $this->y, $grid);
+        if (!$enemyToHit) {
+            return;
+        }
+        $this->hit($enemyToHit, $grid);
     }
-
 }
 
 class Elf extends Unit
