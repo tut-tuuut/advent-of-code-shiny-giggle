@@ -1,5 +1,8 @@
 <?php
 
+use League\CLImate\CLImate;
+
+include(__DIR__.'/../../vendor/autoload.php');
 include(__DIR__.'/../../utils.php');
 
 const MATCH_BEFORE = '/Before: \[(\d+), (\d+), (\d+), (\d+)\]/';
@@ -23,13 +26,13 @@ $newExample = [];
 foreach (explode(PHP_EOL, file_get_contents(__DIR__.'/input.txt')) as $inputRow) {
     $matches = [];
     if (preg_match(MATCH_BEFORE, $inputRow, $matches)) {
-        $newExample = [];
         list(, $zero, $one, $two, $three) = $matches;
         $newExample['before'] = [(int)$zero, (int)$one, (int)$two, (int)$three];
     } elseif (preg_match(MATCH_AFTER, $inputRow, $matches)) {
         list(, $zero, $one, $two, $three) = $matches;
         $newExample['after'] = [(int)$zero, (int)$one, (int)$two, (int)$three];
         $examples[] = $newExample;
+        $newExample = [];
     } elseif (preg_match(MATCH_INSTRUCTION, $inputRow, $matches)) {
         list(, $opcode, $a, $b, $c) = $matches;
         if (isset($newExample['before'])) {
@@ -86,7 +89,16 @@ while (count($opcodeNumbers) < 16) {
 
 // DONE. I have this in opcodeNumbers variable.
 
+// Now, execute the program on the registers
+$registers = [0, 0, 0, 0];
+$cli = new CLImate();
+foreach ($program as $progLine) {
+    list($opcodeNumber, $a, $b, $c) = $progLine;
+    $opcode = $opcodeNumbers[$opcodeNumber];
+    $registers = applyOpCode($opcode, $a, $b, $c, $registers);
+}
 
+say('[PART 2] '.$registers[0].' in register #0 at the end');
 // ------------- utilities --------------------------------------------
 function applyOpCode($opcode, $a, $b, $c, $registers)
 {
