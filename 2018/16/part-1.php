@@ -6,9 +6,57 @@ const MATCH_BEFORE = '/Before: \[(\d+), (\d+), (\d+), (\d+)\]/';
 const MATCH_INSTRUCTION = '/(\d+) (\d+) (\d+) (\d+)/';
 const MATCH_AFTER = '/After:  \[(\d+), (\d+), (\d+), (\d+)\]/';
 
+const OPCODES = [
+    'addr', 'addi',
+    'mulr', 'muli',
+    'banr', 'bani',
+    'borr', 'bori',
+    'setr', 'seti',
+    'gtir', 'gtri', 'gtrr',
+    'eqir', 'eqri', 'eqrr',
+];
+
 $registers = [3, 2, 1, 1];
 $mulr = applyOpCode('seti', 2, 1, 2, $registers);
 say($mulr);
+
+$examples = [];
+$newExample = [];
+foreach (explode(PHP_EOL, file_get_contents(__DIR__.'/input.txt')) as $inputRow) {
+    $matches = [];
+    if (preg_match(MATCH_BEFORE, $inputRow, $matches)) {
+        $newExample = [];
+        list(, $zero, $one, $two, $three) = $matches;
+        $newExample['before'] = [(int)$zero, (int)$one, (int)$two, (int)$three];
+    } elseif (preg_match(MATCH_AFTER, $inputRow, $matches)) {
+        list(, $zero, $one, $two, $three) = $matches;
+        $newExample['after'] = [(int)$zero, (int)$one, (int)$two, (int)$three];
+        $examples[] = $newExample;
+    } elseif (preg_match(MATCH_INSTRUCTION, $inputRow, $matches)) {
+        list(, $opcode, $a, $b, $c) = $matches;
+        $newExample['instruction'] = [(int)$opcode, (int)$a, (int)$b, (int)$c];
+    };
+}
+
+unset($newExample);
+
+$matchingExamples = 0;
+foreach ($examples as $example) {
+    $matchingPatterns = 0;
+    $expected = implode(' ', $example['after']);
+    list(, $a, $b, $c) = $example['instruction'];
+    foreach (OPCODES as $opcode) {
+        $obtained = applyOpCode($opcode, $a, $b, $c, $example['before']);
+        if (implode(' ', $obtained) === $expected) {
+            $matchingPatterns++;
+        }
+    }
+    if ($matchingPatterns >= 3) {
+        $matchingExamples++;
+    }
+}
+
+say('[PART 1] '.$matchingExamples);
 
 function applyOpCode($opcode, $a, $b, $c, $registers)
 {
@@ -103,7 +151,7 @@ function applyOpCode($opcode, $a, $b, $c, $registers)
     // eqri (equal register/immediate) sets register C to 1
     // if register A is equal to value B.
     // Otherwise, register C is set to 0.
-    elseif ($opcode === 'gtri') {
+    elseif ($opcode === 'eqri') {
         $registers[$c] = ($registers[$a] === $b) ? 1 : 0;
     }
 
