@@ -6,7 +6,7 @@ include(__DIR__.'/../../utils.php');
 
 $climate = new League\CLImate\CLImate;
 
-$input = file_get_contents(__DIR__.'/input-2.txt');
+$input = file_get_contents(__DIR__.'/input-4.txt');
 
 $grid = [];
 foreach (explode(PHP_EOL, $input) as $y => $inputrow) {
@@ -245,8 +245,7 @@ abstract class Unit
         }
         $candidates = $found['candidates'];
         if (count($candidates) === 0) {
-            say($this->x.'-'.$this->y.': could not find where to move');
-            //die;
+            return false;
         }
         usort($candidates, function($a, $b) {
             list($xa, $ya) = $a;
