@@ -38,7 +38,7 @@ $inputs = [
 
 $climate = new League\CLImate\CLImate;
 
-$inputInfo = $inputs[1];
+$inputInfo = $inputs[5];
 
 $input = file_get_contents(__DIR__.'/'.$inputInfo['file']);
 
@@ -60,9 +60,10 @@ $climate->clear();
 draw($grid, $climate);
 foreach (integers(100, 1) as $completedTurns) {
     list($grid, $isOver) = makeTurn($grid);
+    //$climate->clear();
+    //draw($grid, $climate);
+    //sleep(1);
     if ($isOver !== false) {
-        $climate->clear();
-        draw($grid, $climate);
         say('hps remaining: '.$isOver);
         say('turns completed: '.$completedTurns);
         checkEquals($inputInfo['turns'],$completedTurns, 'completed turns');
@@ -212,11 +213,6 @@ abstract class Unit
 
     private function isNearAnEnemy($x, $y, &$grid)
     {
-        return ($this->findEnemyToHit($x, $y, $grid) instanceof Unit);
-    }
-
-    private function findEnemyToHit($x, $y, &$grid)
-    {
         foreach (
             $this->findNeighbours($x, $y, $grid)
             as $neighbourInfo
@@ -224,10 +220,30 @@ abstract class Unit
             $neighbour = $neighbourInfo[2];
             if ($neighbour instanceof Unit
             && $this->isEnemy($neighbour)) {
-                return $neighbour;
+                return true;
             }
         }
         return false;
+    }
+
+    private function findEnemyToHit($x, $y, &$grid)
+    {
+        $target = null;
+        foreach (
+            $this->findNeighbours($x, $y, $grid)
+            as $neighbourInfo
+        ) {
+            $neighbour = $neighbourInfo[2];
+            if ($neighbour instanceof Unit
+            && $this->isEnemy($neighbour)) {
+                if (is_null($target)) {
+                    $target = $neighbour;
+                } elseif ($target->getHp() > $neighbour->getHp()) {
+                    $target = $neighbour;
+                }
+            }
+        }
+        return $target;
     }
 
     private function findWhereToMove(&$grid)
