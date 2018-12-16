@@ -1,9 +1,16 @@
 <?php
 
+use League\CLImate\CLImate;
+
 include(__DIR__.'/../../vendor/autoload.php');
 include(__DIR__.'/../../utils.php');
 
 $inputs = [
+    [
+        'file' => 'input.txt',
+        'turns' => '???',
+        'remaining' => '????'
+    ],
     [
         'file' => 'input-2.txt',
         'turns' => 47,
@@ -38,7 +45,8 @@ $inputs = [
 
 $climate = new League\CLImate\CLImate;
 
-$inputInfo = $inputs[1];
+$inputInfo = $inputs[(int)$argv[1]];
+$elfAttack = $argv[3];
 
 $input = file_get_contents(__DIR__.'/'.$inputInfo['file']);
 
@@ -49,21 +57,27 @@ foreach (explode(PHP_EOL, $input) as $y => $inputrow) {
             $grid[$y][$x] = $char;
         } elseif ($char === 'G') {
             say('new goblin at '.$x.'-'.$y);
-            $grid[$y][$x] = new Goblin($x, $y);
+            $grid[$y][$x] = new Goblin($x, $y, 3);
         } elseif ($char === 'E') {
             say('new elf at '.$x.'-'.$y);
-            $grid[$y][$x] = new Elf($x, $y);
+            $grid[$y][$x] = new Elf($x, $y, $elfAttack);
         }
     }
 }
 $climate->clear();
 draw($grid, $climate);
+say('initially');
+sleep(1);
 foreach (integers(100, 1) as $completedTurns) {
-    list($grid, $isOver) = makeTurn($grid);
-    $climate->clear();
-    draw($grid, $climate);
-    sleep(1);
+    list($grid, $isOver) = makeTurn($grid, $completedTurns);
+    if ($argv[2] === 'debug') {
+        $climate->clear();
+        draw($grid, $climate);
+        say('after turn '.$completedTurns);
+        sleep(1);
+    }
     if ($isOver !== false) {
+        draw($grid, $climate);
         say('hps remaining: '.$isOver);
         say('turns completed: '.$completedTurns);
         say('turns: expected '.$inputInfo['turns'].' turns, got '.$completedTurns);
@@ -82,6 +96,9 @@ function checkPopulation($grid) {
             if (!($cell instanceof Unit)) {
                 continue;
             }
+            if (!$cell->isActive()) {
+                continue;
+            }
             if ($cell instanceof Goblin) {
                 $goblinsLeft = true;
                 $goblinsHp += $cell->getHp();
@@ -98,20 +115,24 @@ function checkPopulation($grid) {
     return max($goblinsHp, $elvesHp);
 }
 
-function makeTurn($grid) {
+function makeTurn($grid, $turn) {
     $turnId = uniqid();
     $activeGrid = $grid;
+    $climate = new League\CLImate\CLImate;
     foreach ($grid as $y => $row) {
-        foreach ($row as $x => $place) {
-            if (!($place instanceof Unit)) {
+        foreach ($row as $x => $cell) {
+            if (!($cell instanceof Unit)) {
                 continue;
             }
-            $place->move($activeGrid, $turnId);
-            $place->attack($activeGrid);
+            if (!$cell->isActive()) {
+                continue;
+            }
             $hps = checkPopulation($activeGrid);
             if ($hps !== false) {
                 return [$activeGrid, $hps];
             }
+            $cell->move($activeGrid, $turnId);
+            $cell->attack($activeGrid);
         }
     }
     return [$activeGrid, false];
@@ -139,13 +160,19 @@ abstract class Unit
     private $hp;
     private $attack;
     private $turnId;
+    private $active = true;
 
-    public function __construct($x, $y)
+    public function __construct($x, $y, $attack)
     {
         $this->x = $x;
         $this->y = $y;
         $this->hp = 200;
-        $this->attack = 3;
+        $this->attack = $attack;
+    }
+
+    public function getXY()
+    {
+        return [$this->x, $this->y];
     }
 
     public function sayStatus()
@@ -173,7 +200,16 @@ abstract class Unit
 
     private function dieSadly(&$grid)
     {
+        if ($this->type === 'E') {
+            die('no, elves need more attack');
+        }
+        $this->active = false;
         $grid[$this->y][$this->x] = '.';
+    }
+
+    public function isActive()
+    {
+        return $this->active;
     }
 
     public function __toString()
@@ -193,6 +229,9 @@ abstract class Unit
 
     public function move(&$grid, $turnId)
     {
+        if (!$this->active) {
+            return;
+        }
         if ($this->turnId === $turnId) {
             return; // only one move per turn
         } else {
@@ -283,7 +322,10 @@ abstract class Unit
             }
             if ($this->isNearAnEnemy($x, $y, $grid)) {
                 $found['distance'] = $info['distance'];
-                $found['candidates'][] = $info['initial'];
+                $found['candidates'][] = [
+                    'initial' => $info['initial'],
+                    'final' => [$x, $y],
+                ];
             }
             foreach ($this->findNeighbours($x, $y, $grid) as $neighbourInfo) {
                 list($nx, $ny, $nneighbour) = $neighbourInfo;
@@ -307,8 +349,18 @@ abstract class Unit
             return false;
         }
         usort($candidates, function($a, $b) {
-            list($xa, $ya) = $a;
-            list($xb, $yb) = $b;
+            // sort by target first
+            list($xa, $ya) = $a['final'];
+            list($xb, $yb) = $b['final'];
+            if ($ya != $yb) {
+                return ($ya < $yb) ? -1 : +1;
+            }
+            if ($xa != $xb) {
+                return ($xa < $xb) ? -1 : +1;
+            }
+            // sort by initial step then
+            list($xa, $ya) = $a['initial'];
+            list($xb, $yb) = $b['initial'];
             if ($ya != $yb) {
                 return ($ya < $yb) ? -1 : +1;
             }
@@ -317,7 +369,7 @@ abstract class Unit
             }
             return 0;
         });
-        return array_shift($candidates);
+        return array_shift($candidates)['initial'];
     }
 
     private function findNeighbours($x, $y, &$grid)
@@ -337,6 +389,9 @@ abstract class Unit
 
     public function attack(&$grid)
     {
+        if (!$this->active) {
+            return;
+        }
         $enemyToHit = $this->findEnemyToHit($this->x, $this->y, $grid);
         if (!$enemyToHit) {
             return;
