@@ -16,11 +16,9 @@ const OPCODES = [
     'eqir', 'eqri', 'eqrr',
 ];
 
-$registers = [3, 2, 1, 1];
-$mulr = applyOpCode('seti', 2, 1, 2, $registers);
-say($mulr);
-
+// Parse Input...
 $examples = [];
+$program = [];
 $newExample = [];
 foreach (explode(PHP_EOL, file_get_contents(__DIR__.'/input.txt')) as $inputRow) {
     $matches = [];
@@ -34,30 +32,62 @@ foreach (explode(PHP_EOL, file_get_contents(__DIR__.'/input.txt')) as $inputRow)
         $examples[] = $newExample;
     } elseif (preg_match(MATCH_INSTRUCTION, $inputRow, $matches)) {
         list(, $opcode, $a, $b, $c) = $matches;
-        $newExample['instruction'] = [(int)$opcode, (int)$a, (int)$b, (int)$c];
+        if (isset($newExample['before'])) {
+            $newExample['instruction'] = [(int)$opcode, (int)$a, (int)$b, (int)$c];
+        } else {
+            $program[] = [(int)$opcode, (int)$a, (int)$b, (int)$c];
+        }
     };
 }
 
 unset($newExample);
 
+$opcodeNbCandidates = array_fill(0, 16, OPCODES);
 $matchingExamples = 0;
 foreach ($examples as $example) {
     $matchingPatterns = 0;
+    $matching = [];
     $expected = implode(' ', $example['after']);
-    list(, $a, $b, $c) = $example['instruction'];
+    list($opcodeNb, $a, $b, $c) = $example['instruction'];
     foreach (OPCODES as $opcode) {
         $obtained = applyOpCode($opcode, $a, $b, $c, $example['before']);
         if (implode(' ', $obtained) === $expected) {
             $matchingPatterns++;
+            $matching[] = $opcode;
         }
     }
+    // Do part 1: how many examples behave like 3 or more opcodes?
     if ($matchingPatterns >= 3) {
         $matchingExamples++;
     }
+    // Part 2: use examples to know which opcode has which number
+    $opcodeNbCandidates[$opcodeNb] = array_intersect($opcodeNbCandidates[$opcodeNb], $matching);
 }
 
-say('[PART 1] '.$matchingExamples);
+say('[PART 1] '.$matchingExamples.' examples behaving like 3 opcodes or more');
 
+// Part 2: find number of EVERY opcode
+$opcodeNumbers = [];
+$newopcodeCandidates = $opcodeNbCandidates;
+while (count($opcodeNumbers) < 16) {
+    foreach ($opcodeNbCandidates as $nb => $candidate) {
+        if (count($candidate) === 1) {
+            $opcodename = array_shift($candidate);
+            $opcodeNumbers[$nb] = $opcodename;
+            foreach ($newopcodeCandidates as $newNb => $newCandidate) {
+                $newopcodeCandidates[$newNb] = array_filter($newCandidate, function($value) use ($opcodename) {
+                    return $value !== $opcodename;
+                });
+            }
+        }
+    }
+    $opcodeNbCandidates = $newopcodeCandidates;
+}
+
+// DONE. I have this in opcodeNumbers variable.
+
+
+// ------------- utilities --------------------------------------------
 function applyOpCode($opcode, $a, $b, $c, $registers)
 {
     // addr (add register) stores into register C
