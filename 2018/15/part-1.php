@@ -128,6 +128,10 @@ abstract class Unit
         // let's breadth-first-search the ideal spot
         $visited = [$this->x.'-'.$this->y => true];
         $toVisit = [];
+        $found = [
+            'distance' => 999999,
+            'candidates' => [],
+        ];
         // Fill the initial queue
         foreach ($this->findNeighbours($this->x, $this->y, $grid) as $neighbourInfo) {
             list($x, $y, $neighbour) = $neighbourInfo;
@@ -144,8 +148,12 @@ abstract class Unit
         while (count($toVisit) > 0) {
             $info = array_shift($toVisit);
             list($x, $y) = $info['node'];
+            if ($info['distance'] > $found['distance']) {
+                break;
+            }
             if ($this->isNearAnEnemy($x, $y, $grid)) {
-                return $info['initial'];
+                $found['distance'] = $info['distance'];
+                $found['candidates'][] = $info['initial'];
             }
             foreach ($this->findNeighbours($x, $y, $grid) as $neighbourInfo) {
                 list($nx, $ny, $nneighbour) = $neighbourInfo;
@@ -154,23 +162,38 @@ abstract class Unit
                     continue;
                 }
                 $visited[$signature] = true;
+                if (!(is_string($nneighbour) && $nneighbour === '.')) {
+                    continue;
+                }
                 $toVisit[] = [
                     'initial' => $info['initial'],
                     'distance' => $info['distance'] + 1,
-                    'node' => [$ny, $ny],
+                    'node' => [$nx, $ny],
                 ];
             }
         }
-        return false;
+        $candidates = $found['candidates'];
+        usort($candidates, function($a, $b) {
+            list($xa, $ya) = $a;
+            list($xb, $yb) = $b;
+            if ($ya != $yb) {
+                return ($ya < $yb) ? -1 : +1;
+            }
+            if ($xa != $xb) {
+                return ($xa < $xb) ? -1 : +1;
+            }
+            return 0;
+        });
+        return array_shift($candidates);
     }
 
     private function findNeighbours($x, $y, &$grid)
     {
         foreach ([
-            [$y - 1, $x],
-            [$y, $x - 1],
-            [$y, $x + 1],
-            [$y + 1, $x],
+            [$y - 1, $x], // top
+            [$y, $x - 1], // left
+            [$y, $x + 1], // right
+            [$y + 1, $x], // bottom
         ] as $neighbourCoordinates) {
             list($y, $x) = $neighbourCoordinates;
             if (isset($grid[$y][$x])) {
