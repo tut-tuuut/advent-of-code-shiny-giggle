@@ -38,7 +38,7 @@ $inputs = [
 
 $climate = new League\CLImate\CLImate;
 
-$inputInfo = $inputs[5];
+$inputInfo = $inputs[1];
 
 $input = file_get_contents(__DIR__.'/'.$inputInfo['file']);
 
@@ -60,14 +60,14 @@ $climate->clear();
 draw($grid, $climate);
 foreach (integers(100, 1) as $completedTurns) {
     list($grid, $isOver) = makeTurn($grid);
-    //$climate->clear();
-    //draw($grid, $climate);
-    //sleep(1);
+    $climate->clear();
+    draw($grid, $climate);
+    sleep(1);
     if ($isOver !== false) {
         say('hps remaining: '.$isOver);
         say('turns completed: '.$completedTurns);
-        checkEquals($inputInfo['turns'],$completedTurns, 'completed turns');
-        checkEquals($inputInfo['remaining'],$isOver, 'hp remaining');
+        say('turns: expected '.$inputInfo['turns'].' turns, got '.$completedTurns);
+        say('turns: expected '.$inputInfo['remaining'].', got '.$isOver);
         die;
     }
 }
@@ -99,13 +99,14 @@ function checkPopulation($grid) {
 }
 
 function makeTurn($grid) {
+    $turnId = uniqid();
     $activeGrid = $grid;
     foreach ($grid as $y => $row) {
         foreach ($row as $x => $place) {
             if (!($place instanceof Unit)) {
                 continue;
             }
-            $place->move($activeGrid);
+            $place->move($activeGrid, $turnId);
             $place->attack($activeGrid);
             $hps = checkPopulation($activeGrid);
             if ($hps !== false) {
@@ -137,6 +138,7 @@ abstract class Unit
     private $y;
     private $hp;
     private $attack;
+    private $turnId;
 
     public function __construct($x, $y)
     {
@@ -189,8 +191,13 @@ abstract class Unit
         return $this->type;
     }
 
-    public function move(&$grid)
+    public function move(&$grid, $turnId)
     {
+        if ($this->turnId === $turnId) {
+            return; // only one move per turn
+        } else {
+            $this->turnId = $turnId;
+        }
         if ($this->isNearAnEnemy($this->x, $this->y, $grid)) {
             return false;
         }
