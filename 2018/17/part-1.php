@@ -12,6 +12,12 @@ if (!$inputFile || !is_file(__DIR__.'/'.$inputFile)) {
     die;
 }
 
+const CLAY = '#';
+const SAND = '.';
+const SOURCE = '+';
+const FREE_WATER = '|';
+const RESTING_WATER = '~';
+
 // First, parse input ------------------------------------------------------------------------
 const EXTRACT_COORDINATES = '/(x|y)=(\d+), (x|y)=(\d+)\.\.(\d+)/';
 $maxX = 0;
@@ -54,7 +60,6 @@ foreach(explode(PHP_EOL, file_get_contents($inputFile)) as $inputRow) {
             $minX = $variableMin;
         }
     }
-    say($variableCoord.' : '.$variableMin.' -> '.$variableMax);
     for ($i = $variableMin; $i <= $variableMax; $i++) {
         $clayPoints[] = [
             $constCoord => $constValue,
@@ -64,15 +69,13 @@ foreach(explode(PHP_EOL, file_get_contents($inputFile)) as $inputRow) {
 }
 
 // Then, generate the map -----------------------------------------------------------------------
-say($maxX - $minX);
-say($maxY - $minY);
-$grid = array_fill(0, $maxY + 1, array_fill($minX, $maxX - $minX + 1, '.'));
-$grid[0][500] = '+'; // water source
+$grid = array_fill(0, $maxY + 1, array_fill($minX, $maxX - $minX + 1, SAND));
+$grid[0][500] = SOURCE; // water source
 foreach ($clayPoints as $p) {
-    $grid[$p['y']][$p['x']] = '#';
+    $grid[$p['y']][$p['x']] = CLAY;
 }
 
 // Draw map for debug ---------------------------------------------------------------------------
 foreach ($grid as $y => $row) {
-    say(implode($row));
+    //say(implode($row));
 }
