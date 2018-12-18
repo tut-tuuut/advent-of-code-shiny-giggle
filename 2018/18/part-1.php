@@ -90,9 +90,9 @@ function getNewCellContent($x, $y, &$grid)
         // An acre containing a lumberyard will remain a lumberyard if it was adjacent to
         //    - at least one other lumberyard
         //    - and at least one acre containing trees.
+        $hasLumberNeighbour = false;
+        $hasTreeNeighbour = false;
         foreach (getEveryNeighbour($x, $y, $grid) as $neighbour) {
-            $hasLumberNeighbour = false;
-            $hasTreeNeighbour = false;
             if($neighbour === TREES) {
                 $hasTreeNeighbour = true;
             } elseif ($neighbour === LUMBER) {
