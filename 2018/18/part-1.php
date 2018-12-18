@@ -29,6 +29,8 @@ foreach ($grid as $row) {
 }
 
 $newGrid = [];
+$cli->out('Calculating the 10 first steps...');
+$progress = $cli->progress()->total(9);
 foreach (integers(10) as $minute) {
     foreach ($grid as $y => $row) {
         foreach ($row as $x => $cell) {
@@ -36,15 +38,53 @@ foreach (integers(10) as $minute) {
         }
     }
     $grid = $newGrid;
+    /*
     $cli->clear();
     foreach ($grid as $row) {
         $cli->out(implode('', $row));
-    }
-    sleep(1);
+    }*/
+    $progress->current($minute);
 }
 list($trees, $lumbers) = countTreesAndLumbers($grid);
 say("$trees trees and $lumbers lumbers");
 say('[PART 1] '.($trees*$lumbers), COLOR_NICE_BLUE);
+
+// Part 2
+$cli->out('Calculating the 500 next steps...');
+$progress = $cli->progress()->total(500);
+foreach (integers(500) as $minute) {
+    foreach ($grid as $y => $row) {
+        foreach ($row as $x => $cell) {
+            $newGrid[$y][$x] = getNewCellContent($x, $y, $grid);
+        }
+    }
+    $grid = $newGrid;
+    $progress->current($minute);
+}
+
+// Now we are probably in the periodic part: let's find a period
+$searchWindow = 800;
+say("Looking for a period in the $searchWindow next steps...");
+$min = 999999999;
+$max = 0;
+$period = false;
+$progress = $cli->progress()->total($searchWindow);
+foreach (integers($searchWindow) as $minute) {
+    foreach ($grid as $y => $row) {
+        foreach ($row as $x => $cell) {
+            $newGrid[$y][$x] = getNewCellContent($x, $y, $grid);
+        }
+    }
+    $grid = $newGrid;
+    list($trees, $lumbers) = countTreesAndLumbers($grid);
+    $product = $trees * $lumbers;
+    $progress->current($minute);
+    /*file_put_contents(
+        __DIR__.'/values.csv',
+        implode(';',[$minute+510, $trees, $lumbers, $trees*$lumbers]) . PHP_EOL,
+        FILE_APPEND
+    );*/ // this was useful to check my hypothesis before truly calculating the period
+}
 
 // Utils ----------------------------------------------------------------------
 function getEveryNeighbour($x, $y, &$grid)
@@ -130,4 +170,9 @@ function countTreesAndLumbers(&$grid)
         $nbOfLumbers += count(array_filter($row, 'isLumber'));
     }
     return [$nbOfTrees, $nbOfLumbers];
+}
+
+function fancyRepresentationOfABigNumber($number)
+{
+    return (string)$number;
 }
