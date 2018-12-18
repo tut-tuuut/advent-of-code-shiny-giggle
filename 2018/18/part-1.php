@@ -36,11 +36,15 @@ foreach (integers(10) as $minute) {
         }
     }
     $grid = $newGrid;
+    $cli->clear();
     foreach ($grid as $row) {
         $cli->out(implode('', $row));
     }
     sleep(1);
 }
+list($trees, $lumbers) = countTreesAndLumbers($grid);
+say("$trees trees and $lumbers lumbers");
+say('[PART 1] '.($trees*$lumbers), COLOR_NICE_BLUE);
 
 // Utils ----------------------------------------------------------------------
 function getEveryNeighbour($x, $y, &$grid)
@@ -105,4 +109,25 @@ function getNewCellContent($x, $y, &$grid)
         // Otherwise, it becomes open.
         return OPEN;
     }
+}
+
+function isLumber($value)
+{
+    return $value === LUMBER;
+}
+
+function isTree($value)
+{
+    return $value === TREES;
+}
+
+function countTreesAndLumbers(&$grid)
+{
+    $nbOfTrees = 0;
+    $nbOfLumbers = 0;
+    foreach ($grid as $row) {
+        $nbOfTrees += count(array_filter($row, 'isTree'));
+        $nbOfLumbers += count(array_filter($row, 'isLumber'));
+    }
+    return [$nbOfTrees, $nbOfLumbers];
 }
