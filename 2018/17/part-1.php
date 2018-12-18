@@ -25,7 +25,7 @@ $maxY = 0;
 $minX = 99999999;
 $minY = 99999999;
 $clayPoints = [];
-foreach(explode(PHP_EOL, file_get_contents($inputFile)) as $inputRow) {
+foreach(explode(PHP_EOL, file_get_contents(__DIR__.'/'.$inputFile)) as $inputRow) {
     $matches = [];
     if (!preg_match(EXTRACT_COORDINATES, $inputRow, $matches)) {
         continue;
