@@ -94,31 +94,41 @@ foreach ($sources as $source) {
     }
 
     foreach(array_reverse($newWetCells) as $cell) {
+        // check if it can be transformed in resting water: surrounded by two # and above # or ~
         list($sy, $sx) = $cell;
         $flowToLeft = true;
         $toLeft = 0;
+        $isClosedOnLeft = false;
         while($flowToLeft) {
             $toLeft += 1;
             if ($grid[$sy][$sx - $toLeft] === SAND && in_array($grid[$sy + 1][$sx - $toLeft], [CLAY,RESTING_WATER]) ) {
-                $grid[$sy][$sx - $toLeft] = RESTING_WATER;
-                $grid[$sy][$sx] = RESTING_WATER;
+                $restWaterCandidates[] = [$sy, $sx - $toLeft];
+            } elseif ($grid[$sy][$sx - $toLeft] === CLAY) {
+                $isClosedOnLeft = true;
+                $flowToLeft = false;
             } else {
                 $flowToLeft = false;
             }
         }
-        draw($grid);
         $flowToRight = true;
         $toRight = 0;
+        $isClosedOnRight = false;
         while($flowToRight) {
             $toRight += 1;
-            if ($grid[$sy][$sx + $toRight] === SAND && in_array($grid[$sy + 1][$sx + $toRight], [CLAY,RESTING_WATER])) {
-                $grid[$sy][$sx + $toRight] = RESTING_WATER;
-                $grid[$sy][$sx] = RESTING_WATER;
-            } elseif ($grid[$sy][$sx + $toRight] === SAND && in_array($grid[$sy + 1][$sx + $toRight], [SAND]) ) {
-                $grid[$sy][$sx + $toRight] = FREE_WATER;
-                $sources[] = [$sy, $sx + $toRight];
+            if ($grid[$sy][$sx + $toRight] === SAND && in_array($grid[$sy + 1][$sx + $toRight], [CLAY,RESTING_WATER]) ) {
+                $restWaterCandidates[] = [$sy, $sx + $toRight];
+            } elseif ($grid[$sy][$sx + $toRight] === CLAY) {
+                $isClosedOnRight = true;
+                $flowToRight = false;
             } else {
                 $flowToRight = false;
+            }
+        }
+        if ($isClosedOnLeft && $isClosedOnRight) {
+            $grid[$sy][$sx] = RESTING_WATER;
+            foreach ($restWaterCandidates as $yx) {
+                list($y, $x) = $yx;
+                $grid[$y][$x] = RESTING_WATER;
             }
         }
     }
