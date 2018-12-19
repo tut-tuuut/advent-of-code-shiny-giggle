@@ -99,21 +99,22 @@ foreach ($sources as $source) {
         $toLeft = 0;
         while($flowToLeft) {
             $toLeft += 1;
-            if ($grid[$sy][$sx - $toLeft] === SAND && $grid[$sy + 1][$sx - $toLeft] !== SAND) {
+            if ($grid[$sy][$sx - $toLeft] === SAND && in_array($grid[$sy + 1][$sx - $toLeft], [CLAY,RESTING_WATER]) ) {
                 $grid[$sy][$sx - $toLeft] = RESTING_WATER;
                 $grid[$sy][$sx] = RESTING_WATER;
             } else {
                 $flowToLeft = false;
             }
         }
+        draw($grid);
         $flowToRight = true;
         $toRight = 0;
         while($flowToRight) {
             $toRight += 1;
-            if ($grid[$sy][$sx + $toRight] === SAND && $grid[$sy + 1][$sx - 1] !== SAND) {
+            if ($grid[$sy][$sx + $toRight] === SAND && in_array($grid[$sy + 1][$sx + $toRight], [CLAY,RESTING_WATER])) {
                 $grid[$sy][$sx + $toRight] = RESTING_WATER;
                 $grid[$sy][$sx] = RESTING_WATER;
-            } elseif($grid[$sy][$sx + $toRight] === SAND && $grid[$sy + 1][$sx - 1] != CLAY) {
+            } elseif ($grid[$sy][$sx + $toRight] === SAND && in_array($grid[$sy + 1][$sx + $toRight], [SAND]) ) {
                 $grid[$sy][$sx + $toRight] = FREE_WATER;
                 $sources[] = [$sy, $sx + $toRight];
             } else {
