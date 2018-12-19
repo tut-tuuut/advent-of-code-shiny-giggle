@@ -74,8 +74,68 @@ $grid[0][500] = SOURCE; // water source
 foreach ($clayPoints as $p) {
     $grid[$p['y']][$p['x']] = CLAY;
 }
+draw($grid);
+// Try to make water flow -----------------------------------------------------------------------
+$sources = [[0,500]]; // from which water falls
+foreach ($sources as $source) {
+    list($sy, $sx) = $source;
+    $depth = 0;
+    $drill = true;
+    $newWetCells = [];
+    while ($drill) {
+        $depth += 1;
+        if ($grid[$sy + $depth][$sx] === SAND) {
+            $grid[$sy + $depth][$sx] = FREE_WATER;
+            $newWetCells[] = [$sy + $depth, $sx];
+            $drill = true;
+        } else {
+            $drill = false;
+        }
+    }
 
-// Draw map for debug ---------------------------------------------------------------------------
-foreach ($grid as $y => $row) {
-    //say(implode($row));
+    foreach(array_reverse($newWetCells) as $cell) {
+        list($sy, $sx) = $cell;
+        $flowToLeft = true;
+        $toLeft = 0;
+        while($flowToLeft) {
+            $toLeft += 1;
+            if ($grid[$sy][$sx - $toLeft] === SAND && $grid[$sy + 1][$sx - $toLeft] !== SAND) {
+                $grid[$sy][$sx - $toLeft] = RESTING_WATER;
+                $grid[$sy][$sx] = RESTING_WATER;
+            } else {
+                $flowToLeft = false;
+            }
+        }
+        $flowToRight = true;
+        $toRight = 0;
+        while($flowToRight) {
+            $toRight += 1;
+            if ($grid[$sy][$sx + $toRight] === SAND && $grid[$sy + 1][$sx - 1] !== SAND) {
+                $grid[$sy][$sx + $toRight] = RESTING_WATER;
+                $grid[$sy][$sx] = RESTING_WATER;
+            } elseif($grid[$sy][$sx + $toRight] === SAND && $grid[$sy + 1][$sx - 1] != CLAY) {
+                $grid[$sy][$sx + $toRight] = FREE_WATER;
+                $sources[] = [$sy, $sx + $toRight];
+            } else {
+                $flowToRight = false;
+            }
+        }
+    }
+
 }
+draw($grid);
+// Draw map for debug ---------------------------------------------------------------------------
+function draw(&$grid)
+{
+    $cli = new CLImate();
+    $cli->clear();
+    foreach ($grid as $y => $row) {
+        $str = implode($row);
+        $str = str_replace('+', '<light_blue>+</light_blue>', $str);
+        $str = str_replace('|', '<light_blue>|</light_blue>', $str);
+        $str = str_replace('~', '<light_blue>~</light_blue>', $str);
+        $cli->out($str);
+    }
+}
+
+
