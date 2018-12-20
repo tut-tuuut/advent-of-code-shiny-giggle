@@ -74,8 +74,79 @@ $grid[0][500] = SOURCE; // water source
 foreach ($clayPoints as $p) {
     $grid[$p['y']][$p['x']] = CLAY;
 }
+draw($grid);
+// Try to make water flow -----------------------------------------------------------------------
+$sources = [[0,500]]; // from which water falls
+foreach ($sources as $source) {
+    list($sy, $sx) = $source;
+    $depth = 0;
+    $drill = true;
+    $newWetCells = [];
+    while ($drill) {
+        $depth += 1;
+        if ($grid[$sy + $depth][$sx] === SAND) {
+            $grid[$sy + $depth][$sx] = FREE_WATER;
+            $newWetCells[] = [$sy + $depth, $sx];
+            $drill = true;
+        } else {
+            $drill = false;
+        }
+    }
 
-// Draw map for debug ---------------------------------------------------------------------------
-foreach ($grid as $y => $row) {
-    //say(implode($row));
+    foreach(array_reverse($newWetCells) as $cell) {
+        // check if it can be transformed in resting water: surrounded by two # and above # or ~
+        list($sy, $sx) = $cell;
+        $flowToLeft = true;
+        $toLeft = 0;
+        $isClosedOnLeft = false;
+        while($flowToLeft) {
+            $toLeft += 1;
+            if ($grid[$sy][$sx - $toLeft] === SAND && in_array($grid[$sy + 1][$sx - $toLeft], [CLAY,RESTING_WATER]) ) {
+                $restWaterCandidates[] = [$sy, $sx - $toLeft];
+            } elseif ($grid[$sy][$sx - $toLeft] === CLAY) {
+                $isClosedOnLeft = true;
+                $flowToLeft = false;
+            } else {
+                $flowToLeft = false;
+            }
+        }
+        $flowToRight = true;
+        $toRight = 0;
+        $isClosedOnRight = false;
+        while($flowToRight) {
+            $toRight += 1;
+            if ($grid[$sy][$sx + $toRight] === SAND && in_array($grid[$sy + 1][$sx + $toRight], [CLAY,RESTING_WATER]) ) {
+                $restWaterCandidates[] = [$sy, $sx + $toRight];
+            } elseif ($grid[$sy][$sx + $toRight] === CLAY) {
+                $isClosedOnRight = true;
+                $flowToRight = false;
+            } else {
+                $flowToRight = false;
+            }
+        }
+        if ($isClosedOnLeft && $isClosedOnRight) {
+            $grid[$sy][$sx] = RESTING_WATER;
+            foreach ($restWaterCandidates as $yx) {
+                list($y, $x) = $yx;
+                $grid[$y][$x] = RESTING_WATER;
+            }
+        }
+    }
+
 }
+draw($grid);
+// Draw map for debug ---------------------------------------------------------------------------
+function draw(&$grid)
+{
+    $cli = new CLImate();
+    $cli->clear();
+    foreach ($grid as $y => $row) {
+        $str = implode($row);
+        $str = str_replace('+', '<light_blue>+</light_blue>', $str);
+        $str = str_replace('|', '<light_blue>|</light_blue>', $str);
+        $str = str_replace('~', '<light_blue>~</light_blue>', $str);
+        $cli->out($str);
+    }
+}
+
+
