@@ -66,9 +66,14 @@ foreach (integers(500) as $minute) {
 $searchWindow = 800;
 say("Looking for a period in the $searchWindow next steps...");
 $min = 999999999;
+$minMinute = 0;
+$minPeriod = 0; // time between 2 minimums
 $max = 0;
+$maxPeriod = 0; // time between 2 maximums
+$maxMinute = 0;
 $period = false;
 $progress = $cli->progress()->total($searchWindow);
+$productsPerMinute = [];
 foreach (integers($searchWindow) as $minute) {
     foreach ($grid as $y => $row) {
         foreach ($row as $x => $cell) {
@@ -78,6 +83,16 @@ foreach (integers($searchWindow) as $minute) {
     $grid = $newGrid;
     list($trees, $lumbers) = countTreesAndLumbers($grid);
     $product = $trees * $lumbers;
+    if (!$period) { // find min and max product
+        if ($max < $product) {
+            $max = $product;
+            $maxMinute = $minute + 510;
+        }
+        if ($min > $product) {
+            $min = $product;
+            $minMinute = $minute + 510;
+        }
+    }
     $progress->current($minute);
     /*file_put_contents(
         __DIR__.'/values.csv',
