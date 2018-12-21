@@ -77,6 +77,7 @@ foreach ($clayPoints as $p) {
 draw($grid);
 // Try to make water flow -----------------------------------------------------------------------
 $sources = [[0,500]]; // from which water falls
+$newSources = [];
 foreach ($sources as $source) {
     list($sy, $sx) = $source;
     $depth = 0;
@@ -94,6 +95,7 @@ foreach ($sources as $source) {
     }
 
     foreach(array_reverse($newWetCells) as $cell) {
+        $restWaterCandidates = [];
         // check if it can be transformed in resting water: surrounded by two # and above # or ~
         list($sy, $sx) = $cell;
         $flowToLeft = true;
@@ -102,9 +104,16 @@ foreach ($sources as $source) {
         while($flowToLeft) {
             $toLeft += 1;
             if ($grid[$sy][$sx - $toLeft] === SAND && in_array($grid[$sy + 1][$sx - $toLeft], [CLAY,RESTING_WATER]) ) {
+                // on a clay or resting water surface
                 $restWaterCandidates[] = [$sy, $sx - $toLeft];
             } elseif ($grid[$sy][$sx - $toLeft] === CLAY) {
+                // bumping on the wall of a container
                 $isClosedOnLeft = true;
+                $flowToLeft = false;
+            } elseif ($smth) {
+                // no left wall for current container
+                $restWaterCandidates[] = [$sy, $sx - $toLeft];
+                $isClosedOnLeft = false;
                 $flowToLeft = false;
             } else {
                 $flowToLeft = false;
@@ -116,9 +125,16 @@ foreach ($sources as $source) {
         while($flowToRight) {
             $toRight += 1;
             if ($grid[$sy][$sx + $toRight] === SAND && in_array($grid[$sy + 1][$sx + $toRight], [CLAY,RESTING_WATER]) ) {
+                // on a clay or resting water surface
                 $restWaterCandidates[] = [$sy, $sx + $toRight];
             } elseif ($grid[$sy][$sx + $toRight] === CLAY) {
+                // bumping on the wall of a container
                 $isClosedOnRight = true;
+                $flowToRight = false;
+            } elseif ($grid[$sy][$sx + $toRight] === SAND && in_array($grid[$sy + 1][$sx + $toRight], [SAND])) {
+                // no right wall for current container
+                $restWaterCandidates[] = [$sy, $sx + $toRight];
+                $isClosedOnRight = false;
                 $flowToRight = false;
             } else {
                 $flowToRight = false;
@@ -129,6 +145,12 @@ foreach ($sources as $source) {
             foreach ($restWaterCandidates as $yx) {
                 list($y, $x) = $yx;
                 $grid[$y][$x] = RESTING_WATER;
+            }
+        } else {
+            foreach ($restWaterCandidates as $yx) {
+                list($y, $x) = $yx;
+                $grid[$y][$x] = FREE_WATER;
+                $sources[] = $yx;
             }
         }
     }
