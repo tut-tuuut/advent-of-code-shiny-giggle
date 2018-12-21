@@ -127,7 +127,7 @@ function waterFlows($source, &$grid) {
                 // bumping on the wall of a container
                 $isClosedOnLeft = true;
                 $flowToLeft = false;
-            } elseif ($grid[$sy][$sx - $toLeft] === SAND && in_array(f($grid, $sy + 1, $sx - $toLeft), [SAND]) ) {
+            } elseif ($grid[$sy][$sx - $toLeft] === SAND && f($grid, $sy + 1, $sx - $toLeft) === SAND && f($grid, $sy + 1, $sx - $toLeft + 1) === CLAY) {
                 // no left wall for current container
                 $restWaterCandidates[] = [$sy, $sx - $toLeft];
                 $isClosedOnLeft = false;
@@ -152,7 +152,7 @@ function waterFlows($source, &$grid) {
                 // bumping on the wall of a container
                 $isClosedOnRight = true;
                 $flowToRight = false;
-            } elseif ($grid[$sy][$sx + $toRight] === SAND && in_array(f($grid, $sy + 1, $sx + $toRight), [SAND])) {
+            } elseif ($grid[$sy][$sx + $toRight] === SAND && f($grid, $sy + 1, $sx + $toRight) === SAND && f($grid, $sy + 1, $sx + $toRight - 1) === CLAY) {
                 // no right wall for current container
                 $restWaterCandidates[] = [$sy, $sx + $toRight];
                 $isClosedOnRight = false;
@@ -179,10 +179,11 @@ function waterFlows($source, &$grid) {
 }
 
 // Draw map for debug ---------------------------------------------------------------------------
-function draw(&$grid)
+function draw(&$grid, $clear = true)
 {
     $cli = new CLImate();
-    $cli->clear();
+    if ($clear) { $cli->clear(); } else { $cli->out(''); }
+    $cli->out(key($grid[0])); // display first x coordinate
     foreach ($grid as $y => $row) {
         $str = implode($row);
         $str = str_replace('+', '<light_blue>+</light_blue>', $str);
