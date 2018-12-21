@@ -74,7 +74,7 @@ $grid[0][500] = SOURCE; // water source
 foreach ($clayPoints as $p) {
     $grid[$p['y']][$p['x']] = CLAY;
 }
-draw($grid);
+//draw($grid);
 // Make water flow --------------------------------------------------------------------------------
 $sources = [[0,500]]; // from which water falls
 while(count($sources)) {
@@ -83,8 +83,8 @@ while(count($sources)) {
         $newSources = array_merge($newSources, waterFlows($source, $grid));
     }
     $sources = $newSources;
-    draw($grid);
 }
+draw($grid);
 // When we have no sources anymore, we can begin to count wet cells -------------------------------
 $wetCells = 0;
 foreach ($grid as $y => $row) {
@@ -140,7 +140,7 @@ function waterFlows($source, &$grid)
                 // bumping on the wall of a container
                 $isClosedOnLeft = true;
                 $flowToLeft = false;
-            } elseif ($grid[$sy][$sx - $toLeft] === SAND && f($grid, $sy + 1, $sx - $toLeft) === SAND && f($grid, $sy + 1, $sx - $toLeft + 1) === CLAY) {
+            } elseif ($grid[$sy][$sx - $toLeft] === SAND && f($grid, $sy + 1, $sx - $toLeft) === SAND && in_array(f($grid, $sy + 1, $sx - $toLeft + 1), [CLAY,RESTING_WATER])) {
                 // no left wall for current container
                 $restWaterCandidates[] = [$sy, $sx - $toLeft];
                 $isClosedOnLeft = false;
@@ -165,7 +165,7 @@ function waterFlows($source, &$grid)
                 // bumping on the wall of a container
                 $isClosedOnRight = true;
                 $flowToRight = false;
-            } elseif ($grid[$sy][$sx + $toRight] === SAND && f($grid, $sy + 1, $sx + $toRight) === SAND && f($grid, $sy + 1, $sx + $toRight - 1) === CLAY) {
+            } elseif ($grid[$sy][$sx + $toRight] === SAND && f($grid, $sy + 1, $sx + $toRight) === SAND && in_array(f($grid, $sy + 1, $sx + $toRight - 1), [CLAY,RESTING_WATER])) {
                 // no right wall for current container
                 $restWaterCandidates[] = [$sy, $sx + $toRight];
                 $isClosedOnRight = false;
