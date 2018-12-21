@@ -68,22 +68,49 @@ foreach(explode(PHP_EOL, file_get_contents(__DIR__.'/'.$inputFile)) as $inputRow
     }
 }
 
-// Then, generate the map -----------------------------------------------------------------------
+// Then, generate the map -------------------------------------------------------------------------
 $grid = array_fill(0, $maxY + 1, array_fill($minX, $maxX - $minX + 1, SAND));
 $grid[0][500] = SOURCE; // water source
 foreach ($clayPoints as $p) {
     $grid[$p['y']][$p['x']] = CLAY;
 }
-draw($grid);
-// Try to make water flow -----------------------------------------------------------------------
+//draw($grid);
+// Make water flow --------------------------------------------------------------------------------
 $sources = [[0,500]]; // from which water falls
-foreach ($sources as $source) {
+while(count($sources)) {
+    $newSources = [];
+    foreach ($sources as $source) {
+        $newSources = array_merge($newSources, waterFlows($source, $grid));
+    }
+    $sources = $newSources;
+}
+draw($grid);
+// When we have no sources anymore, we can begin to count wet cells -------------------------------
+$wetCells = 0;
+foreach ($grid as $y => $row) {
+    $wetCells += count(array_filter($row, 'isWet'));
+}
+say("$wetCells in the grid!");
+
+// ------------------------------------------------------------------------------------------------
+function isWet($cell)
+{
+    return $cell === FREE_WATER || $cell === RESTING_WATER;
+}
+
+function waterFlows($source, &$grid)
+{
     list($sy, $sx) = $source;
+    $newSources = [];
     $depth = 0;
     $drill = true;
     $newWetCells = [];
     while ($drill) {
         $depth += 1;
+        if (!isset($grid[$sy + $depth])) {
+            $drill = false;
+            continue;
+        }
         if ($grid[$sy + $depth][$sx] === SAND) {
             $grid[$sy + $depth][$sx] = FREE_WATER;
             $newWetCells[] = [$sy + $depth, $sx];
@@ -94,6 +121,7 @@ foreach ($sources as $source) {
     }
 
     foreach(array_reverse($newWetCells) as $cell) {
+        $restWaterCandidates = [];
         // check if it can be transformed in resting water: surrounded by two # and above # or ~
         list($sy, $sx) = $cell;
         $flowToLeft = true;
@@ -101,10 +129,21 @@ foreach ($sources as $source) {
         $isClosedOnLeft = false;
         while($flowToLeft) {
             $toLeft += 1;
-            if ($grid[$sy][$sx - $toLeft] === SAND && in_array($grid[$sy + 1][$sx - $toLeft], [CLAY,RESTING_WATER]) ) {
+            if (!isset($grid[$sy][$sx - $toLeft])) {
+                $flowToLeft = false;
+                continue;
+            }
+            if ($grid[$sy][$sx - $toLeft] === SAND && in_array(f($grid, $sy + 1, $sx - $toLeft), [CLAY,RESTING_WATER]) ) {
+                // on a clay or resting water surface
                 $restWaterCandidates[] = [$sy, $sx - $toLeft];
             } elseif ($grid[$sy][$sx - $toLeft] === CLAY) {
+                // bumping on the wall of a container
                 $isClosedOnLeft = true;
+                $flowToLeft = false;
+            } elseif ($grid[$sy][$sx - $toLeft] === SAND && f($grid, $sy + 1, $sx - $toLeft) === SAND && in_array(f($grid, $sy + 1, $sx - $toLeft + 1), [CLAY,RESTING_WATER])) {
+                // no left wall for current container
+                $restWaterCandidates[] = [$sy, $sx - $toLeft];
+                $isClosedOnLeft = false;
                 $flowToLeft = false;
             } else {
                 $flowToLeft = false;
@@ -115,10 +154,21 @@ foreach ($sources as $source) {
         $isClosedOnRight = false;
         while($flowToRight) {
             $toRight += 1;
-            if ($grid[$sy][$sx + $toRight] === SAND && in_array($grid[$sy + 1][$sx + $toRight], [CLAY,RESTING_WATER]) ) {
+            if (!isset($grid[$sy][$sx + $toRight])) {
+                $flowToRight = false;
+                continue;
+            }
+            if ($grid[$sy][$sx + $toRight] === SAND && in_array(f($grid, $sy + 1, $sx + $toRight), [CLAY,RESTING_WATER]) ) {
+                // on a clay or resting water surface
                 $restWaterCandidates[] = [$sy, $sx + $toRight];
             } elseif ($grid[$sy][$sx + $toRight] === CLAY) {
+                // bumping on the wall of a container
                 $isClosedOnRight = true;
+                $flowToRight = false;
+            } elseif ($grid[$sy][$sx + $toRight] === SAND && f($grid, $sy + 1, $sx + $toRight) === SAND && in_array(f($grid, $sy + 1, $sx + $toRight - 1), [CLAY,RESTING_WATER])) {
+                // no right wall for current container
+                $restWaterCandidates[] = [$sy, $sx + $toRight];
+                $isClosedOnRight = false;
                 $flowToRight = false;
             } else {
                 $flowToRight = false;
@@ -130,16 +180,23 @@ foreach ($sources as $source) {
                 list($y, $x) = $yx;
                 $grid[$y][$x] = RESTING_WATER;
             }
+        } else {
+            foreach ($restWaterCandidates as $yx) {
+                list($y, $x) = $yx;
+                $grid[$y][$x] = FREE_WATER;
+                $newSources[] = $yx;
+            }
         }
     }
-
+    return $newSources;
 }
-draw($grid);
+
 // Draw map for debug ---------------------------------------------------------------------------
-function draw(&$grid)
+function draw(&$grid, $clear = true)
 {
     $cli = new CLImate();
-    $cli->clear();
+    if ($clear) { $cli->clear(); } else { $cli->out(''); }
+    $cli->out(key($grid[0])); // display first x coordinate
     foreach ($grid as $y => $row) {
         $str = implode($row);
         $str = str_replace('+', '<light_blue>+</light_blue>', $str);
@@ -149,4 +206,7 @@ function draw(&$grid)
     }
 }
 
-
+// find value of cell on row y and col x, without yielding a notice if its unset
+function f(&$grid, $y, $x, $default = SAND) {
+    return isset($grid[$y][$x]) ? $grid[$y][$x] : $default;
+}
