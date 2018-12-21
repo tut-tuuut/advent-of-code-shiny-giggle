@@ -68,14 +68,14 @@ foreach(explode(PHP_EOL, file_get_contents(__DIR__.'/'.$inputFile)) as $inputRow
     }
 }
 
-// Then, generate the map -----------------------------------------------------------------------
+// Then, generate the map -------------------------------------------------------------------------
 $grid = array_fill(0, $maxY + 1, array_fill($minX, $maxX - $minX + 1, SAND));
 $grid[0][500] = SOURCE; // water source
 foreach ($clayPoints as $p) {
     $grid[$p['y']][$p['x']] = CLAY;
 }
 draw($grid);
-// Try to make water flow -----------------------------------------------------------------------
+// Make water flow --------------------------------------------------------------------------------
 $sources = [[0,500]]; // from which water falls
 while(count($sources)) {
     $newSources = [];
@@ -85,8 +85,21 @@ while(count($sources)) {
     $sources = $newSources;
     draw($grid);
 }
+// When we have no sources anymore, we can begin to count wet cells -------------------------------
+$wetCells = 0;
+foreach ($grid as $y => $row) {
+    $wetCells += count(array_filter($row, 'isWet'));
+}
+say("$wetCells in the grid!");
 
-function waterFlows($source, &$grid) {
+// ------------------------------------------------------------------------------------------------
+function isWet($cell)
+{
+    return $cell === FREE_WATER || $cell === RESTING_WATER;
+}
+
+function waterFlows($source, &$grid)
+{
     list($sy, $sx) = $source;
     $newSources = [];
     $depth = 0;
