@@ -4,15 +4,16 @@ use League\CLImate\CLImate;
 include(__DIR__.'/../../vendor/autoload.php');
 include(__DIR__.'/../../utils.php');
 
-const TARGET_X = 10;//13;
-const TARGET_Y = 10;//743;
+const TARGET_X = 13;
+const TARGET_Y = 743;
 
-const CAVE_DEPTH = 510;//8112;
+const CAVE_DEPTH = 8112;
 
 $cli = new CLImate();
 
 $history = [];
 $totalRiskLevel = 0;
+$progress = $cli->progress()->total(TARGET_Y);
 for ($y = 0; $y <= TARGET_Y; $y++) {
     for ($x = 0; $x <= TARGET_X; $x++) {
         $risk = getRiskLevel($x, $y, $history);
@@ -25,7 +26,7 @@ for ($y = 0; $y <= TARGET_Y; $y++) {
         }
         $totalRiskLevel += $risk;
     }
-    $cli->out('');
+    $cli->out(' '.$y.'/'.TARGET_Y);
 }
 say('part 1: '. $totalRiskLevel);
 
@@ -55,7 +56,7 @@ function getGeologicalIndex($x, $y, &$history)
     } elseif ($x === 0) {
         $result = gmp_mul($y, 48271);
     } else {
-        $result = getGeologicalIndex($x - 1, $y, $history) * getGeologicalIndex($x, $y - 1, $history);
+        $result = getErosionLevel($x - 1, $y, $history) * getErosionLevel($x, $y - 1, $history);
     }
     $history[$x][$y] = $result;
     return $result;
