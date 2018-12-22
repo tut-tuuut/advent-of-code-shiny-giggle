@@ -7,6 +7,14 @@ include(__DIR__.'/../../utils.php');
 const TARGET_X = 13;
 const TARGET_Y = 743;
 
+const REGION_ROCK = 0;
+const REGION_WET = 1;
+const REGION_NARROW = 2;
+
+const TOOL_CLIMB = 1;
+const TOOL_TORCH = 2;
+const TOOL_NONE = 3;
+
 const CAVE_DEPTH = 8112;
 
 $cli = new CLImate();
@@ -14,21 +22,25 @@ $cli = new CLImate();
 $history = [];
 $totalRiskLevel = 0;
 $progress = $cli->progress()->total(TARGET_Y);
+$cli->out('Calculating risk level in area...');
 for ($y = 0; $y <= TARGET_Y; $y++) {
     for ($x = 0; $x <= TARGET_X; $x++) {
-        $risk = getRiskLevel($x, $y, $history);
-        if ($x === 0 && $y === 0) {
-            $cli->inline('M');
-        } elseif ($x === TARGET_X && $y === TARGET_Y) {
-            $cli->inline('T');
-        } else {
-            $cli->inline(draw($risk));
-        }
-        $totalRiskLevel += $risk;
+        $totalRiskLevel += getRiskLevel($x, $y, $history);
     }
-    $cli->out(' '.$y.'/'.TARGET_Y);
+    $progress->current($y);
 }
 say('part 1: '. $totalRiskLevel);
+
+$cli->out('Calculating map...');
+$progress = $cli->progress()->total(TARGET_Y + 100);
+$grid = [];
+for ($y = 0; $y <= TARGET_Y + 100; $y++) {
+    for ($x = 0; $x <= TARGET_X + 100; $x++) {
+        $grid[$y][$x] = getRiskLevel($x, $y, $history);
+    }
+    $progress->current($y);
+}
+$cli->out('Done. Now, just calculating the shortest path...');
 
 function getRiskLevel($x, $y, &$history)
 {
@@ -68,11 +80,11 @@ function getGeologicalIndex($x, $y, &$history)
 
 function draw($value)
 {
-    if ($value == 0) {
+    if ($value == REGION_ROCK) {
         return '.';
-    } elseif ($value == 1) {
+    } elseif ($value == REGION_WET) {
         return '=';
-    } elseif ($value == 2) {
+    } elseif ($value == REGION_NARROW) {
         return '|';
     }
     return '#';
