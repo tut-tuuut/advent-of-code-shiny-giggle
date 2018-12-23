@@ -188,6 +188,13 @@ function draw($value)
 
 function drawPath($path, $grid)
 {
+    $cli = new CLImate();
+$cli->out('');
+    foreach ($grid as $y => $row) {
+        foreach ($row as $x => $cell) {
+            $grid[$y][$x] = draw($cell);
+        }
+    }
     foreach ($path as $signature) {
         list($x, $y, $tool) = explode('-', $signature);
         $x = (int)$x;
@@ -202,7 +209,6 @@ function drawPath($path, $grid)
         }
         $grid[$y][$x] = "<$color>".$grid[$y][$x]."</$color>";
     }
-    $cli = new CLImate();
     foreach ($grid as $row) {
         $cli->out(implode('', $row));
     }
