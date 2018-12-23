@@ -32,10 +32,10 @@ for ($y = 0; $y <= TARGET_Y; $y++) {
 say('part 1: '. $totalRiskLevel);
 
 $cli->out('Calculating map...');
-$progress = $cli->progress()->total(TARGET_Y + 100);
+$progress = $cli->progress()->total(TARGET_Y + 30);
 $grid = [];
-for ($y = 0; $y <= TARGET_Y + 10; $y++) {
-    for ($x = 0; $x <= TARGET_X + 10; $x++) {
+for ($y = 0; $y <= TARGET_Y + 30; $y++) {
+    for ($x = 0; $x <= TARGET_X + 20; $x++) {
         $grid[$y][$x] = getRiskLevel($x, $y, $history);
     }
     $progress->current($y);
@@ -68,7 +68,6 @@ function calculateShortestPath($beginning, $target, &$grid)
     }
     krsort($toCheck);
     while (count($toCheck)) {
-        $cli->inline('.');
         $looking = array_pop($toCheck);
         $sortedNeighbours = [];
         foreach (findNeighbours($looking['node'], $grid) as $neighbour) {
@@ -146,7 +145,7 @@ function getRiskLevel($x, $y, &$history)
 function getErosionLevel($x, $y, &$history)
 {
     $index = getGeologicalIndex($x, $y, $history);
-    return $index + CAVE_DEPTH % 20183;
+    return ($index + CAVE_DEPTH) % 20183;
 }
 
 function getGeologicalIndex($x, $y, &$history)
@@ -189,7 +188,7 @@ function draw($value)
 function drawPath($path, $grid)
 {
     $cli = new CLImate();
-$cli->out('');
+    $cli->out('');
     foreach ($grid as $y => $row) {
         foreach ($row as $x => $cell) {
             $grid[$y][$x] = draw($cell);
@@ -207,7 +206,7 @@ $cli->out('');
         } elseif ($tool === TOOL_NONE) {
             $color = 'green';
         }
-        $grid[$y][$x] = "<$color>".$grid[$y][$x]."</$color>";
+        $grid[$y][$x] = "<background_$color>".$grid[$y][$x]."</background_$color>";
     }
     foreach ($grid as $row) {
         $cli->out(implode('', $row));
