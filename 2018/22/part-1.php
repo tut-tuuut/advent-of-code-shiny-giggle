@@ -4,11 +4,11 @@ use League\CLImate\CLImate;
 include(__DIR__.'/../../vendor/autoload.php');
 include(__DIR__.'/../../utils.php');
 
-const TARGET_X = 10; // 13;
-const TARGET_Y = 10; //743;
-const CAVE_DEPTH = 510; //8112;
+const TARGET_X = 13;
+const TARGET_Y = 743;
+const CAVE_DEPTH = 8112;
 
-const RAB_X = 30;
+const RAB_X = 13;
 const RAB_Y = 20;
 
 const REGION_ROCK = 0;
