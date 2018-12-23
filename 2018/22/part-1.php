@@ -4,8 +4,9 @@ use League\CLImate\CLImate;
 include(__DIR__.'/../../vendor/autoload.php');
 include(__DIR__.'/../../utils.php');
 
-const TARGET_X = 13;
-const TARGET_Y = 743;
+const TARGET_X = 10; // 13;
+const TARGET_Y = 10; //743;
+const CAVE_DEPTH = 510; //8112;
 
 const REGION_ROCK = 0;
 const REGION_WET = 1;
@@ -15,7 +16,6 @@ const TOOL_CLIMB = 1;
 const TOOL_TORCH = 2;
 const TOOL_NONE = 3;
 
-const CAVE_DEPTH = 8112;
 
 $cli = new CLImate();
 
@@ -41,6 +41,94 @@ for ($y = 0; $y <= TARGET_Y + 100; $y++) {
     $progress->current($y);
 }
 $cli->out('Done. Now, just calculating the shortest path...');
+$beginning = [0, 0, TOOL_TORCH];
+$target = [TARGET_X, TARGET_Y, TOOL_TORCH];
+
+function calculateShortestPath($beginning, $target, &$grid)
+{
+    $cli->out('');
+    // 7 minutes to change tools
+    // 1 minute to move without changing tools
+    $visited = [implode('-', $beginning)];
+    $toCheck = [];
+    foreach (findNeighbours($beginning, $grid) as $neighbourInfo) {
+        list($x, $y, $neighbour) = $neighbourInfo;
+        $visited[$x.'-'.$y] = true;
+        if (!(is_string($neighbour) && $neighbour === '.')) {
+            continue;
+        }
+        $toVisit[] = [
+            'initial' => [$x, $y],
+            'distance' => 1,
+            'node' => [$x, $y],
+        ];
+    }
+    while (count($toCheck)) {
+        $cli->inline('.');
+        $looking = array_pop($toCheck);
+        $sortedNeighbours = [];
+        foreach (findNeighbours($looking) as $neighbour) {
+            $sortedNeighbours[timeFromAToB($toCheck, $neighbour).uniqid()] = $neighbour;
+        }
+        ksort($sortedNeighbours);
+        foreach ($sortedNeighbours as $neighbour) {
+            if (isset($visited[implode('-', $neighbour)])) {
+                
+            }
+            $toCheck[] = $neighbour;
+        }
+    }
+}
+
+function findNeighbours($a, &$grid)
+{
+    list($xa, $ya, $toola) = $a;
+    foreach ([-1, +1] as $offset) {
+        foreach([TOOL_NONE, TOOL_CLIMB, TOOL_TORCH] as $tool) {
+            if (isset($grid[$y][$xa + $offset])) {
+                if (isToolValid($grid[$y][$xa + $offset], $tool)) {
+                    yield [$xa + $offset, $y, $tool];
+                }
+            }
+            if (isset( $grid[$y + $offset][$xa])) {
+                if (isToolValid($grid[$y + $offset][$xa], $tool)) {
+                    yield [$xa, $y + $offset, $tool];
+                }
+            }
+        }
+    }
+}
+
+function timeFromAToB($a, $b, &$grid)
+{
+    list($xa, $ya, $toola) = $a;
+    list($xb, $yb, $toolb) = $b;
+    // Check if $a and $b are valid: if not, return infinity
+    if (!isToolValid($grid[$ya][$xa], $toola) || !isToolValid($grid[$yb][$xb], $toolb)) {
+        return PHP_INT_MAX;
+    }
+    // Check if $a and $b are adjacent (normally OK, but who knows)
+    if (abs($xa - $xb) + abs($ya - $yb) > 1) {
+        return PHP_INT_MAX;
+    }
+    $time = abs($xa - $xb) + abs($ya - $yb); // 1 minute to move if cells are different
+    // Check if you need to change tools
+    if ($toola !== $toolb) {
+        $time += 7;
+    }
+    return $time;
+}
+
+function isToolValid($cellType, $tool)
+{
+    if ($cellType === REGION_ROCK) {
+        return ($tool === TOOL_TORCH || $tool === TOOL_CLIMB);
+    } elseif ($cellType === REGION_WET) {
+        return ($tool === TOOL_NONE || $tool === TOOL_CLIMB);
+    } elseif ($cellType === REGION_NARROW) {
+        return ($tool === TOOL_TORCH || $tool === TOOL_NONE);
+    }
+}
 
 function getRiskLevel($x, $y, &$history)
 {
