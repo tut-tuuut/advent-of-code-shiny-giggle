@@ -1,5 +1,8 @@
 <?php
 
+include(__DIR__.'/../../vendor/autoload.php');
+use League\CLImate\CLImate;
+
 include(__DIR__.'/../../utils.php');
 include(__DIR__.'/input.php');
 
@@ -11,8 +14,9 @@ Step B must be finished before step E can begin.
 Step D must be finished before step E can begin.
 Step F must be finished before step E can begin.';*/
 
-const NB_OF_WORKERS = 5;
-const BASE_DURATION = 60;
+const NB_OF_WORKERS = 5;//5;
+const BASE_DURATION = 60;//60;
+const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 $extractLetters = '/Step (\w) must be finished before step (\w) can begin./';
 $steps = [];
@@ -33,21 +37,36 @@ foreach ($steps as $step) {
     $step->debug();
 }
 
+$workers = [];
+$elapsed = 0;
 while (count($steps) > 0) {
-    doNextStep($steps);
+    doNextStep($steps, $workers);
+    $elapsed++;
 }
-
-function doNextStep(&$steps) {
-    $next = min(findReadySteps($steps));
-    $steps[$next]->do();
-    unset($steps[$next]);
-    return true;
+say('part 2:'.$elapsed);
+function doNextStep(&$steps, &$workers) {
+    $cli = new CLImate();
+    $cli->out('');
+    while (count($workers) < NB_OF_WORKERS && count(findReadySteps($steps)) > 0) {
+        // begin new tasks
+        $next = min(findReadySteps($steps));
+        $steps[$next]->begin();
+        $workers[] = $steps[$next];
+    }
+    foreach ($workers as $i => $worker) {
+        $cli->inline($worker->getLetter().' ');
+        $worker->progress();
+        if ($worker->isDone()) {
+            unset($workers[$i]);
+            unset($steps[$worker->getLetter()]);
+        }
+    }
 }
 
 function findReadySteps(&$steps) {
     $ready = [];
     foreach ($steps as $step) {
-        if ($step->isReady()) {
+        if ($step->isReady() && !$step->isInProgress()) {
             $ready[] = $step->getLetter();
         }
     }
@@ -60,6 +79,7 @@ class Step
 
     private $letter = '';
     private $done = false;
+    private $todo;
 
     /**
      * @var Step[]
@@ -74,6 +94,11 @@ class Step
     public function __construct($letter)
     {
         $this->letter = $letter;
+    }
+
+    public function getDuration()
+    {
+        return strpos(ALPHABET, $this->letter) + 1 + BASE_DURATION;
     }
 
     public function dependsOn(Step $step)
@@ -99,11 +124,30 @@ class Step
         return true;
     }
 
+    public function isInProgress()
+    {
+        if (!is_null($this->todo)) {
+            return true;
+        }
+    }
+
+    public function begin()
+    {
+        $this->todo = $this->getDuration();
+    }
+
+    public function progress()
+    {
+        $this->todo -= 1;
+        if ($this->todo === 0) {
+            $this->do();
+        }
+    }
+
     public function do()
     {
         self::$sequence .= $this->letter;
         $this->done = true;
-        say(self::$sequence);
     }
 
     public function isDone()
