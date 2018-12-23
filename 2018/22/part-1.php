@@ -1,5 +1,5 @@
 <?php
-
+ini_set('memory_limit', '2G');
 use League\CLImate\CLImate;
 include(__DIR__.'/../../vendor/autoload.php');
 include(__DIR__.'/../../utils.php');
@@ -7,6 +7,9 @@ include(__DIR__.'/../../utils.php');
 const TARGET_X = 10; // 13;
 const TARGET_Y = 10; //743;
 const CAVE_DEPTH = 510; //8112;
+
+const RAB_X = 30;
+const RAB_Y = 20;
 
 const REGION_ROCK = 0;
 const REGION_WET = 1;
@@ -32,15 +35,15 @@ for ($y = 0; $y <= TARGET_Y; $y++) {
 say('part 1: '. $totalRiskLevel);
 
 $cli->out('Calculating map...');
-$progress = $cli->progress()->total(TARGET_Y + 30);
+$progress = $cli->progress()->total(TARGET_Y + RAB_Y);
 $grid = [];
-for ($y = 0; $y <= TARGET_Y + 30; $y++) {
-    for ($x = 0; $x <= TARGET_X + 20; $x++) {
+for ($y = 0; $y <= TARGET_Y + RAB_Y; $y++) {
+    for ($x = 0; $x <= TARGET_X + RAB_X; $x++) {
         $grid[$y][$x] = getRiskLevel($x, $y, $history);
     }
     $progress->current($y);
 }
-$cli->out('Done. Now, just calculating the shortest path...');
+$cli->out('Done. Now, "just" calculating the shortest path...');
 $beginning = [0, 0, TOOL_TORCH];
 $target = [TARGET_X, TARGET_Y, TOOL_TORCH];
 $distance = calculateShortestPath($beginning, $target, $grid);
@@ -50,8 +53,9 @@ say('part 2: '.$distance);
 function calculateShortestPath($beginning, $target, &$grid)
 {
     $cli = new CLImate();
-    $cli->out('');
     $targetSignature = implode('-', $target);
+    $cli->out('target: '.$targetSignature);
+
     // 7 minutes to change tools
     // 1 minute to move without changing tools
     $visited = [implode('-', $beginning)];
@@ -59,7 +63,6 @@ function calculateShortestPath($beginning, $target, &$grid)
     foreach (findNeighbours($beginning, $grid) as $neighbour) {
         $distance = timeFromAToB($beginning, $neighbour, $grid);
         $signature = implode('-', $neighbour);
-        $visited[$signature] = true;
         $toCheck[str_pad($distance, 5, '0', STR_PAD_LEFT).'-'.$signature] = [
             'distance' => $distance,
             'node' => $neighbour,
@@ -69,13 +72,24 @@ function calculateShortestPath($beginning, $target, &$grid)
     krsort($toCheck);
     while (count($toCheck)) {
         $looking = array_pop($toCheck);
+        $signature = implode('-', $looking['node']);
+        if (isset($visited[$signature])) {
+            continue;
+        }
+        $visited[$signature] = true;
+        if ($signature === $targetSignature) {
+            drawPath(array_merge($looking['path'], [$signature]), $grid);
+            return $looking['distance'];
+        }
         $sortedNeighbours = [];
+        if (count($visited) % 1000 === 0) {
+            $cli->inline('.');
+        }
         foreach (findNeighbours($looking['node'], $grid) as $neighbour) {
             $distance = timeFromAToB($neighbour, $looking['node'], $grid) + $looking['distance'];
             $signature = implode('-', $neighbour);
-            if ($signature === $targetSignature) {
-                drawPath(array_merge($looking['path'], [$signature]), $grid);
-                return $distance;
+            if (isset($visited[$signature])) {
+                continue;
             }
             $toCheck[str_pad($distance, 5, '0', STR_PAD_LEFT).'-'.$signature] = [
                 'distance' => $distance,
@@ -85,6 +99,7 @@ function calculateShortestPath($beginning, $target, &$grid)
         }
         krsort($toCheck);
     }
+    say('oh.');
 }
 
 function findNeighbours($a, &$grid)
@@ -185,13 +200,15 @@ function draw($value)
     return '#';
 }
 
-function drawPath($path, $grid)
+function drawPath($path, &$grid)
 {
+    var_dump($path);
     $cli = new CLImate();
     $cli->out('');
+    $drawnGrid = [];
     foreach ($grid as $y => $row) {
         foreach ($row as $x => $cell) {
-            $grid[$y][$x] = draw($cell);
+            $drawnGrid[$y][$x] = draw($cell);
         }
     }
     foreach ($path as $signature) {
@@ -206,9 +223,9 @@ function drawPath($path, $grid)
         } elseif ($tool === TOOL_NONE) {
             $color = 'green';
         }
-        $grid[$y][$x] = "<background_$color>".$grid[$y][$x]."</background_$color>";
+        $drawnGrid[$y][$x] = "<background_$color>".draw($grid[$y][$x])."</background_$color>";
     }
-    foreach ($grid as $row) {
+    foreach ($drawnGrid as $row) {
         $cli->out(implode('', $row));
     }
 }
