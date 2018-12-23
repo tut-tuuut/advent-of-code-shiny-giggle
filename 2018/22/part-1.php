@@ -132,13 +132,13 @@ function isToolValid($cellType, $tool)
 
 function getRiskLevel($x, $y, &$history)
 {
-    return gmp_mod(getErosionLevel($x, $y, $history), 3);
+    return getErosionLevel($x, $y, $history) % 3;
 }
 
 function getErosionLevel($x, $y, &$history)
 {
     $index = getGeologicalIndex($x, $y, $history);
-    return gmp_mod($index + CAVE_DEPTH, 20183);
+    return $index + CAVE_DEPTH % 20183;
 }
 
 function getGeologicalIndex($x, $y, &$history)
@@ -152,9 +152,9 @@ function getGeologicalIndex($x, $y, &$history)
     } elseif ($y === TARGET_Y && $x === TARGET_X) {
         $result = 0;
     } elseif ($y === 0) {
-        $result = gmp_mul($x, 16807);
+        $result = $x * 16807;
     } elseif ($x === 0) {
-        $result = gmp_mul($y, 48271);
+        $result = $y * 48271;
     } else {
         $result = getErosionLevel($x - 1, $y, $history) * getErosionLevel($x, $y - 1, $history);
     }
