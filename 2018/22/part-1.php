@@ -34,8 +34,8 @@ say('part 1: '. $totalRiskLevel);
 $cli->out('Calculating map...');
 $progress = $cli->progress()->total(TARGET_Y + 100);
 $grid = [];
-for ($y = 0; $y <= TARGET_Y + 100; $y++) {
-    for ($x = 0; $x <= TARGET_X + 100; $x++) {
+for ($y = 0; $y <= TARGET_Y + 10; $y++) {
+    for ($x = 0; $x <= TARGET_X + 10; $x++) {
         $grid[$y][$x] = getRiskLevel($x, $y, $history);
     }
     $progress->current($y);
@@ -63,6 +63,7 @@ function calculateShortestPath($beginning, $target, &$grid)
         $toCheck[str_pad($distance, 5, '0', STR_PAD_LEFT).'-'.$signature] = [
             'distance' => $distance,
             'node' => $neighbour,
+            'path' => [$signature]
         ];
     }
     krsort($toCheck);
@@ -74,11 +75,13 @@ function calculateShortestPath($beginning, $target, &$grid)
             $distance = timeFromAToB($neighbour, $looking['node'], $grid) + $looking['distance'];
             $signature = implode('-', $neighbour);
             if ($signature === $targetSignature) {
+                drawPath(array_merge($looking['path'], [$signature]), $grid);
                 return $distance;
             }
             $toCheck[str_pad($distance, 5, '0', STR_PAD_LEFT).'-'.$signature] = [
                 'distance' => $distance,
                 'node' => $neighbour,
+                'path' => array_merge($looking['path'], [$signature]),
             ];
         }
         krsort($toCheck);
@@ -181,4 +184,26 @@ function draw($value)
         return '|';
     }
     return '#';
+}
+
+function drawPath($path, $grid)
+{
+    foreach ($path as $signature) {
+        list($x, $y, $tool) = explode('-', $signature);
+        $x = (int)$x;
+        $y = (int)$y;
+        $tool = (int)$tool;
+        if ($tool === TOOL_TORCH) {
+            $color = 'red';
+        } elseif ($tool === TOOL_CLIMB) {
+            $color = 'light_blue';
+        } elseif ($tool === TOOL_NONE) {
+            $color = 'green';
+        }
+        $grid[$y][$x] = "<$color>".$grid[$y][$x]."</$color>";
+    }
+    $cli = new CLImate();
+    foreach ($grid as $row) {
+        $cli->out(implode('', $row));
+    }
 }
