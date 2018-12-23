@@ -43,40 +43,45 @@ for ($y = 0; $y <= TARGET_Y + 100; $y++) {
 $cli->out('Done. Now, just calculating the shortest path...');
 $beginning = [0, 0, TOOL_TORCH];
 $target = [TARGET_X, TARGET_Y, TOOL_TORCH];
+$distance = calculateShortestPath($beginning, $target, $grid);
+
+say('part 2: '.$distance);
 
 function calculateShortestPath($beginning, $target, &$grid)
 {
+    $cli = new CLImate();
     $cli->out('');
+    $targetSignature = implode('-', $target);
     // 7 minutes to change tools
     // 1 minute to move without changing tools
     $visited = [implode('-', $beginning)];
     $toCheck = [];
-    foreach (findNeighbours($beginning, $grid) as $neighbourInfo) {
-        list($x, $y, $neighbour) = $neighbourInfo;
-        $visited[$x.'-'.$y] = true;
-        if (!(is_string($neighbour) && $neighbour === '.')) {
-            continue;
-        }
-        $toVisit[] = [
-            'initial' => [$x, $y],
-            'distance' => 1,
-            'node' => [$x, $y],
+    foreach (findNeighbours($beginning, $grid) as $neighbour) {
+        $distance = timeFromAToB($beginning, $neighbour, $grid);
+        $signature = implode('-', $neighbour);
+        $visited[$signature] = true;
+        $toCheck[str_pad($distance, 5, '0', STR_PAD_LEFT).'-'.$signature] = [
+            'distance' => $distance,
+            'node' => $neighbour,
         ];
     }
+    krsort($toCheck);
     while (count($toCheck)) {
         $cli->inline('.');
         $looking = array_pop($toCheck);
         $sortedNeighbours = [];
-        foreach (findNeighbours($looking) as $neighbour) {
-            $sortedNeighbours[timeFromAToB($toCheck, $neighbour).uniqid()] = $neighbour;
-        }
-        ksort($sortedNeighbours);
-        foreach ($sortedNeighbours as $neighbour) {
-            if (isset($visited[implode('-', $neighbour)])) {
-                
+        foreach (findNeighbours($looking['node'], $grid) as $neighbour) {
+            $distance = timeFromAToB($neighbour, $looking['node'], $grid) + $looking['distance'];
+            $signature = implode('-', $neighbour);
+            if ($signature === $targetSignature) {
+                return $distance;
             }
-            $toCheck[] = $neighbour;
+            $toCheck[str_pad($distance, 5, '0', STR_PAD_LEFT).'-'.$signature] = [
+                'distance' => $distance,
+                'node' => $neighbour,
+            ];
         }
+        krsort($toCheck);
     }
 }
 
@@ -85,14 +90,14 @@ function findNeighbours($a, &$grid)
     list($xa, $ya, $toola) = $a;
     foreach ([-1, +1] as $offset) {
         foreach([TOOL_NONE, TOOL_CLIMB, TOOL_TORCH] as $tool) {
-            if (isset($grid[$y][$xa + $offset])) {
-                if (isToolValid($grid[$y][$xa + $offset], $tool)) {
-                    yield [$xa + $offset, $y, $tool];
+            if (isset($grid[$ya][$xa + $offset])) {
+                if (isToolValid($grid[$ya][$xa + $offset], $tool)) {
+                    yield [$xa + $offset, $ya, $tool];
                 }
             }
-            if (isset( $grid[$y + $offset][$xa])) {
-                if (isToolValid($grid[$y + $offset][$xa], $tool)) {
-                    yield [$xa, $y + $offset, $tool];
+            if (isset( $grid[$ya + $offset][$xa])) {
+                if (isToolValid($grid[$ya + $offset][$xa], $tool)) {
+                    yield [$xa, $ya + $offset, $tool];
                 }
             }
         }
