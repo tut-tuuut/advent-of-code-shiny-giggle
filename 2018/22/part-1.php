@@ -8,7 +8,7 @@ const TARGET_X = 13;
 const TARGET_Y = 743;
 const CAVE_DEPTH = 8112;
 
-const RAB_X = 13;
+const RAB_X = 60;
 const RAB_Y = 20;
 
 const REGION_ROCK = 0;
@@ -202,7 +202,6 @@ function draw($value)
 
 function drawPath($path, &$grid)
 {
-    var_dump($path);
     $cli = new CLImate();
     $cli->out('');
     $drawnGrid = [];
