@@ -18,6 +18,9 @@ const SOURCE = '+';
 const FREE_WATER = '|';
 const RESTING_WATER = '~';
 
+const LEFT = -1;
+const RIGHT = 1;
+
 // First, parse input ------------------------------------------------------------------------
 const EXTRACT_COORDINATES = '/(x|y)=(\d+), (x|y)=(\d+)\.\.(\d+)/';
 $maxX = 0;
@@ -98,6 +101,11 @@ function isWet($cell)
     return $cell === FREE_WATER || $cell === RESTING_WATER;
 }
 
+function isCrossable($cell)
+{
+    return $cell === SAND || $cell == FREE_WATER;
+}
+
 function waterFlows($source, &$grid)
 {
     list($sy, $sx) = $source;
@@ -124,57 +132,42 @@ function waterFlows($source, &$grid)
         $restWaterCandidates = [];
         // check if it can be transformed in resting water: surrounded by two # and above # or ~
         list($sy, $sx) = $cell;
-        $flowToLeft = true;
-        $toLeft = 0;
-        $isClosedOnLeft = false;
-        while($flowToLeft) {
-            $toLeft += 1;
-            if (!isset($grid[$sy][$sx - $toLeft])) {
-                $flowToLeft = false;
-                continue;
+        $isClosedOnBothSides = true;
+        foreach ([LEFT, RIGHT] as $direction) {
+            $flowToDirection = true;
+            $toDirection = 0;
+            $isClosedOnThisSide = false;
+            while ($flowToDirection) {
+                $toDirection += 1;
+                if (!isset($grid[$sy][$sx + $direction * $toDirection])) {
+                    $flowToDirection = false;
+                    continue;
+                }
+                if (isCrossable($grid[$sy][$sx + $direction * $toDirection])
+                && !isCrossable(f($grid, $sy + 1, $sx + $direction * $toDirection))) {
+                    // on a clay or resting water surface
+                    //      ->   X
+                    //       #####
+                    $restWaterCandidates[] = [$sy, $sx + $direction * $toDirection];
+                } elseif (!isCrossable($grid[$sy][$sx + $direction * $toDirection])) {
+                    // bumping on the wall of a container
+                    //   -> X#
+                    //      #
+                    $isClosedOnThisSide = true;
+                    $flowToDirection = false;
+                } elseif (isCrossable($grid[$sy][$sx + $direction * $toDirection]) // a
+                && isCrossable(f($grid, $sy + 1, $sx + $direction * $toDirection)) // b
+                && !isCrossable(f($grid, $sy + 1, $sx + $direction * ($toDirection - 1))) ) { // c
+                    // no side wall for current container on this direction
+                    // -> a
+                    // ##cb
+                    $restWaterCandidates[] = [$sy, $sx + $direction * $toDirection];
+                    $flowToDirection = false;
+                }
             }
-            if ($grid[$sy][$sx - $toLeft] === SAND && in_array(f($grid, $sy + 1, $sx - $toLeft), [CLAY,RESTING_WATER]) ) {
-                // on a clay or resting water surface
-                $restWaterCandidates[] = [$sy, $sx - $toLeft];
-            } elseif ($grid[$sy][$sx - $toLeft] === CLAY) {
-                // bumping on the wall of a container
-                $isClosedOnLeft = true;
-                $flowToLeft = false;
-            } elseif ($grid[$sy][$sx - $toLeft] === SAND && f($grid, $sy + 1, $sx - $toLeft) === SAND && in_array(f($grid, $sy + 1, $sx - $toLeft + 1), [CLAY,RESTING_WATER])) {
-                // no left wall for current container
-                $restWaterCandidates[] = [$sy, $sx - $toLeft];
-                $isClosedOnLeft = false;
-                $flowToLeft = false;
-            } else {
-                $flowToLeft = false;
-            }
+            $isClosedOnBothSides = $isClosedOnBothSides && $isClosedOnThisSide;
         }
-        $flowToRight = true;
-        $toRight = 0;
-        $isClosedOnRight = false;
-        while($flowToRight) {
-            $toRight += 1;
-            if (!isset($grid[$sy][$sx + $toRight])) {
-                $flowToRight = false;
-                continue;
-            }
-            if ($grid[$sy][$sx + $toRight] === SAND && in_array(f($grid, $sy + 1, $sx + $toRight), [CLAY,RESTING_WATER]) ) {
-                // on a clay or resting water surface
-                $restWaterCandidates[] = [$sy, $sx + $toRight];
-            } elseif ($grid[$sy][$sx + $toRight] === CLAY) {
-                // bumping on the wall of a container
-                $isClosedOnRight = true;
-                $flowToRight = false;
-            } elseif ($grid[$sy][$sx + $toRight] === SAND && f($grid, $sy + 1, $sx + $toRight) === SAND && in_array(f($grid, $sy + 1, $sx + $toRight - 1), [CLAY,RESTING_WATER])) {
-                // no right wall for current container
-                $restWaterCandidates[] = [$sy, $sx + $toRight];
-                $isClosedOnRight = false;
-                $flowToRight = false;
-            } else {
-                $flowToRight = false;
-            }
-        }
-        if ($isClosedOnLeft && $isClosedOnRight) {
+        if ($isClosedOnBothSides) {
             $grid[$sy][$sx] = RESTING_WATER;
             foreach ($restWaterCandidates as $yx) {
                 list($y, $x) = $yx;
