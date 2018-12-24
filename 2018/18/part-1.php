@@ -64,17 +64,12 @@ foreach (integers(500) as $minute) {
 
 // Now we are probably in the periodic part: let's find a period
 $searchWindow = 800;
-say("Looking for a period in the $searchWindow next steps...");
-$min = 999999999;
-$minMinute = 0;
-$minPeriod = 0; // time between 2 minimums
-$max = 0;
-$maxPeriod = 0; // time between 2 maximums
-$maxMinute = 0;
-$period = false;
+say("For part 2, looking for a period in the $searchWindow next steps...");
+say('Calculating values...');
 $progress = $cli->progress()->total($searchWindow);
-$productsPerMinute = [];
-foreach (integers($searchWindow) as $minute) {
+$values = [];
+foreach (integers($searchWindow, 511) as $minute) {
+    // calculate cell contents
     foreach ($grid as $y => $row) {
         foreach ($row as $x => $cell) {
             $newGrid[$y][$x] = getNewCellContent($x, $y, $grid);
@@ -83,23 +78,28 @@ foreach (integers($searchWindow) as $minute) {
     $grid = $newGrid;
     list($trees, $lumbers) = countTreesAndLumbers($grid);
     $product = $trees * $lumbers;
-    if (!$period) { // find min and max product
-        if ($max < $product) {
-            $max = $product;
-            $maxMinute = $minute + 510;
-        }
-        if ($min > $product) {
-            $min = $product;
-            $minMinute = $minute + 510;
-        }
-    }
-    $progress->current($minute);
-    /*file_put_contents(
-        __DIR__.'/values.csv',
-        implode(';',[$minute+510, $trees, $lumbers, $trees*$lumbers]) . PHP_EOL,
-        FILE_APPEND
-    );*/ // this was useful to check my hypothesis before truly calculating the period
+    $values[$minute] = $product;
+    $progress->current($minute - 511);
 }
+// find a period
+foreach ($values as $turtle => $turtleValue) {
+    $hare = $turtle * 2;
+    if (!isset($values[$hare])) {
+        say('unable to find a period!');
+        die;
+    }
+    if ($values[$hare] === $turtleValue) {
+        $period = $hare - $turtle;
+        say('period is '.$period);
+        break;
+    }
+}
+$moduloValues = [];
+foreach ($values as $index => $value) {
+    $moduloValues[$index%$period] = $value;
+}
+const PART_2_TARGET = 1000000000;
+say('[PART 2] '.$moduloValues[PART_2_TARGET%$period], COLOR_NICE_BLUE);
 
 // Utils ----------------------------------------------------------------------
 function getEveryNeighbour($x, $y, &$grid)
