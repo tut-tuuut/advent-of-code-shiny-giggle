@@ -101,6 +101,11 @@ class Cell
         $this->state = $state;
     }
 
+    public function evaluate()
+    {
+        
+    }
+
     public static function drawGrid($clear = true)
     {
         $cli = new CLImate();
