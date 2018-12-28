@@ -129,59 +129,62 @@ function waterFlows($source, &$grid)
     }
 
     foreach(array_reverse($newWetCells) as $cell) {
-        $restWaterCandidates = [];
+        $restWaterCandidates = getSupportedNeighbours($cell, $grid);
         // check if it can be transformed in resting water: surrounded by two # and above # or ~
-        list($sy, $sx) = $cell;
-        $isClosedOnBothSides = true;
-        foreach ([LEFT, RIGHT] as $direction) {
-            $flowToDirection = true;
-            $toDirection = 0;
-            $isClosedOnThisSide = false;
-            while ($flowToDirection) {
-                $toDirection += 1;
-                if (!isset($grid[$sy][$sx + $direction * $toDirection])) {
-                    $flowToDirection = false;
-                    continue;
-                }
-                if (isCrossable($grid[$sy][$sx + $direction * $toDirection])
-                && !isCrossable(f($grid, $sy + 1, $sx + $direction * $toDirection))) {
-                    // on a clay or resting water surface
-                    //      ->   X
-                    //       #####
-                    $restWaterCandidates[] = [$sy, $sx + $direction * $toDirection];
-                } elseif (!isCrossable($grid[$sy][$sx + $direction * $toDirection])) {
-                    // bumping on the wall of a container
-                    //   -> X#
-                    //      #
-                    $isClosedOnThisSide = true;
-                    $flowToDirection = false;
-                } elseif (isCrossable($grid[$sy][$sx + $direction * $toDirection]) // a
-                && isCrossable(f($grid, $sy + 1, $sx + $direction * $toDirection)) // b
-                && !isCrossable(f($grid, $sy + 1, $sx + $direction * ($toDirection - 1))) ) { // c
-                    // no side wall for current container on this direction
-                    // -> a
-                    // ##cb
-                    $restWaterCandidates[] = [$sy, $sx + $direction * $toDirection];
-                    $flowToDirection = false;
-                }
-            }
-            $isClosedOnBothSides = $isClosedOnBothSides && $isClosedOnThisSide;
-        }
-        if ($isClosedOnBothSides) {
-            $grid[$sy][$sx] = RESTING_WATER;
+        if (count($restWaterCandidates)) {
             foreach ($restWaterCandidates as $yx) {
                 list($y, $x) = $yx;
                 $grid[$y][$x] = RESTING_WATER;
             }
-        } else {
-            foreach ($restWaterCandidates as $yx) {
-                list($y, $x) = $yx;
-                $grid[$y][$x] = FREE_WATER;
-                $newSources[] = $yx;
-            }
         }
     }
     return $newSources;
+}
+
+function getSupportedNeighbours($cell, &$grid)
+{
+    list($sy, $sx) = $cell;
+    $isClosedOnBothSides = true;
+    $restWaterCandidates = [];
+    foreach ([LEFT, RIGHT] as $direction) {
+        $flowToDirection = true;
+        $toDirection = 0;
+        $isClosedOnThisSide = false;
+        while ($flowToDirection) {
+            $toDirection += 1;
+            if (!isset($grid[$sy][$sx + $direction * $toDirection])) {
+                $flowToDirection = false;
+                continue;
+            }
+            if (isCrossable($grid[$sy][$sx + $direction * $toDirection])
+            && !isCrossable(f($grid, $sy + 1, $sx + $direction * $toDirection))) {
+                // on a clay or resting water surface
+                //      ->   X
+                //       #####
+                $restWaterCandidates[] = [$sy, $sx + $direction * $toDirection];
+            } elseif (!isCrossable($grid[$sy][$sx + $direction * $toDirection])) {
+                // bumping on the wall of a container
+                //   -> X#
+                //      #
+                $isClosedOnThisSide = true;
+                $flowToDirection = false;
+            } elseif (isCrossable($grid[$sy][$sx + $direction * $toDirection]) // a
+            && isCrossable(f($grid, $sy + 1, $sx + $direction * $toDirection)) // b
+            && !isCrossable(f($grid, $sy + 1, $sx + $direction * ($toDirection - 1))) ) { // c
+                // no side wall for current container on this direction
+                // -> a
+                // ##cb
+                $restWaterCandidates[] = [$sy, $sx + $direction * $toDirection];
+                $flowToDirection = false;
+            }
+        }
+        $isClosedOnBothSides = $isClosedOnBothSides && $isClosedOnThisSide;
+    }
+    if ($isClosedOnBothSides) {
+        $restWaterCandidates[] = $cell;
+        return $restWaterCandidates;
+    }
+    return [];
 }
 
 // Draw map for debug ---------------------------------------------------------------------------
