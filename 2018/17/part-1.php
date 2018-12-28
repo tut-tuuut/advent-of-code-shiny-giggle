@@ -119,7 +119,7 @@ function waterFlows($source, &$grid)
             $drill = false;
             continue;
         }
-        if ($grid[$sy + $depth][$sx] === SAND) {
+        if (isCrossable($grid[$sy + $depth][$sx])) {
             $grid[$sy + $depth][$sx] = FREE_WATER;
             $newWetCells[] = [$sy + $depth, $sx];
             $drill = true;
@@ -129,12 +129,18 @@ function waterFlows($source, &$grid)
     }
 
     foreach(array_reverse($newWetCells) as $cell) {
-        $restWaterCandidates = getSupportedNeighbours($cell, $grid);
+        list($closed, $restWaterCandidates) = getSupportedNeighbours($cell, $grid);
         // check if it can be transformed in resting water: surrounded by two # and above # or ~
-        if (count($restWaterCandidates)) {
+        if ($closed) {
             foreach ($restWaterCandidates as $yx) {
                 list($y, $x) = $yx;
                 $grid[$y][$x] = RESTING_WATER;
+            }
+        } else {
+            foreach ($restWaterCandidates as $yx) {
+                list($y, $x) = $yx;
+                $grid[$y][$x] = FREE_WATER;
+                $newSources[] = [$y, $x];
             }
         }
     }
@@ -180,11 +186,7 @@ function getSupportedNeighbours($cell, &$grid)
         }
         $isClosedOnBothSides = $isClosedOnBothSides && $isClosedOnThisSide;
     }
-    if ($isClosedOnBothSides) {
-        $restWaterCandidates[] = $cell;
-        return $restWaterCandidates;
-    }
-    return [];
+    return [$isClosedOnBothSides, $restWaterCandidates];
 }
 
 // Draw map for debug ---------------------------------------------------------------------------
