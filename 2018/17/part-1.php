@@ -77,7 +77,48 @@ $grid[0][500] = SOURCE; // water source
 foreach ($clayPoints as $p) {
     $grid[$p['y']][$p['x']] = CLAY;
 }
-draw($grid);
+$oGrid = [];
+foreach ($grid as $y => $row) {
+    foreach ($row as $x => $row) {
+        $oGrid[$y][$x] = new Cell($x, $y, $grid[$y][$x]);
+    }
+}
+Cell::$grid = $oGrid;
+Cell::drawGrid();
+
+class Cell
+{
+    private $x;
+    private $y;
+    private $state;
+
+    public static $grid;
+
+    public function __construct($x, $y, $state)
+    {
+        $this->x = $x;
+        $this->y = $y;
+        $this->state = $state;
+    }
+
+    public static function drawGrid($clear = true)
+    {
+        $cli = new CLImate();
+        if ($clear) { $cli->clear(); } else { $cli->out(''); }
+        foreach (self::$grid as $y => $row) {
+            $str = implode($row);
+            $str = str_replace('+', '<light_blue>+</light_blue>', $str);
+            $str = str_replace('|', '<light_blue>|</light_blue>', $str);
+            $str = str_replace('~', '<light_blue>~</light_blue>', $str);
+            $cli->out($str);
+        }
+    }
+
+    public function __toString()
+    {
+        return $this->state;
+    }
+}
 
 // Draw map for debug ---------------------------------------------------------------------------
 function draw(&$grid, $clear = true)
