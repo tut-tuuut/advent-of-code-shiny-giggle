@@ -15,3 +15,11 @@ with open('input.txt', "r+") as file:
 all_required_paper = sum(map(required_wrapping_paper, input.split('\n')))
 
 print(f'The elves will need {all_required_paper} sqft of wrapping paper.')
+
+def required_ribboon(strDimensions):
+    l, w, h = list(map(int, strDimensions.split('x', 3)))
+    return l*w*h + 2*min(l+w, w+h, l+h)
+
+print('Check my code works on given examples:')
+print(f"this should be 34: {required_ribboon('2x3x4')}")
+print(f"this should be 14: {required_ribboon('1x1x10')}")
