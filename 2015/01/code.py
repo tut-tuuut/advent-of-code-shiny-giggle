@@ -7,3 +7,11 @@ def resulting(instructions):
 
 print('resulting floor:')
 print(resulting(input))
+
+instrlen = len(input)
+
+for i in range(2,instrlen):
+    result = resulting(input[0:i])
+    if result == -1:
+        print('you reach the basement after {theresult} iterations.'.format(theresult = i))
+        break
