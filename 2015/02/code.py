@@ -8,3 +8,10 @@ def required_wrapping_paper(strDimensions):
 print('Check my code works on given examples:')
 print(f"this should be 58: {required_wrapping_paper('2x3x4')}")
 print(f"this should be 43: {required_wrapping_paper('1x1x10')}")
+
+with open('input.txt', "r+") as file:
+    input = file.read()
+
+all_required_paper = sum(map(required_wrapping_paper, input.split('\n')))
+
+print(f'The elves will need {all_required_paper} sqft of wrapping paper.')
