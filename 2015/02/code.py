@@ -23,3 +23,7 @@ def required_ribboon(strDimensions):
 print('Check my code works on given examples:')
 print(f"this should be 34: {required_ribboon('2x3x4')}")
 print(f"this should be 14: {required_ribboon('1x1x10')}")
+
+all_required_ribboon = sum(map(required_ribboon, input.split('\n')))
+print(f'The elves will need {all_required_ribboon} ft of ribboon.')
+print('It should not be 1586300')
