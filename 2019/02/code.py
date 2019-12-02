@@ -5,9 +5,9 @@ def interpret_program(strProgram):
         if instruction == 99:
             break
         elif instruction == 1:
-            program[target] = param1 + param2
+            program[target] = program[param1] + program[param2]
         elif instruction == 2:
-            program[target] = param1 * param2
+            program[target] = program[param1] * program[param2]
     print(program)
 
 
