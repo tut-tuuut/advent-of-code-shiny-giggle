@@ -21,7 +21,7 @@ def find_six_zeroes(prefix):
         i += 1
         if i % 1000000 == 0:
             print(f'{time.ctime()} i = {i}')
-        if md5(f'{prefix}{i}')[0:5] == '000000':
+        if md5(f'{prefix}{i}')[0:6] == '000000':
             return i
 
 print(find_six_zeroes(input))
