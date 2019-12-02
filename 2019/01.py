@@ -1,4 +1,4 @@
-with open(__file__ + '.input.txt') as file:
+with open(__file__ + '.input') as file:
     input = file.read()
 
 def fuel_for_given_module(inputRow):
