@@ -71,15 +71,12 @@ def find_intersections_between_wires(firstWire, secondWire):
                 intersections.append(tuple(intersection))
     return intersections
 
-secondWire = get_points_from_instructions('R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51')
-firstWire = get_points_from_instructions('U98,R91,D20,R16,D67,R40,U7,R15,U6,R7')
-print(find_intersections_between_wires(firstWire, secondWire))
-print(min(list(map(lambda seg: manhattan_distance((0,0), seg), find_intersections_between_wires(firstWire, secondWire)))))
+#secondWire = get_points_from_instructions('R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51')
+#firstWire = get_points_from_instructions('U98,R91,D20,R16,D67,R40,U7,R15,U6,R7')
+#print(find_intersections_between_wires(firstWire, secondWire))
+#print(min(list(map(lambda seg: manhattan_distance((0,0), seg), find_intersections_between_wires(firstWire, secondWire)))))
 
-"""
 with open(__file__ + '.input') as file:
-    input = file.read().split('\n')
-    print(input)
+    input = list(map(get_points_from_instructions, file.read().split('\n')))
 
 print(min(list(map(lambda seg: manhattan_distance((0,0), seg), find_intersections_between_wires(input[0], input[1])))))
-"""
