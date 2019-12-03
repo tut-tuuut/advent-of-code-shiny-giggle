@@ -13,10 +13,12 @@ def segment_intersection(ab, cd):
     xa, ya, xb, yb = ab
     xc, yc, xd, yd = cd
     if is_horizontal(ab):
-        if min(xa,xb) < xc < max(xa,xb) and min(yd, yc) < xa < max(yd, yc):
+        if min(xa,xb) < xc < max(xa,xb) and min(yd, yc) < ya < max(yd, yc):
+            #print(f'17 - intersection btw {ab} and {cd} in {(xc, ya)}')
             return (xc, ya)
     elif is_vertical(ab):
-        if min(ya, yb) < yc < max (ya, yb) and min(xc, xd) < xa < max(xc, xd):
+        if min(ya, yb) < yc < max(ya, yb) and min(xc, xd) < xa < max(xc, xd):
+            #print(f'21 - intersection btw {ab} and {cd} in {(xa,yc)}')
             return (xa, yc)
 
 
@@ -37,8 +39,8 @@ def is_horizontal(ab):
 #print(is_horizontal((0,0,1,0)))
 #print(is_horizontal((0,0,0,7)))
 
-print(segment_intersection((-3, 0, 4, 0), (0, 4, 0, 1)))
-print(segment_intersection((-1, -3, -1, 4), (-2,-1,1,-1)))
+#print(segment_intersection((-3, 0, 4, 0), (0, 4, 0, 1)))
+#print(segment_intersection((-1, -3, -1, 4), (-2,-1,1,-1)))
 
 def get_points_from_instructions(strInstructions):
     instructions = strInstructions.split(',')
@@ -58,5 +60,26 @@ def get_points_from_instructions(strInstructions):
         points.append(tuple(currentPosition))
     return points
 
-firstWire = get_points_from_instructions('R8,U5,L5,D3')
-secondWire = get_points_from_instructions('U7,R6,D4,L4')
+def find_intersections_between_wires(firstWire, secondWire):
+    intersections = []
+    for i in range(len(firstWire)-1):
+        ab = firstWire[i] + firstWire[i+1]
+        for j in range(len(secondWire)-1):
+            cd = secondWire[j] + secondWire[j+1]
+            intersection = segment_intersection(ab, cd)
+            if intersection != None:
+                intersections.append(tuple(intersection))
+    return intersections
+
+secondWire = get_points_from_instructions('R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51')
+firstWire = get_points_from_instructions('U98,R91,D20,R16,D67,R40,U7,R15,U6,R7')
+print(find_intersections_between_wires(firstWire, secondWire))
+print(min(list(map(lambda seg: manhattan_distance((0,0), seg), find_intersections_between_wires(firstWire, secondWire)))))
+
+"""
+with open(__file__ + '.input') as file:
+    input = file.read().split('\n')
+    print(input)
+
+print(min(list(map(lambda seg: manhattan_distance((0,0), seg), find_intersections_between_wires(input[0], input[1])))))
+"""
