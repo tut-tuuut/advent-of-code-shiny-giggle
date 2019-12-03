@@ -39,3 +39,24 @@ def is_horizontal(ab):
 
 print(segment_intersection((-3, 0, 4, 0), (0, 4, 0, 1)))
 print(segment_intersection((-1, -3, -1, 4), (-2,-1,1,-1)))
+
+def get_points_from_instructions(strInstructions):
+    instructions = strInstructions.split(',')
+    currentPosition = [0,0]
+    points = [(0,0)]
+    for instruction in instructions:
+        direction = instruction[0]
+        steps = int(instruction[1:])
+        if direction == 'U':
+            currentPosition[1] += steps
+        elif direction == 'D':
+            currentPosition[1] -= steps
+        elif direction == 'R':
+            currentPosition[0] += steps
+        elif direction == 'L':
+            currentPosition[0] -= steps
+        points.append(tuple(currentPosition))
+    return points
+
+firstWire = get_points_from_instructions('R8,U5,L5,D3')
+secondWire = get_points_from_instructions('U7,R6,D4,L4')
