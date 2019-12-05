@@ -1,3 +1,9 @@
+OPCODE_STOP = 99
+OPCODE_ADD = 1
+OPCODE_MULTIPLY = 2
+OPCODE_INPUT = 3
+OPCODE_OUTPUT = 4
+
 def str_to_program(strProgram):
     return list(map(int, strProgram.split(',')))
 
@@ -7,24 +13,24 @@ def run_program(program):
         instruction = str(program[i])
         opcode = int(instruction[-2:])
         params = get_params_values(instruction, i, program)
-        if opcode == 99:
+        if opcode == OPCODE_STOP:
             return program[0]
-        elif opcode == 1:
+        elif opcode == OPCODE_ADD:
             target = int(program[i+3])
             program[target] = params[0] + params[1]
             i += 4
-        elif opcode == 2:
+        elif opcode == OPCODE_MULTIPLY:
             target = program[i+3]
             program[target] = params[0] * params[1]
             i += 4
-        elif opcode == 3:
-            inputvalue = input(f'INPUT for instruction#{i}: ')
+        elif opcode == OPCODE_INPUT:
+            inputvalue = input(f'. INPUT for instruction #{i}: ')
             target = program[i+1]
             program[target] = inputvalue
             i += 2
-        elif opcode == 4:
+        elif opcode == OPCODE_OUTPUT:
             output = params[0]
-            print(f'OUTPUT instruction#{i}: {output}')
+            print(f'. OUTPUT instruction #{i}: {output}')
             i += 2
     return program[0]
 
@@ -33,9 +39,9 @@ def get_params_values(strInstructions, i, listProgram):
     opcode = int(strInstructions[-2:])
     params = []
     nbParameters = 0
-    if opcode <= 2:
+    if opcode in (OPCODE_ADD, OPCODE_MULTIPLY):
         nbParameters = 3
-    elif opcode <= 4:
+    elif opcode in (OPCODE_OUTPUT, OPCODE_INPUT):
         nbParameters = 1
     for p in range(1, nbParameters+1):
         if strInstructions[-p-2] == '0':
