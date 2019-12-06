@@ -29,28 +29,17 @@ class SpaceObject:
     def all(cls):
         return list(map(cls.find, cls.space))
 
-example = """COM)B
-B)C
-C)D
-D)E
-E)F
-B)G
-G)H
-D)I
-E)J
-J)K
-K)L"""
+with open(__file__ + '.input') as file:
+    input = file.read()
 
-l = list(map(lambda s: tuple(s.split(')')), example.split('\n')))
-for couple in l:
+l = list(map(lambda s: tuple(s.split(')')), input.split('\n')))
+for couple in l: # I will instantiate most of them twice, but oh well
     o = SpaceObject(couple[1])
     o = SpaceObject(couple[0])
-for couple in l:
+for couple in l: # Each object stores a reference to its parent
     center,orbit = couple
     SpaceObject.find(orbit).setParent(SpaceObject.find(center))
-for o in SpaceObject.all():
-    o.debug()
-    print(f'{o.name} : {o.orbitCount()}')
 
-print('example:')
+print('1st part:')
 print(sum(list(map(lambda o: o.orbitCount(), SpaceObject.all()))))
+
