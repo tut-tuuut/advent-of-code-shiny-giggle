@@ -38,20 +38,6 @@ class SpaceObject:
 with open(__file__ + '.input') as file:
     input = file.read()
 
-input = """COM)B
-B)C
-C)D
-D)E
-E)F
-B)G
-G)H
-D)I
-E)J
-J)K
-K)L
-K)YOU
-I)SAN"""
-
 l = list(map(lambda s: tuple(s.split(')')), input.split('\n')))
 for couple in l: # I will instantiate most of them twice, but oh well
     o = SpaceObject(couple[1])
