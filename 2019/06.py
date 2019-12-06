@@ -14,6 +14,12 @@ class SpaceObject:
         else:
             return 1 + self.parent.orbitCount()
 
+    def ancestors(self):
+        if self.parent == None:
+            return set()
+        else:
+            return {self.parent.name} | self.parent.ancestors()
+
     def debug(self):
         print(f'I am {self.name}')
         if self.parent == None:
@@ -32,6 +38,20 @@ class SpaceObject:
 with open(__file__ + '.input') as file:
     input = file.read()
 
+input = """COM)B
+B)C
+C)D
+D)E
+E)F
+B)G
+G)H
+D)I
+E)J
+J)K
+K)L
+K)YOU
+I)SAN"""
+
 l = list(map(lambda s: tuple(s.split(')')), input.split('\n')))
 for couple in l: # I will instantiate most of them twice, but oh well
     o = SpaceObject(couple[1])
@@ -43,3 +63,7 @@ for couple in l: # Each object stores a reference to its parent
 print('1st part:')
 print(sum(list(map(lambda o: o.orbitCount(), SpaceObject.all()))))
 
+santaOrbits = SpaceObject.find('SAN').ancestors()
+meOrbits = SpaceObject.find('YOU').ancestors()
+transfers = meOrbits ^ santaOrbits
+print(f'part 2: {len(transfers)}')
