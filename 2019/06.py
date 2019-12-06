@@ -8,6 +8,12 @@ class SpaceObject:
     def setParent(self, parent):
         self.parent = parent
 
+    def orbitCount(self):
+        if self.parent == None:
+            return 0
+        else:
+            return 1 + self.parent.orbitCount()
+
     def debug(self):
         print(f'I am {self.name}')
         if self.parent == None:
@@ -44,3 +50,7 @@ for couple in l:
     SpaceObject.find(orbit).setParent(SpaceObject.find(center))
 for o in SpaceObject.all():
     o.debug()
+    print(f'{o.name} : {o.orbitCount()}')
+
+print('example:')
+print(sum(list(map(lambda o: o.orbitCount(), SpaceObject.all()))))
