@@ -1,3 +1,5 @@
+import itertools
+
 OPCODE_STOP = 99
 OPCODE_ADD = 1
 OPCODE_MULTIPLY = 2
@@ -94,22 +96,10 @@ def get_thruster_signal(strProgram, phaseSettings):
     return output
 
 maxThrusterSignal = 0
-for i in range(0,5):
-    for j in range(0,5):
-        if i == j:
-            continue
-        for k in range(0,5):
-            if k in (i, j):
-                continue
-            for l in range(0,5):
-                if l in (i, j, k):
-                    continue
-                for m in range(0, 5):
-                    if m in (i, j, k, l):
-                        continue
-                    thrusterSignal = get_thruster_signal(my_provided_program, (i, j, k, l, m))
-                    if thrusterSignal > maxThrusterSignal:
-                        maxThrusterSignal = thrusterSignal
-                        print(f'thruster signal of {maxThrusterSignal} found for {(i, j, k, l, m)}')
+for phaseSettings in itertools.permutations(range(0,5)):
+    thrusterSignal = get_thruster_signal(my_provided_program, phaseSettings)
+    if thrusterSignal > maxThrusterSignal:
+        maxThrusterSignal = thrusterSignal
+        print(f'thruster signal of {maxThrusterSignal} found for {phaseSettings}')
 
 print(f'part 1: {maxThrusterSignal}')
