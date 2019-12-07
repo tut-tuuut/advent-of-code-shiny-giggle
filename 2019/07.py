@@ -1,4 +1,4 @@
-import itertools
+import itertools as it
 
 OPCODE_STOP = 99
 OPCODE_ADD = 1
@@ -21,7 +21,8 @@ def run_program(program, inputs):
         opcode = int(instruction[-2:])
         params = get_params_values(instruction, i, program)
         if opcode == OPCODE_STOP:
-            return program[0]
+            print('STOP')
+            return None
         elif opcode == OPCODE_ADD:
             target = int(program[i+3])
             program[target] = params[0] + params[1]
@@ -32,10 +33,12 @@ def run_program(program, inputs):
             i += 4
         elif opcode == OPCODE_INPUT:
             inputvalue = next(inputs)
+            print(f'INPUT {inputvalue}')
             target = program[i+1]
             program[target] = inputvalue
             i += 2
         elif opcode == OPCODE_OUTPUT:
+            print(f'OUTPUT {params[0]}')
             output = params[0]
             return output
             i += 2
@@ -88,18 +91,43 @@ with open(__file__ + '.input') as file:
     my_provided_program = file.read()
 
 
-def get_thruster_signal(strProgram, phaseSettings):
+"""def get_thruster_signal(program, phaseSettings):
     previousOutput = 0
     for i in phaseSettings:
-        output = run_program(str_to_program(my_provided_program), (i, previousOutput))
+        output = run_program(program, (i, previousOutput))
         previousOutput = output
     return output
 
 maxThrusterSignal = 0
-for phaseSettings in itertools.permutations(range(0,5)):
-    thrusterSignal = get_thruster_signal(my_provided_program, phaseSettings)
+for phaseSettings in it.permutations(range(0,5)):
+    thrusterSignal = get_thruster_signal(str_to_program(my_provided_program), phaseSettings)
     if thrusterSignal > maxThrusterSignal:
         maxThrusterSignal = thrusterSignal
         print(f'thruster signal of {maxThrusterSignal} found for {phaseSettings}')
-
 print(f'part 1: {maxThrusterSignal}')
+"""
+def get_thruster_signal_with_feedback_loop(program, phaseSettings):
+    previousOutput = 0
+    programs = list(map(lambda x: list(program), range(0,5)))
+    k = 0
+    for i in phaseSettings:
+        output = run_program(programs[k], (i, previousOutput))
+        if output == None:
+            break
+        previousOutput = output
+        k += 1
+    for k in it.count():
+        output = run_program(programs[k%5], (phaseSettings[k%5], previousOutput))
+        if output == None:
+            print(f'BREAK at program {k%5}')
+            break
+        previousOutput = output
+        if k%5 == 4:
+            print(previousOutput)
+        if k > 100:
+            break
+    return previousOutput
+
+exampleprog = [3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,54,1105,1,12,1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10]
+examplephase = [9,7,8,5,6]
+print(get_thruster_signal_with_feedback_loop(exampleprog, examplephase))
