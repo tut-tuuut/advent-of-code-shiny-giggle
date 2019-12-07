@@ -82,9 +82,9 @@ def get_params_values(strInstructions, i, listProgram):
         params.append(value)
     return list(map(int,params))
 
-my_provided_program = '3,23,3,24,1002,24,10,24,1002,23,-1,23,101,5,23,23,1,24,23,23,4,23,99,0,0'
+with open(__file__ + '.input') as file:
+    my_provided_program = file.read()
 
-phaseSettings = (0,1,2,3,4)
 
 def get_thruster_signal(strProgram, phaseSettings):
     previousOutput = 0
@@ -93,4 +93,23 @@ def get_thruster_signal(strProgram, phaseSettings):
         previousOutput = output
     return output
 
-print(get_thruster_signal(my_provided_program, phaseSettings))
+maxThrusterSignal = 0
+for i in range(0,5):
+    for j in range(0,5):
+        if i == j:
+            continue
+        for k in range(0,5):
+            if k in (i, j):
+                continue
+            for l in range(0,5):
+                if l in (i, j, k):
+                    continue
+                for m in range(0, 5):
+                    if m in (i, j, k, l):
+                        continue
+                    thrusterSignal = get_thruster_signal(my_provided_program, (i, j, k, l, m))
+                    if thrusterSignal > maxThrusterSignal:
+                        maxThrusterSignal = thrusterSignal
+                        print(f'thruster signal of {maxThrusterSignal} found for {(i, j, k, l, m)}')
+
+print(f'part 1: {maxThrusterSignal}')
