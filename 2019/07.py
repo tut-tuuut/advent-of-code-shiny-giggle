@@ -26,7 +26,6 @@ class IntcodeProgram:
             opcode = int(instruction[-2:])
             params = self.get_params_values(instruction)
             if opcode == self.OPCODE_STOP:
-                print('STOP')
                 return None
             elif opcode == self.OPCODE_ADD:
                 target = int(self.program[self.i+3])
@@ -38,12 +37,10 @@ class IntcodeProgram:
                 self.i += 4
             elif opcode == self.OPCODE_INPUT:
                 inputvalue = next(inputs)
-                print(f'INPUT {inputvalue}')
                 target = self.program[self.i+1]
                 self.program[target] = inputvalue
                 self.i += 2
             elif opcode == self.OPCODE_OUTPUT:
-                print(f'OUTPUT {params[0]}')
                 output = params[0]
                 self.i += 2
                 return output
@@ -95,8 +92,8 @@ class IntcodeProgram:
 with open(__file__ + '.input') as file:
     my_provided_program = file.read()
 
-
-"""def get_thruster_signal(program, phaseSettings):
+"""
+def get_thruster_signal(program, phaseSettings):
     previousOutput = 0
     for i in phaseSettings:
         output = run_program(program, (i, previousOutput))
@@ -109,7 +106,6 @@ for phaseSettings in it.permutations(range(0,5)):
     if thrusterSignal > maxThrusterSignal:
         maxThrusterSignal = thrusterSignal
         print(f'thruster signal of {maxThrusterSignal} found for {phaseSettings}')
-print(f'part 1: {maxThrusterSignal}')
 """
 def get_thruster_signal_with_feedback_loop(strProgram, phaseSettings):
     previousOutput = 0
@@ -124,15 +120,19 @@ def get_thruster_signal_with_feedback_loop(strProgram, phaseSettings):
     for k in it.count():
         output = programs[k%5].run((previousOutput, previousOutput))
         if output == None:
-            print(f'BREAK at program {k%5}')
             break
         previousOutput = output
-        if k%5 == 4:
-            print(previousOutput)
         if k > 100:
             break
     return previousOutput
 
-exampleprog = '3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,54,1105,1,12,1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10'
-examplephase = [9,7,8,5,6]
-print(get_thruster_signal_with_feedback_loop(exampleprog, examplephase))
+
+with open(__file__ + '.input') as file:
+    inputprog = file.read()
+
+maxThrusterSignal = 0
+for phaseSettings in it.permutations(range(5,10)):
+    thrusterSignal = get_thruster_signal_with_feedback_loop(inputprog, phaseSettings)
+    if thrusterSignal > maxThrusterSignal:
+        maxThrusterSignal = thrusterSignal
+print(f'part 2: {maxThrusterSignal}')
