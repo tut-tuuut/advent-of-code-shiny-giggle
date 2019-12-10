@@ -27,21 +27,23 @@ class AsteroidField:
             return True
         for c in self.asteroids:
             if a == c or b == c:
-                next
+                continue
             if not(a.x <= c.x <= b.x) or not(a.y <= c.y <= b.y):
-                next
+                continue
             if b.x == a.x:
-                print(f'two points at x {a.x}')
                 if a.y < c.y < b.y:
                     return False
-                next
-            if c.y == 1.0 * c.x * (b.y - a.y) / (b.x - a.x) + a.y - 1.0 * a.x * (b.y - a.y) / (b.x - a.x):
+                continue
+            alpha = 1.0 * (b.y - a.y) / (b.x - a.x)
+            if c.y == c.x * alpha + a.y - a.x * alpha:
                 return False
         return True
 
     def parseLinesOfView(self):
         for a in self.asteroids:
             for b in self.asteroids:
+                if a == b:
+                    continue
                 if self.do_they_see_each_other(a,b):
                     self.graph.add_edge(a,b)
 
