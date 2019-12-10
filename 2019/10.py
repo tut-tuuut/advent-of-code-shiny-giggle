@@ -47,51 +47,79 @@ class AsteroidField:
         return True
 
     def parseLinesOfView(self):
-        for a in self.asteroids:
+        for i,a in enumerate(self.asteroids):
+            print(f'parsing lines of view {int(100*i/len(self.asteroids))}%...', end='\r')
             for b in self.asteroids:
                 if a == b:
                     continue
                 if self.do_they_see_each_other(a,b):
                     self.graph.add_edge(a.coord,b.coord)
+        print('done!')
     
     def rotate_station(self):
         #target bounds
-        minx = -1*self.station.x
-        miny = -1*self.station.y
-        maxx = 2*self.width - self.station.x
-        maxy = 2*self.height - self.station.y
+        factor = 5
+        minx = -factor*self.station.x
+        miny = -factor*self.station.y
+        maxx = 2*factor*self.width - factor*self.station.x
+        maxy = 2*factor*self.height - factor*self.station.y
 
-        target = [self.station.x, miny]
+        target = [self.station.x-1, miny]
+        self.turns = -1
         while True:
             while target[0] < maxx:
+                if target[0] == self.station.x: #just to know
+                    #if self.turns > -1:
+                        #print('+1 turn!')
+                    self.turns += 1
                 target[0] += 1
-                yield target
+                yield Asteroid(target[0], target[1], f'{target[0]}•{target[1]}')
             while target[1] < maxy:
                 target[1] += 1
-                yield target
+                yield Asteroid(target[0], target[1], f'{target[0]}•{target[1]}')
             while target[0] > minx:
                 target[0] -= 1
-                yield target
+                yield Asteroid(target[0], target[1], f'{target[0]}•{target[1]}')
             while target[1] > miny:
                 target[1] -= 1
-                yield target
+                yield Asteroid(target[0], target[1], f'{target[0]}•{target[1]}')
     
     def vaporise_asteroids(self):
-        print('kabooom!')
+        print('yayyyy! destrooooy!')
+        destroyed = 0
+        for i,target in enumerate(self.rotate_station()):
+            for a in self.asteroids:
+                if a == self.station:
+                    continue
+                if self.is_c_between_a_and_b(self.station, target, a) and self.do_they_see_each_other(self.station, a):
+                    destroyed += 1
+                    if destroyed == 200:
+                        print(f'200th asteroid to be destroyed is {a.coord}')
+                        return
+                    print(f'{destroyed} KABOUMS!', end='\r')
+                    self.asteroids.remove(a)
+                    break
 
-
-
-
-
-
-
-
-
-astMap = """.#....#####...#..
-##...##.#####..##
-##...#...#.#####.
-..#.....#...###..
-..#.#.....#....##"""
+astMap = """.#..##.###...#######
+##.############..##.
+.#.######.########.#
+.###.#######.####.#.
+#####.##.#.##.###.##
+..#####..#.#########
+####################
+#.####....###.#.#.##
+##.#################
+#####.##.###..####..
+..######..##.#######
+####.##.####...##..#
+.#####..#.######.###
+##...#.##########...
+#.##########.#######
+.####.#.###.###.#.##
+....##.##.###..#####
+.#.#.###########.###
+#.#.#.#####.####.###
+###.##.####.##.#..##"""
 field = AsteroidField(astMap)
 
 maxDetected = 0
@@ -105,7 +133,4 @@ print(f'you can detect {maxDetected} asteroids from there!')
 
 field.setStation(bestLocation)
 
-for i,target in enumerate(field.rotate_station()):
-    print(target)
-    if i > 100:
-        break
+field.vaporise_asteroids()
