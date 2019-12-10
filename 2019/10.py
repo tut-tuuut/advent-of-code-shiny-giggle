@@ -1,12 +1,13 @@
 from collections import namedtuple
 import networkx as nx
 
-Asteroid = namedtuple('Point', 'x y')
+Asteroid = namedtuple('Point', 'x y coord')
 
 class AsteroidField:
     def __init__(self, strMap):
         self.graph = nx.Graph()
         self.asteroids = self.parseMap(strMap)
+        print(f'{len(self.asteroids)} asteroids in this field...')
         self.parseLinesOfView()
         
     def parseMap(self, strMap):
@@ -15,27 +16,24 @@ class AsteroidField:
         for y,row in enumerate(rows):
             for x,val in enumerate(list(row)):
                 if val == '#':
-                    a = Asteroid(x,y)
+                    a = Asteroid(x,y,f'{x}•{y}')
                     asteroids.append(a)
-                    self.graph.add_node(a)
+                    self.graph.add_node(a.coord)
         return set(asteroids)
     
     def do_they_see_each_other(self,a,b):
-        if b in self.graph.adj[a]:
+        if b in self.graph.adj[a.coord]:
             return True
         if (abs(a.x - b.x)) == 1 or (abs(a.y - b.y)) == 1:
             return True
         for c in self.asteroids:
             if a == c or b == c:
                 continue
-            if not(a.x <= c.x <= b.x) or not(a.y <= c.y <= b.y):
+            if not(min(a.x,b.x) <= c.x <= max(b.x,a.x)):
                 continue
-            if b.x == a.x:
-                if a.y < c.y < b.y:
-                    return False
+            if not(min(a.y,b.y) <= c.y <= max(b.y,a.y)):
                 continue
-            alpha = 1.0 * (b.y - a.y) / (b.x - a.x)
-            if c.y == c.x * alpha + a.y - a.x * alpha:
+            if (b.x-a.x)*(c.y-a.y) == (b.y-a.y)*(c.x-a.x): #xy' - yx' = 0
                 return False
         return True
 
@@ -45,13 +43,20 @@ class AsteroidField:
                 if a == b:
                     continue
                 if self.do_they_see_each_other(a,b):
-                    self.graph.add_edge(a,b)
+                    self.graph.add_edge(a.coord,b.coord)
 
-astMap = """.#..#
-.....
-#####
-....#
-...##"""
+astMap = """.#....#####...#..
+##...##.#####..##
+##...#...#.#####.
+..#.....X...###..
+..#.#.....#....##"""
 field = AsteroidField(astMap)
-print(field.asteroids)
-print(field.graph.number_of_nodes())
+
+maxDetected = 0
+for ast in field.asteroids:
+    neighbours = list(field.graph.neighbors(ast.coord))
+    if len(neighbours) > maxDetected:
+        bestLocation = ast
+        maxDetected = len(neighbours)
+print(f'best location is {bestLocation.coord}')
+print(f'you can detect {maxDetected} asteroids from there!')
