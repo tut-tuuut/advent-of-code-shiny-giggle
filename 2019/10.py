@@ -7,6 +7,7 @@ class AsteroidField:
     def __init__(self, strMap):
         self.graph = nx.Graph()
         self.asteroids = self.parseMap(strMap)
+        self.parseLinesOfView()
         
     def parseMap(self, strMap):
         rows = strMap.split('\n')
@@ -18,6 +19,31 @@ class AsteroidField:
                     asteroids.append(a)
                     self.graph.add_node(a)
         return set(asteroids)
+    
+    def do_they_see_each_other(self,a,b):
+        if b in self.graph.adj[a]:
+            return True
+        if (abs(a.x - b.x)) == 1 or (abs(a.y - b.y)) == 1:
+            return True
+        for c in self.asteroids:
+            if a == c or b == c:
+                next
+            if not(a.x <= c.x <= b.x) or not(a.y <= c.y <= b.y):
+                next
+            if b.x == a.x:
+                print(f'two points at x {a.x}')
+                if a.y < c.y < b.y:
+                    return False
+                next
+            if c.y == 1.0 * c.x * (b.y - a.y) / (b.x - a.x) + a.y - 1.0 * a.x * (b.y - a.y) / (b.x - a.x):
+                return False
+        return True
+
+    def parseLinesOfView(self):
+        for a in self.asteroids:
+            for b in self.asteroids:
+                if self.do_they_see_each_other(a,b):
+                    self.graph.add_edge(a,b)
 
 astMap = """.#..#
 .....
