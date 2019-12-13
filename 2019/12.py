@@ -78,6 +78,24 @@ jupiter.add(europa)
 jupiter.add(ganymede)
 jupiter.add(callisto)
 
-for i in range(1000):
+# calculons les niveaux d'énergie de chaque lune individuellement pour 4000 steps
+numberOfSteps = 2000
+energySets = []
+for i in range(2*numberOfSteps):
     jupiter.step()
-print(f'after 1000 steps: {jupiter.energy()}')
+    energies = []
+    for m in jupiter.moons:
+        energies.append(m.kinetic_energy())
+        energies.append(m.potential_energy())
+    energySets.append(tuple(energies))
+
+# lièvre + tortue pour trouver des périodicités dans les niveaux d'énergie individuels
+periods = []
+for i in range(1,numberOfSteps):
+    rabbit = energySets[2*i]
+    turtle = energySets[i]
+    for index,energy in enumerate(turtle):
+        if energy == rabbit[index]:
+            print(f'for index {index} we may have a periodicity of {i}')
+
+# et ensuite la périodicité globale et le plus petit multiple commun des périodicités individuelles
