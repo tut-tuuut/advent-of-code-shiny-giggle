@@ -14,6 +14,12 @@ class Moon:
         self.vx = 0
         self.vy = 0
         self.vz = 0
+    def potential_energy(self):
+        return abs(self.x) + abs(self.y) + abs(self.z)
+    def kinetic_energy(self):
+        return abs(self.vx) + abs(self.vy) + abs(self.vz)
+    def total_energy(self):
+        return self.potential_energy() * self.kinetic_energy()
 
 class System:
     def __init__(self):
@@ -51,7 +57,8 @@ class System:
     def step(self):
         self.apply_gravity()
         self.apply_velocity()
-
+    def energy(self):
+        return sum(list(map(lambda moon: moon.total_energy(), self.moons)))
 
 # puzzle input
 io = Moon('io', 1, -4, 3)
@@ -60,10 +67,10 @@ ganymede = Moon('ganymede', -4, -6, 7)
 callisto = Moon('callisto', 6, -9, -11)
 
 # example input
-io = Moon('io', -1, 0, 2)
-europa = Moon('europa',2, -10, -7)
-ganymede = Moon('ganymede', 4, -8, 8)
-callisto = Moon('callisto',3, 5, -1)
+#io = Moon('io', -1, 0, 2)
+#europa = Moon('europa',2, -10, -7)
+#ganymede = Moon('ganymede', 4, -8, 8)
+#callisto = Moon('callisto',3, 5, -1)
 
 jupiter = System()
 jupiter.add(io)
@@ -71,6 +78,6 @@ jupiter.add(europa)
 jupiter.add(ganymede)
 jupiter.add(callisto)
 
-jupiter.debug()
-jupiter.step()
-jupiter.debug()
+for i in range(1000):
+    jupiter.step()
+print(f'after 1000 steps: {jupiter.energy()}')
