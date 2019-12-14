@@ -1,10 +1,5 @@
 import itertools as it
 
-puzzleInput = """<x=1, y=-4, z=3>
-<x=-14, y=9, z=-4>
-<x=-4, y=-6, z=7>
-<x=6, y=-9, z=-11>"""
-
 class Moon:
     def __init__(self, name, x, y, z):
         self.name = name
@@ -29,6 +24,24 @@ class System:
     def debug(self):
         for moon in self.moons:
             print(f'{moon.name}: {moon.x} {moon.y} {moon.z} | {moon.vx} {moon.vy} {moon.vz}')
+    def x(self):
+        data = []
+        for moon in self.moons:
+            data.append(str(moon.x))
+            data.append(str(moon.vx))
+        return '.'.join(data)
+    def y(self):
+        data = []
+        for moon in self.moons:
+            data.append(str(moon.y))
+            data.append(str(moon.vy))
+        return '.'.join(data)
+    def z(self):
+        data = []
+        for moon in self.moons:
+            data.append(str(moon.z))
+            data.append(str(moon.vz))
+        return '.'.join(data)
     def apply_gravity(self):
         for m,n in it.combinations(self.moons, 2):
             if m.x > n.x:
@@ -67,10 +80,10 @@ ganymede = Moon('ganymede', -4, -6, 7)
 callisto = Moon('callisto', 6, -9, -11)
 
 # example input
-#io = Moon('io', -1, 0, 2)
-#europa = Moon('europa',2, -10, -7)
-#ganymede = Moon('ganymede', 4, -8, 8)
-#callisto = Moon('callisto',3, 5, -1)
+io = Moon('io', -1, 0, 2)
+europa = Moon('europa',2, -10, -7)
+ganymede = Moon('ganymede', 4, -8, 8)
+callisto = Moon('callisto',3, 5, -1)
 
 jupiter = System()
 jupiter.add(io)
@@ -78,24 +91,45 @@ jupiter.add(europa)
 jupiter.add(ganymede)
 jupiter.add(callisto)
 
-# calculons les niveaux d'énergie de chaque lune individuellement pour 4000 steps
-numberOfSteps = 2000
-energySets = []
-for i in range(2*numberOfSteps):
+numberOfSteps = 3000
+xdata = []
+ydata = []
+zdata = []
+periods = {}
+for i in it.count():
+    print(f'Analyzing... step {i}', end='\r')
+    if 'x' not in periods.keys():
+        x = jupiter.x()
+        if x in xdata:
+            periods['x'] = i
+            print(f'{i} may be a period for x')
+            del(xdata)
+        else:
+            xdata.append(x)
+
+    if 'y' not in periods.keys():
+        y = jupiter.y()
+        if y in ydata:
+            periods['y'] = i
+            print(f'{i} may be a period for y')
+            del(ydata)
+        else:
+            ydata.append(y)
+
+    if 'z' not in periods.keys():
+        z = jupiter.z()
+        if z in zdata:
+            periods['z'] = i
+            print(f'{i} may be a period for z')
+            del(zdata)
+        else:
+            zdata.append(z)
+    
+    if len(periods.keys()) == 3:
+        print('Found 3 periods! I’m done!')
+        break
+
     jupiter.step()
-    energies = []
-    for m in jupiter.moons:
-        energies.append(m.kinetic_energy())
-        energies.append(m.potential_energy())
-    energySets.append(tuple(energies))
 
-# lièvre + tortue pour trouver des périodicités dans les niveaux d'énergie individuels
-periods = []
-for i in range(1,numberOfSteps):
-    rabbit = energySets[2*i]
-    turtle = energySets[i]
-    for index,energy in enumerate(turtle):
-        if energy == rabbit[index]:
-            print(f'for index {index} we may have a periodicity of {i}')
 
-# et ensuite la périodicité globale et le plus petit multiple commun des périodicités individuelles
+print(periods)
