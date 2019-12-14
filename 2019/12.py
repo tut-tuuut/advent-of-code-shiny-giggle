@@ -87,10 +87,10 @@ ganymede = Moon('ganymede', -4, -6, 7)
 callisto = Moon('callisto', 6, -9, -11)
 
 # example input
-io = Moon('io', -1, 0, 2)
-europa = Moon('europa',2, -10, -7)
-ganymede = Moon('ganymede', 4, -8, 8)
-callisto = Moon('callisto',3, 5, -1)
+#io = Moon('io', -1, 0, 2)
+#europa = Moon('europa',2, -10, -7)
+#ganymede = Moon('ganymede', 4, -8, 8)
+#callisto = Moon('callisto',3, 5, -1)
 
 jupiter = System()
 jupiter.add(io)
