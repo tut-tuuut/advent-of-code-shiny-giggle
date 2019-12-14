@@ -1,4 +1,5 @@
 from collections import namedtuple
+import math
 Chemical = namedtuple('Chemical', 'qty name')
 Reaction = namedtuple('Reaction', 'input output')
 
@@ -19,21 +20,26 @@ class Nanofactory:
             output = chemical_from_string(strProduct)
             self.recipes[output.name] = Reaction(inputs, output)
             self.quantities[output.name] = 0
+    def use(self, qty, name):
+        print(f'use {qty} {name}')
+        self.quantities[name] -= qty
     def make(self, qty, name, level):
-        print(f'{"-"*level} make {qty} {name}')
+        print(f'{"-"*level} need {qty} {name}')
         if (name == 'ORE'):
             self.exctractedOre += qty
             return
         if (self.quantities[name] >= qty):
             print(f'already have {self.quantities[name]} {name}')
-            self.quantities[name] -= qty
+            self.use(qty, name)
             return
         reaction = self.recipes[name]
         neededToProduce = qty - self.quantities[name]
-        multiplier = round(neededToProduce / reaction.output.qty)
+        multiplier = math.ceil(neededToProduce / reaction.output.qty)
+        print(f'{"-"*level} have {self.quantities[name]} left')
+        print(f'{"-"*level} will produce {multiplier*reaction.output.qty} {name}')
         for reactive in reaction.input:
             self.make(multiplier * reactive.qty, reactive.name, level + 1)
-            self.quantities[reactive.name] -= multiplier * reactive.qty
+            self.use(multiplier * reactive.qty, reactive.name)
         self.quantities[name] += reaction.output.qty * multiplier
         return
 
@@ -43,4 +49,13 @@ with open(__file__ + '.t1-31') as file:
 
 f.parseRecipes(string1)
 f.make(1, 'FUEL',0)
-print(f'answer: {f.exctractedOre}')
+print(f'this should be 31: {f.exctractedOre}')
+
+f = Nanofactory()
+with open(__file__ + '.t3-165') as file:
+    string2 = file.read()
+
+f.parseRecipes(string2)
+f.make(1, 'FUEL', 0)
+print(f'this should be 165: {f.exctractedOre}') # 260483 too low
+print(f.quantities['ORE'])
