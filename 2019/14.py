@@ -30,7 +30,6 @@ class Nanofactory:
             return
         if (self.quantities[name] >= qty):
             print(f'already have {self.quantities[name]} {name}')
-            self.use(qty, name)
             return
         reaction = self.recipes[name]
         neededToProduce = qty - self.quantities[name]
@@ -59,3 +58,18 @@ f.parseRecipes(string2)
 f.make(1, 'FUEL', 0)
 print(f'this should be 165: {f.exctractedOre}') # 260483 too low
 print(f.quantities['ORE'])
+
+f = Nanofactory()
+with open(__file__ + '.t2-13312') as file:
+    string2 = file.read()
+f.parseRecipes(string2)
+f.make(1, 'FUEL', 0)
+print(f'this should be 13312: {f.exctractedOre}')
+
+print('REAL INPUT ---!')
+f = Nanofactory()
+with open(__file__ + '.input') as file:
+    string2 = file.read()
+f.parseRecipes(string2)
+f.make(1, 'FUEL', 0)
+print(f'this should be more than 260483 and less than 453838: {f.exctractedOre}')
