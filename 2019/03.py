@@ -84,14 +84,32 @@ intersections_between_wires = find_intersections_between_wires(input[0], input[1
 print('Answer to part #1:')
 print(min(list(map(lambda seg: manhattan_distance((0,0), seg), intersections_between_wires))))
 
-def is_point_on_segment(point, seg):
+def is_point_on_segment(point, segment):
     x, y = point
-    xa, ya, xb, yb = seg
-    if is_horizontal(seg) and min(xa,xb) < x < max(xa, xb) and y == yb:
-        return True
-    elif is_vertical(seg) and min(ya,yb) < y < max(ya, yb) and x == xa:
+    xa, ya, xb, yb = segment
+    if min(xa, xb) <= x <= max(xa,xb) and min(ya, yb) <= y <= max(ya, yb):
         return True
     return False
 
+def segments(wire):
+    for i in range(len(wire)-1):
+        yield wire[i] + wire[i+1]
+
+def wire_length_to_point(point, wire):
+    length = 0
+    for segment in segments(wire):
+        xa,ya,xb,yb = segment
+        if is_point_on_segment(point, segment):
+            length += manhattan_distance((xa, ya), point)
+            return length
+        else:
+            length += manhattan_distance((xa,ya),(xb,yb))
+
 def find_most_efficient_intersection(wire1, wire2):
-    print('dodooooo')
+    intersections = find_intersections_between_wires(wire1, wire2)
+    lengths = {}
+    for i in intersections:
+        lengths[i] = (wire_length_to_point(i, wire1), wire_length_to_point(i, wire2))
+    print(min(list(map(sum,list(lengths.values())))))
+
+find_most_efficient_intersection(input[0], input[1])
