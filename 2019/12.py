@@ -1,4 +1,11 @@
 import itertools as it
+from math import gcd
+
+def lcm(listOfInts):
+    lcm = listOfInts[0]
+    for i in listOfInts[1:]:
+        lcm = int(lcm*i/gcd(lcm, i))
+    return lcm
 
 class Moon:
     def __init__(self, name, x, y, z):
@@ -131,5 +138,5 @@ for i in it.count():
 
     jupiter.step()
 
-
 print(periods)
+print(f'answer: {lcm(list(periods.values()))}')
