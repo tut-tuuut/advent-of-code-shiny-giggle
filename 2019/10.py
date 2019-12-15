@@ -56,70 +56,62 @@ class AsteroidField:
                     self.graph.add_edge(a.coord,b.coord)
         print('done!')
     
-    def rotate_station(self):
-        #target bounds
-        factor = 5
-        minx = -factor*self.station.x
-        miny = -factor*self.station.y
-        maxx = 2*factor*self.width - factor*self.station.x
-        maxy = 2*factor*self.height - factor*self.station.y
-
-        target = [self.station.x-1, miny]
-        self.turns = -1
-        while True:
-            while target[0] < maxx:
-                if target[0] == self.station.x: #just to know
-                    #if self.turns > -1:
-                        #print('+1 turn!')
-                    self.turns += 1
-                target[0] += 1
-                yield Asteroid(target[0], target[1], f'{target[0]}•{target[1]}')
-            while target[1] < maxy:
-                target[1] += 1
-                yield Asteroid(target[0], target[1], f'{target[0]}•{target[1]}')
-            while target[0] > minx:
-                target[0] -= 1
-                yield Asteroid(target[0], target[1], f'{target[0]}•{target[1]}')
-            while target[1] > miny:
-                target[1] -= 1
-                yield Asteroid(target[0], target[1], f'{target[0]}•{target[1]}')
+    def pente(self, a):
+        # get inclination of a given segment
+        s = self.station
+        if s.x == a.x:
+            return float('inf')
+        return (a.y - s.y)/(a.x - s.x)
     
     def vaporise_asteroids(self):
         print('yayyyy! destrooooy!')
-        destroyed = 0
-        for i,target in enumerate(self.rotate_station()):
-            for a in self.asteroids:
-                if a == self.station:
-                    continue
-                if self.is_c_between_a_and_b(self.station, target, a) and self.do_they_see_each_other(self.station, a):
-                    destroyed += 1
-                    if destroyed == 200:
-                        print(f'200th asteroid to be destroyed is {a.coord}')
-                        return
-                    print(f'{destroyed} KABOUMS!', end='\r')
-                    self.asteroids.remove(a)
-                    break
+        detectables = list(filter(lambda x: self.do_they_see_each_other(self.station,x), self.asteroids))
+        detectables.remove(self.station)
+        print(f'{len(detectables)} asteroids detectable')
+        # divide
+        left = list(filter(lambda a: a.x < self.station.x, detectables))
+        print(f'{len(left)} asteroids on the left half of the screen')
+        # sort the asteroids on the left
+        left = sorted(left, key=self.pente)
+        print(left[0:5])
+        firstOnTheLeft = len(detectables) - len(left) + 1
+        bet = left[200 - firstOnTheLeft]
+        print(f'answer to part2: {100*bet.x + bet.y}')
 
-astMap = """.#..##.###...#######
-##.############..##.
-.#.######.########.#
-.###.#######.####.#.
-#####.##.#.##.###.##
-..#####..#.#########
-####################
-#.####....###.#.#.##
-##.#################
-#####.##.###..####..
-..######..##.#######
-####.##.####...##..#
-.#####..#.######.###
-##...#.##########...
-#.##########.#######
-.####.#.###.###.#.##
-....##.##.###..#####
-.#.#.###########.###
-#.#.#.#####.####.###
-###.##.####.##.#..##"""
+
+astMap = """..#..###....#####....###........#
+.##.##...#.#.......#......##....#
+#..#..##.#..###...##....#......##
+..####...#..##...####.#.......#.#
+...#.#.....##...#.####.#.###.#..#
+#..#..##.#.#.####.#.###.#.##.....
+#.##...##.....##.#......#.....##.
+.#..##.##.#..#....#...#...#...##.
+.#..#.....###.#..##.###.##.......
+.##...#..#####.#.#......####.....
+..##.#.#.#.###..#...#.#..##.#....
+.....#....#....##.####....#......
+.#..##.#.........#..#......###..#
+#.##....#.#..#.#....#.###...#....
+.##...##..#.#.#...###..#.#.#..###
+.#..##..##...##...#.#.#...#..#.#.
+.#..#..##.##...###.##.#......#...
+...#.....###.....#....#..#....#..
+.#...###..#......#.##.#...#.####.
+....#.##...##.#...#........#.#...
+..#.##....#..#.......##.##.....#.
+.#.#....###.#.#.#.#.#............
+#....####.##....#..###.##.#.#..#.
+......##....#.#.#...#...#..#.....
+...#.#..####.##.#.........###..##
+.......#....#.##.......#.#.###...
+...#..#.#.........#...###......#.
+.#.##.#.#.#.#........#.#.##..#...
+.......#.##.#...........#..#.#...
+.####....##..#..##.#.##.##..##...
+.#.#..###.#..#...#....#.###.#..#.
+............#...#...#.......#.#..
+.........###.#.....#..##..#.##..."""
 field = AsteroidField(astMap)
 
 maxDetected = 0
