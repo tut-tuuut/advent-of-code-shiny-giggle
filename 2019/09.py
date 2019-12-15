@@ -23,5 +23,13 @@ def part1():
     for o in c.run([1]):
         print(o)
 
+def part2():
+    with open(__file__ + '.input') as file:
+        strprogram = file.read()
+    c = intcode.Computer(intcode.Computer.str_to_program(strprogram))
+    for o in c.run([2]):
+        print(o)
+
 #sandbox()
-part1()
+#part1()
+part2()
