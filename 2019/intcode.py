@@ -1,3 +1,5 @@
+import itertools as it
+
 class Computer:
     OPCODE_STOP = 99
     OPCODE_ADD = 1
@@ -52,7 +54,7 @@ class Computer:
             elif opcode == self.OPCODE_OUTPUT:
                 output = params[0]
                 self.i += 2
-                return output
+                yield output
             elif opcode == self.OPCODE_JUMPIFTRUE:
                 if params[0] != 0:
                     self.i = params[1]
@@ -79,7 +81,8 @@ class Computer:
                 self.i += 4
             elif opcode == self.OPCODE_ADJUST_RELATIVE_BASE:
                 self.rb += params[0]
-                print(f'adjust relative base to {self.rb} (added {params[0]})')
+                if self.verbose:
+                    print(f'adjust relative base to {self.rb} (added {params[0]})')
                 self.i += 2
 
     def get_params_values(self, strInstructions):
@@ -96,11 +99,15 @@ class Computer:
         for p in range(1, nbParameters+1):
             if strInstructions[-p-2] == '0':
                 address = int(self.program[self.i+p])
+                if address >= len(self.program):
+                    self.program.extend( it.repeat(0, 1 + address - len(self.program)) )
                 if self.verbose:
                     print(f'looking for something at address {address}')
                 value = self.program[address]
             elif strInstructions[-p-2] == '2':
                 address = self.rb + int(self.program[self.i+p])
+                if address >= len(self.program):
+                    self.program.extend( it.repeat(0, 1 + address - len(self.program)) )
                 value = self.program[address]
             else:
                 value = self.program[self.i+p]
