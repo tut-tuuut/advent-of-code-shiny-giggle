@@ -1,4 +1,4 @@
-class IntcodeProgram:
+class Computer:
     OPCODE_STOP = 99
     OPCODE_ADD = 1
     OPCODE_MULTIPLY = 2
@@ -11,7 +11,8 @@ class IntcodeProgram:
 
     def __init__(self, program):
         self.program = program
-        self.i = 0
+        self.i = 0 # instruction pointer
+        self.rb = 0 # relative base
 
     @classmethod
     def str_to_program(self, strProgram):
@@ -81,6 +82,9 @@ class IntcodeProgram:
         for p in range(1, nbParameters+1):
             if strInstructions[-p-2] == '0':
                 address = int(self.program[self.i+p])
+                value = self.program[address]
+            elif strInstructions[-p-2] == '2':
+                address = self.rb + int(self.program[self.i+p])
                 value = self.program[address]
             else:
                 value = self.program[self.i+p]
