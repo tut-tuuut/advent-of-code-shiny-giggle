@@ -32,10 +32,11 @@ class Computer:
                 print(f'instruction: {instruction}')
             opcode = int(instruction[-2:])
             params = self.get_params_values(instruction)
+            target = params['target']
+            params = params['values']
             if opcode == self.OPCODE_STOP:
                 return None
             elif opcode == self.OPCODE_ADD:
-                target = int(self.program[self.i+3])
                 if self.verbose:
                     print('will store something in address #{target}')
                 self.program[target] = params[0] + params[1]
@@ -43,12 +44,10 @@ class Computer:
                     print(f'stored {self.program[target]} at address #{target}')
                 self.i += 4
             elif opcode == self.OPCODE_MULTIPLY:
-                target = self.program[self.i+3]
                 self.program[target] = params[0] * params[1]
                 self.i += 4
             elif opcode == self.OPCODE_INPUT:
                 inputvalue = next(inputs)
-                target = self.program[self.i+1]
                 self.program[target] = inputvalue
                 self.i += 2
             elif opcode == self.OPCODE_OUTPUT:
@@ -66,14 +65,12 @@ class Computer:
                 else:
                     self.i += 3
             elif opcode == self.OPCODE_LESSTHAN:
-                target = self.program[self.i+3]
                 if params[0] < params[1]:
                     self.program[target] = 1
                 else:
                     self.program[target] = 0
                 self.i += 4
             elif opcode == self.OPCODE_EQUALS:
-                target = self.program[self.i+3]
                 if params[0] == params[1]:
                     self.program[target] = 1
                 else:
@@ -96,6 +93,7 @@ class Computer:
             nbParameters = 2
         elif opcode in (self.OPCODE_OUTPUT, self.OPCODE_INPUT, self.OPCODE_ADJUST_RELATIVE_BASE):
             nbParameters = 1
+        address = 0
         for p in range(1, nbParameters+1):
             if strInstructions[-p-2] == '0':
                 address = int(self.program[self.i+p])
@@ -112,4 +110,4 @@ class Computer:
             else:
                 value = self.program[self.i+p]
             params.append(value)
-        return list(map(int,params))
+        return {'values':list(map(int,params)),'target':address}

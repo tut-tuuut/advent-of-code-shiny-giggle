@@ -15,6 +15,13 @@ def sandbox():
     c = intcode.Computer([104,1125899906842624,99])
     for o in c.run([]):
         print(f'this should be 1125899906842624: {o}')
-    
 
-sandbox()
+def part1():
+    with open(__file__ + '.input') as file:
+        strprogram = file.read()
+    c = intcode.Computer(intcode.Computer.str_to_program(strprogram))
+    for o in c.run([1]):
+        print(o)
+
+#sandbox()
+part1()
