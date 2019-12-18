@@ -1,7 +1,24 @@
+import networkx as nx
+
+def parse_map(strMap):
+    rows = strMap.split('\n')
+    for y,row in enumerate(rows):
+        for x,char in enumerate(row):
+            if char == '#':
+                continue
+            if char in 'azertyuiopqsdfghjklmwxcvbn':
+                print(f'key {char} in {x}-{y}')
+            elif char in 'AZERTYUIOPQSDFGHJKLMWXCVBN':
+                print(f'door {char} in {x}-{y}')
+            elif char == '@':
+                print(f'entrance at {x}-{y}')
+
 def sandbox():
     map1 = """#########
 #b.A.@.a#
 #########""" # 8 steps
+
+    parse_map(map1)
 
     map2 = """########################
 #f.D.E.e.C.b.A.@.a.B.c.#
