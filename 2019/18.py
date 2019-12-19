@@ -1,17 +1,26 @@
 import networkx as nx
+from collections import namedtuple
+Point = namedtuple('Point', 'x y type name')
+
 
 def parse_map(strMap):
     rows = strMap.split('\n')
+    grid = {}
+    graphRow = nx.Graph()
     for y,row in enumerate(rows):
         for x,char in enumerate(row):
+            coords = f'{x}-{y}'
             if char == '#':
                 continue
             if char in 'azertyuiopqsdfghjklmwxcvbn':
-                print(f'key {char} in {x}-{y}')
+                type = 'key'
             elif char in 'AZERTYUIOPQSDFGHJKLMWXCVBN':
-                print(f'door {char} in {x}-{y}')
+                type = 'door'
             elif char == '@':
-                print(f'entrance at {x}-{y}')
+                type = 'entrance'
+            elif char == '.':
+                type = '.'
+            
 
 def sandbox():
     map1 = """#########
