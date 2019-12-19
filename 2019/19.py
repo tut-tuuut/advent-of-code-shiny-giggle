@@ -17,13 +17,21 @@ def part1():
             count += 1
     print('computing part 1... DONE! 🤩\n\n')
     print(f'part 1 result: {count}')
-part1()
+#part1()
 
 
 def part2():
-    minx = 50
-    maxx = 100
-    for y in range(150,200):
-        # find minimum and maximum x which yield 1
-        print(y)
+    minx = 104
+    maxx = 145
+    y = 299
+    while (maxx - minx) < 100:
+        y += 1
+        while is_tracted(minx,y) == 0:
+            minx += 1# find minimum and maximum x which yield 1
+        while is_tracted(maxx, y) == 1:
+            maxx += 1
+        print(f'width of beam at y= {y}: {maxx - minx}', end='\r')
         # and if maxx - minxx >= 100 that could be good
+    print('\n')
+
+part2()
