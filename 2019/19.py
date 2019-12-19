@@ -32,6 +32,17 @@ def part2():
             maxx += 1
         print(f'width of beam at y= {y}: {maxx - minx}', end='\r')
         # and if maxx - minxx >= 100 that could be good
-    print('\n')
+    print('\n\n')
+    x = minx - 1
+    miny = y
+    for x in range(minx, minx+10):
+        s = ''
+        for y in range(miny, miny+10):
+            if is_tracted(x, y) == 1:
+                s += '#'
+            else:
+                s += '.'
+        print(f'x = {x} : {s}')
+    print('\n\n')
 
 part2()
