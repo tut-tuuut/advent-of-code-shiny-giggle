@@ -17,10 +17,15 @@ class Computer:
         self.i = 0 # instruction pointer
         self.rb = 0 # relative base
         self.verbose = False
+        self.mode = 'yield'
 
     @classmethod
     def str_to_program(self, strProgram):
         return list(map(int, strProgram.split(',')))
+
+    def reinit(self):
+        self.i = 0
+        self.rb = 0
 
     def run(self, inputs):
         inputs = iter(inputs)
