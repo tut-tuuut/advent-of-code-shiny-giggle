@@ -76,7 +76,13 @@ def part1():
         print(f'robot is walking... step {i}', end='\r')
         i += 1
     print(f'\n\nstep1 : robot painted {len(robot.grid.keys())} panels')
-
+    print(f'will need an image of {robot.maxX - robot.minX} width x {robot.maxY - robot.minY} height')
+    imgFile = Image.new('1', (robot.maxX - robot.minX + 40, robot.maxY - robot.minY + 60))
+    for coords in robot.grid.keys():
+        if robot.grid[coords] == 0:
+            continue
+        imgFile.putpixel((coords[0] - robot.minX + 2, robot.maxY - coords[1] - robot.minY - 3), 1)
+    imgFile.show()
 part1()
 
 def part2():
