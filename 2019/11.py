@@ -92,7 +92,7 @@ def part2():
     for coords in robot.grid.keys():
         if robot.grid[coords] == 0:
             continue
-        imgFile.putpixel((coords[0] - robot.minX + 2, coords[1] - robot.minY + 3), 1)
+        imgFile.putpixel((coords[0] - robot.minX + 2, robot.maxY - coords[1] - robot.minY - 3), 1)
     imgFile.show()
 
 
