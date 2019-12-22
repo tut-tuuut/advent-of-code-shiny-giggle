@@ -12,12 +12,12 @@ class Computer:
     OPCODE_EQUALS = 8
     OPCODE_ADJUST_RELATIVE_BASE = 9
 
-    def __init__(self, program):
+    def __init__(self, program, output_mode='yield'):
         self.program = program
         self.i = 0 # instruction pointer
         self.rb = 0 # relative base
         self.verbose = False
-        self.mode = 'yield'
+        self.output_mode = output_mode
 
     @classmethod
     def str_to_program(self, strProgram):
@@ -58,7 +58,7 @@ class Computer:
             elif opcode == self.OPCODE_OUTPUT:
                 output = params[0]
                 self.i += 2
-                yield output
+                return output
             elif opcode == self.OPCODE_JUMPIFTRUE:
                 if params[0] != 0:
                     self.i = params[1]
@@ -86,7 +86,7 @@ class Computer:
                 if self.verbose:
                     print(f'adjust relative base to {self.rb} (added {params[0]})')
                 self.i += 2
-
+    
     def get_params_values(self, strInstructions):
         strInstructions = strInstructions.rjust(5, '0')
         opcode = int(strInstructions[-2:])
