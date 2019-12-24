@@ -50,10 +50,20 @@ def diversityRating(intGrid):
         row.reverse()
     number = list(map(lambda row: ''.join(list(map(str, row))), grid))
     number.reverse()
-    print(''.join(number))
     return int(''.join(number),2)
         
 
-strGrid = exampleInput.replace('.','0').replace('#','1')
+strGrid = myInput.replace('.','0').replace('#','1')
 intGrid = list(map(lambda strRow: list(map(int,list(strRow))),strGrid.split('\n')))
-print(diversityRating(intGrid))
+
+grids = []
+grids.append(deepCopy(intGrid))
+
+for i in it.count():
+    print(f'looking for repeating patterns round {i}', end='\r')
+    newGrid = nextGrid(intGrid)
+    if newGrid in grids:
+        print(f'\npart1: biodiversity rating is {diversityRating(newGrid)}')
+        break
+    grids.append(deepCopy(newGrid))
+    intGrid = newGrid
