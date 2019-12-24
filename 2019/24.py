@@ -12,8 +12,17 @@ exampleInput = """....#
 ..#..
 #...."""
 
+exampleInput = """.....
+.....
+.....
+#....
+.#..."""
+
+def deepCopy(grid):
+    return list(map(lambda row: row.copy(), grid)) # grid.copy() is not enough
+
 def nextGrid(grid):
-    newGrid = list(map(lambda row: row.copy(), grid)) # grid.copy() is not enough
+    newGrid = deepCopy(grid)
     for i,j in it.product(range(5), repeat=2):
         adjacentBugs = 0
         if i >= 1:
@@ -35,14 +44,16 @@ def printGrid(intGrid):
         print(''.join(list(map(str, listRow))).replace('1','#').replace('0','.'))
     print('\n\n')
 
+def diversityRating(intGrid):
+    grid = deepCopy(intGrid)
+    for row in grid:
+        row.reverse()
+    number = list(map(lambda row: ''.join(list(map(str, row))), grid))
+    number.reverse()
+    print(''.join(number))
+    return int(''.join(number),2)
+        
+
 strGrid = exampleInput.replace('.','0').replace('#','1')
 intGrid = list(map(lambda strRow: list(map(int,list(strRow))),strGrid.split('\n')))
-printGrid(intGrid)
-nextGr = nextGrid(intGrid)
-printGrid(nextGr)
-nextGr = nextGrid(nextGr)
-printGrid(nextGr)
-nextGr = nextGrid(nextGr)
-printGrid(nextGr)
-nextGr = nextGrid(nextGr)
-printGrid(nextGr)
+print(diversityRating(intGrid))
