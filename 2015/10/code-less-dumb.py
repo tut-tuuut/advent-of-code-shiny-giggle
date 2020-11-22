@@ -4,6 +4,8 @@ inputStr = "3113322113"
 def elvesSay(s):
     # https://docs.python.org/3/library/re.html#re.sub
     regex = r'(\d)\1*'
+    # (\d) one digit in capturing group,
+    # \1* followed by O or more of the result of the 1st capturing group
     return re.sub(regex, lambda x: f'{len(x.group(0))}{x.group(1)}', s)
 
 print(f'this should be 331211: {elvesSay("33321")}')
