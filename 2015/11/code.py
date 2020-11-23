@@ -1,31 +1,61 @@
 import string
+import re
 
 santa_current_password = 'cqjxjnds'
 
-letters = list(string.ascii_lowercase)
-digits = (list(string.digits) + letters)[:26]
-print(digits)
-print(len(digits))
+LETTERS = string.ascii_lowercase
+TRIPLETS = {string.ascii_lowercase[i:i+3] for i in range(24)}
 
-def password_to_integer(password):
-    for digit, letter in zip(digits, letters):
-        password = password.replace(letter,digit)
-    return int(password, 26)
-
-def integer_to_password(integer):
-    if integer < 26:
-        return letters[integer%26]
+def increment_password(password):
+    lastLetter = password[-1:]
+    if lastLetter == 'z' and len(password) > 1:
+        return f'{increment_password(password[:-1])}a'
+    elif lastLetter == 'z' and len(password) == 1:
+        return 'za'
     else:
-        return f'{integer_to_password(integer//26)}{letters[integer%26]}'
+        return f'{password[:-1]}{chr(ord(lastLetter) + 1)}'
 
 
-def increment_password(password, increment=1):
-    intpassword = password_to_integer(password)
-    intpassword = intpassword + increment
-    return integer_to_password(intpassword)
+def first_criteria(password):
+    # Passwords must include one increasing straight of at least three LETTERS,
+    # like abc, bcd, cde, and so on, up to xyz.
+    # They cannot skip LETTERS; abd doesn't count.
+    for triplet in TRIPLETS:
+        if triplet in password:
+            return True
+    return False
 
+def second_criteria(password):
+    # Passwords may not contain the LETTERS i, o, or l
+    if 'i' in password or 'o' in password or 'l' in password:
+        return False
+    return True
 
-print(password_to_integer('zaza'))
-print(integer_to_password(440050))
+def third_criteria(password):
+    # Passwords must contain at least two different,
+    # non-overlapping pairs of LETTERS, like aa, bb, or zz.
+    regex = r'([a-z])\1{1}'
+    re.match(regex, password)
+    return True
 
-print(increment_password('zaza',100))
+def is_good_password(password):
+    return second_criteria(password) and third_criteria(password) and first_criteria(password)
+# ----------
+
+def find_next_good_password(password):
+    for i in range(100):
+        password = increment_password(password)
+        if is_good_password(password):
+            return password
+    return 'not found in given limit'
+
+# ----
+
+"""
+print(f'this should be abd: {increment_password("abc")}')
+print(f'this should be aca: {increment_password("abz")}')
+print(f'this should be caa: {increment_password("bzz")}')
+print(f'this should be caaa: {increment_password("bzzz")}')
+"""
+
+print(f'this should be abcdffaa : {find_next_good_password("abcdefgh")}')
