@@ -1,5 +1,6 @@
 import string
 import re
+import utils as u
 
 santa_current_password = 'cqjxjnds'
 
@@ -11,7 +12,7 @@ def increment_password(password):
     if lastLetter == 'z' and len(password) > 1:
         return f'{increment_password(password[:-1])}a'
     elif lastLetter == 'z' and len(password) == 1:
-        return 'za'
+        return 'aa'
     else:
         return f'{password[:-1]}{chr(ord(lastLetter) + 1)}'
 
@@ -34,28 +35,42 @@ def second_criteria(password):
 def third_criteria(password):
     # Passwords must contain at least two different,
     # non-overlapping pairs of LETTERS, like aa, bb, or zz.
-    regex = r'([a-z])\1{1}'
-    re.match(regex, password)
-    return True
+    regex = r'([a-z])\1{1}[a-z]*([a-z])\2{1}'
+    if re.search(regex, password):
+        return True
+    return False
 
 def is_good_password(password):
     return second_criteria(password) and third_criteria(password) and first_criteria(password)
 # ----------
 
 def find_next_good_password(password):
-    for i in range(100):
+    for i in range(100000):
         password = increment_password(password)
-        if is_good_password(password):
-            return password
+        if not second_criteria(password):
+            continue
+        if not third_criteria(password):
+            continue
+        if not first_criteria(password):
+            continue
+        print(f'found in {i+1} iterations!')
+        return password
     return 'not found in given limit'
 
 # ----
 
-"""
-print(f'this should be abd: {increment_password("abc")}')
-print(f'this should be aca: {increment_password("abz")}')
-print(f'this should be caa: {increment_password("bzz")}')
-print(f'this should be caaa: {increment_password("bzzz")}')
-"""
+u.assert_equals('abd', increment_password('abc'), "increment_password('abc')")
+u.assert_equals('abe', increment_password('abc'), "increment_password('abc')")
+
+u.assert_equals('abd', increment_password("abc"), "increment_password abc")
+u.assert_equals('aca', increment_password("abz"), "increment_password abz")
+u.assert_equals('caa', increment_password("bzz"), "increment_password bzz")
+u.assert_equals('caaa', increment_password("bzzz"), "increment_password bzzz")
+u.assert_equals('xy', increment_password("xx"), "increment_password xx")
+
+print(first_criteria('abcdffaa'))
+print(second_criteria('abcdffaa'))
+print(third_criteria('abcdffaa'))
 
 print(f'this should be abcdffaa : {find_next_good_password("abcdefgh")}')
+print(f'this should be ghjaabcc : {find_next_good_password("ghijklmn")}')
