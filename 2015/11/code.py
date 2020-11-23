@@ -32,6 +32,13 @@ def second_criteria(password):
         return False
     return True
 
+def fix_second_criteria(password, letter):
+    if not letter in password:
+        return password
+    pos = password.find(letter)
+    nextLetter = chr(ord(letter) + 1)
+    return password[:pos] + nextLetter + 'a' * (len(password) - pos - 1)
+
 def third_criteria(password):
     # Passwords must contain at least two different,
     # non-overlapping pairs of LETTERS, like aa, bb, or zz.
@@ -45,10 +52,14 @@ def is_good_password(password):
 # ----------
 
 def find_next_good_password(password):
-    for i in range(100000):
+    for i in range(1000000):
         password = increment_password(password)
+        
         if not second_criteria(password):
-            continue
+            password = fix_second_criteria(password, 'i')
+            password = fix_second_criteria(password, 'o')
+            password = fix_second_criteria(password, 'l')
+
         if not third_criteria(password):
             continue
         if not first_criteria(password):
@@ -68,9 +79,15 @@ u.assert_equals('caa', increment_password("bzz"), "increment_password bzz")
 u.assert_equals('caaa', increment_password("bzzz"), "increment_password bzzz")
 u.assert_equals('xy', increment_password("xx"), "increment_password xx")
 
-print(first_criteria('abcdffaa'))
-print(second_criteria('abcdffaa'))
-print(third_criteria('abcdffaa'))
+u.assert_equals(True, first_criteria('abcdffaa'))
+u.assert_equals(True, second_criteria('abcdffaa'))
+u.assert_equals(True, third_criteria('abcdffaa'))
 
-print(f'this should be abcdffaa : {find_next_good_password("abcdefgh")}')
-print(f'this should be ghjaabcc : {find_next_good_password("ghijklmn")}')
+u.assert_equals(fix_second_criteria('abciabc', 'i'), 'abcjaaa')
+u.assert_equals('abcdffaa', find_next_good_password("abcdefgh"))
+u.assert_equals('ghjaabcc', find_next_good_password("ghijklmn"))
+
+part1 = find_next_good_password(santa_current_password)
+u.answer_part_1(part1)
+
+u.answer_part_2(find_next_good_password(part1))
