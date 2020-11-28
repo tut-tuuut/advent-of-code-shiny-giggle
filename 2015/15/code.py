@@ -3,7 +3,10 @@ import math
 import re
 
 def dot(v,w): # "produit scalaire" in French
-    return sum([a*b for (a,b) in zip(v,w)])
+    return sum(a*b for (a,b) in zip(v,w))
+
+# __ = dunder (Double UNDERscore)
+# -> "dunder method "
 
 constraints = ( # i parsed it with my own eyes and brain
     ( 5, -1, 0, -1), # capacity
@@ -13,6 +16,22 @@ constraints = ( # i parsed it with my own eyes and brain
 )
 caloriesVector = (5, 1, 6, 8)
 
+# voir doc du module collections
+# utiliser les typehint sur les namedtuples?
+# itertools
+# from typing import NamedTuple
+# class CaloriesVector(NamedTuple):
+    # a: int
+    # b: str
+    # c: dict
+    # def __mul__(self, other):
+        # pass
+
+# from operator import attrgetter
+# persons.sort()
+# sorted(persons, key=attrgetter('info.age')) # plus performant que la version lambda
+# sorted(persons, key=attrgetter('info.age', 'info.taille')) # ha ! va écrire une lambda équivalente
+# sorted(persons, key=lambda x: x.info.age)
 
 size = 100 # 156 849 iterations for size 100
 generator = ((x,y,z,size-x-y-z) for x in range(1, size) for y in range(1, size - x) for z in range(1,size-x-y))
