@@ -3,14 +3,25 @@ import utils as u
 
 
 def find_all_possibilities(containers, target):
-    if sum(containers) == target:
-        return 1
-    result = 0
-    for i in range(len(containers) - 1):
-        for combination in itertools.combinations(containers, i):
-            if sum(combination) == target:
-                result += 1
+    return len(
+        list(
+            "x"
+            for i in range(len(containers))
+            for combination in itertools.combinations(containers, i)
+            if sum(combination) == target
+        )
+    )
     return result
+
+
+def find_all_radasse_possibilities(containers, target):
+    combinationLenghts = [
+        len(combination)
+        for i in range(len(containers))
+        for combination in itertools.combinations(containers, i)
+        if sum(combination) == target
+    ]
+    return combinationLenghts.count(min(combinationLenghts))
 
 
 exampleContainers = (20, 15, 10, 5, 5)
@@ -44,3 +55,7 @@ u.assert_equals(find_all_possibilities(exampleContainers, 25), 4)
 u.assert_equals(find_all_possibilities(inputContainers, 150), 1304)
 
 u.answer_part_1(find_all_possibilities(inputContainers, 150))
+
+u.assert_equals(find_all_radasse_possibilities(exampleContainers, 25), 3)
+
+u.answer_part_2(find_all_radasse_possibilities(inputContainers, 150))
