@@ -1,11 +1,12 @@
 import re
 import unittest
 
-#import django
-#import networkx as nx
+# import django
+# import networkx as nx
 
 import utils as u
-#from . import utils as u # <3
+
+# from . import utils as u # <3
 
 # PEP8 = bien ! Ultra adopté dans la commu Python
 # = signe ++ de qualité
@@ -23,43 +24,45 @@ import utils as u
 # NameError: name 's' is not defined
 def find_winner_part_1(s: str, runDuration: int) -> int:
     return max(
-        calculateNbOfKm(v, tf, tr, runDuration)
-        for name, v, tf, tr in parseInputStr(s)
+        calculateNbOfKm(v, tf, tr, runDuration) for name, v, tf, tr in parseInputStr(s)
     )
+
 
 def find_winner_part_1(s: str, runDuration: int) -> int:
     return max(
-        calculateNbOfKm(*rest, tr, runDuration)
-        for _, *rest, tr in parseInputStr(s)
+        calculateNbOfKm(*rest, tr, runDuration) for _, *rest, tr in parseInputStr(s)
     )
+
 
 # dict() : non. (Bon c'est pas trop grave mais c'est pas la peine.)
 def findWinnerPart2(s, runDuration):
-    from collections import defaultdict # import scopé à la fonction
+    from collections import defaultdict  # import scopé à la fonction
+
     scores = defaultdict(int)
     reindeers = {}
     for row in parseInputStr(s):
         name, v, tf, tr = row
-        #scores[name] = 0
+        # scores[name] = 0
         reindeers[name] = (int(v), int(tf), int(tr))
     for i in range(1, runDuration):
         maxDistance = 0
         # aheadReindeers = []
-        for name in reindeers: # calculate position of every reindeer at that time
+        for name in reindeers:  # calculate position of every reindeer at that time
             distance = calculateNbOfKm(*reindeers[name], i)
             if distance > maxDistance:
                 maxDistance = distance
                 aheadReindeers = [name]
             elif distance == maxDistance:
                 aheadReindeers.append(name)
-        for name in aheadReindeers: # update scores
+        for name in aheadReindeers:  # update scores
             scores[name] += 1
     return max(scores.values())
+
 
 # a * b -> a.__mul__(b)
 # a * b -> b.__rmul__(a)
 # class int:
-    # def __mul__(self, other):
+# def __mul__(self, other):
 
 # collections, bien pour
 # namedTuple
@@ -71,12 +74,13 @@ def findWinnerPart2(s, runDuration):
 # operator.attrgetter(*attrs)
 # cool pour récupérer des attributs sous forme de tuples
 # cool aussi en combinaison avec les fonctions de tri
-# https://docs.python.org/3/library/operator.html#operator.attrgetter
+#
+
 
 def calculateNbOfKm(v, tf, tr, runDuration):
-    tf = int(tf) # flying time
-    tr = int(tr) # rest time
-    v = int(v) # velocity
+    tf = int(tf)  # flying time
+    tr = int(tr)  # rest time
+    v = int(v)  # velocity
     nbOfCycles = runDuration // (tf + tr)
     flyingSecondsOnLastCycle = min(tf, runDuration % (tf + tr))
     km = v * tf * nbOfCycles + v * flyingSecondsOnLastCycle
@@ -95,7 +99,7 @@ def parseInputStr(s):
     [^\d]+
     (?P<tr>\d+) # tr = time to rest
     \sseconds?\."""
-    pattern = re.compile(regex, re.X|re.M)
+    pattern = re.compile(regex, re.X | re.M)
 
     for row in pattern.findall(s):
         yield ()
@@ -126,11 +130,14 @@ u.answer_part_2(findWinnerPart2(inputStr, 2503))
 # /usr/local/bin/python3 /Users/ahr/Code/advent-of-code-shiny-giggle/2015/14/code.py
 # python3 -m unittest 2015/14/code.py
 
+
 class CdiscountTestCase(unittest.TestCase):
     pass
 
+
 class CasinoTestCase(unittest.TestCase):
     pass
+
 
 # help(code.TestFoo)
 # code.TestFoo.mro()d
@@ -143,6 +150,7 @@ class TestFoo(CdiscountTestCase, CasinoTestCase):
         foo = """
         lolilol
         """
+
 
 # pytest ou py.test # <3
 def test_examples_part_1():
