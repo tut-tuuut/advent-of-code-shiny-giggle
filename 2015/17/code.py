@@ -5,13 +5,12 @@ import utils as u
 def find_all_possibilities(containers, target):
     return len(
         list(
-            "x"
+            0
             for i in range(len(containers))
             for combination in itertools.combinations(containers, i)
             if sum(combination) == target
         )
     )
-    return result
 
 
 def find_all_radasse_possibilities(containers, target):
