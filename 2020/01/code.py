@@ -1,10 +1,10 @@
 import utils as u
 
 with open(__file__ + ".input.txt", "r+") as file:
-    inputStr = file.read()
+    input_string = file.read()
 
 
-numbers = set(int(row) for row in inputStr.split("\n") if row)
+numbers = set(int(row) for row in input_string.split("\n") if row)
 
 # part 1 -----------------------------------------------------
 def find_numbers_which_sum_to_target(numbers, target):
