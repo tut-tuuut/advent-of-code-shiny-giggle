@@ -18,30 +18,22 @@ def is_valid_password_for_part_two(input_str):
     return (password[int(nb_from) - 1], password[int(nb_to) - 1]).count(letter) == 1
 
 
-# part 1 ------------------------------------------------------------------------
+# part 1 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
 u.assert_equals(is_valid_password("1-3 a: abcde"), True)
 u.assert_equals(is_valid_password("1-3 b: cdefg"), False)
 u.assert_equals(is_valid_password("2-9 c: ccccccccc"), True)
 
-u.answer_part_1(
-    len([True for string in input_str.split("\n") if is_valid_password(string)])
-)
+u.answer_part_1(sum(1 for string in input_str.split("\n") if is_valid_password(string)))
 # 347 too low
 # 519 OK
 
-# part 2 ------------------------------------------------------------------------
+# part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
 u.assert_equals(is_valid_password_for_part_two("1-3 a: abcde"), True)
 u.assert_equals(is_valid_password_for_part_two("1-3 b: cdefg"), False)
 u.assert_equals(is_valid_password_for_part_two("2-9 c: ccccccccc"), False)
 
 u.answer_part_2(
-    len(
-        [
-            True
-            for string in input_str.split("\n")
-            if is_valid_password_for_part_two(string)
-        ]
-    )
+    sum(1 for string in input_str.split("\n") if is_valid_password_for_part_two(string))
 )
