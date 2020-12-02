@@ -6,32 +6,6 @@ import scipy.stats as stats
 import utils as u
 
 # Easy part : calculate number of gifts from house number
-prime_numbers = [2, 3, 5, 7, 11]
-
-
-def yield_prime_numbers_before(target):
-    max_known_prime_number = max(prime_numbers)
-    if target < max_known_prime_number:
-        yield from (i for i in prime_numbers if i <= target)
-    if target > max_known_prime_number:
-        yield from prime_numbers
-        for i in range(max_known_prime_number, target):
-            prime = True
-            for j in prime_numbers:
-                if i % j == 0:
-                    prime = False
-                    break
-            if prime == True:
-                prime_numbers.append(i)
-                yield i
-
-
-def get_prime_divisors(number):
-    for prime_divisor in yield_prime_numbers_before(number):
-        divisor = prime_divisor
-        while number % divisor == 0:
-            yield prime_divisor
-            divisor *= prime_divisor
 
 
 def get_number_of_gifts(house_number):
@@ -41,7 +15,20 @@ def get_number_of_gifts(house_number):
     )
 
 
-print(list(get_prime_divisors(725)))
+sigmas = {}
+
+
+def sigma(number):
+    """sum of divisors of number"""
+    if number in sigmas:
+        return sigmas(number)
+    sigma = sum(divisor for divisor in range(1, number + 1) if number % divisor == 0)
+    sigmas[number] = sigma
+    return sigma
+
+
+u.assert_equals(sigma(10), 18)
+print(sigma(5))
 
 # it works but it's an O(n)
 
