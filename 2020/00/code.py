@@ -1,7 +1,7 @@
 import utils as u
 
 with open(__file__ + ".input.txt", "r+") as file:
-    input_str = file.read()
+    raw_input = file.read()
 
 # part 1 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
