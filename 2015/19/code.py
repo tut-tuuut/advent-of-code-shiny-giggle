@@ -13,6 +13,8 @@ molecule = molecule_pattern.search(inputStr).group(1)
 replacement_pattern = re.compile(r"\b(\w+) => (\w+)\b")
 replacements = replacement_pattern.findall(inputStr)
 
+# Part 1 ------------------------------------------------------------------
+
 
 def find_all_resulting_molecules(molecule, replacements):
     resulting_molecules = set()
@@ -31,3 +33,21 @@ example_replacements = (("H", "HO"), ("H", "OH"), ("O", "HH"))
 print(find_all_resulting_molecules(example_molecule, example_replacements))
 
 u.answer_part_1(len(find_all_resulting_molecules(molecule, replacements)))
+#
+#                         _\/_
+#                          /\
+#                          /\
+#                         /  \
+#                         /~~\o
+#       PART    ------   /o   \  ------  TWO
+#                       /~~*~~~\
+#                      o/    o \
+#                      /~~~~~~~~\~`
+#                     /__*_______\
+#                          ||
+#                        \====/
+#                         \__/
+#
+
+# the problem in part 2 is absolutely NOTHING LIKE the first part...
+# Try a width-first search?
