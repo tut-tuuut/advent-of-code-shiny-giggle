@@ -49,8 +49,7 @@ for i in range(1, len(sorted_place_ids) - 1):
 
 # another method using a comprehension, but i'm not sure it's clearer
 for seat_id, next_seat_id in (
-    (sorted_place_ids[i], sorted_place_ids[i + 1])
-    for i in range(len(sorted_place_ids) - 1)
+    (sorted_place_ids[i : i + 2]) for i in range(len(sorted_place_ids) - 1)
 ):
     if seat_id + 1 != next_seat_id:
         u.answer_part_2(seat_id + 1)
