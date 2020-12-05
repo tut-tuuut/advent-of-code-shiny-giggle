@@ -29,13 +29,20 @@ u.assert_equals(get_place_id(70, 7), 567)
 u.assert_equals(get_place_id(14, 7), 119)
 u.assert_equals(get_place_id(102, 4), 820)
 
-u.answer_part_1(
-    max(
-        get_place_id(*get_place_coordinates(boarding_pass))
-        for boarding_pass in raw_input.splitlines()
-    )
-)
+place_ids = [
+    get_place_id(*get_place_coordinates(boarding_pass))
+    for boarding_pass in raw_input.splitlines()
+]
+
+u.answer_part_1(max(place_ids))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
-place
+sorted_place_ids = sorted(place_ids)
+
+for i in range(1, len(sorted_place_ids)):
+    seat_id = sorted_place_ids[i]
+    next_seat_id = sorted_place_ids[i + 1]
+    if seat_id + 1 != next_seat_id:
+        u.answer_part_2(seat_id + 1)
+        break
