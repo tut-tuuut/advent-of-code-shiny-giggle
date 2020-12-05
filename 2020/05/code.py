@@ -40,9 +40,18 @@ u.answer_part_1(max(place_ids))
 
 sorted_place_ids = sorted(place_ids)
 
-for i in range(1, len(sorted_place_ids)):
+for i in range(1, len(sorted_place_ids) - 1):
     seat_id = sorted_place_ids[i]
     next_seat_id = sorted_place_ids[i + 1]
+    if seat_id + 1 != next_seat_id:
+        u.answer_part_2(seat_id + 1)
+        break
+
+# another method using a comprehension, but i'm not sure it's clearer
+for seat_id, next_seat_id in (
+    (sorted_place_ids[i], sorted_place_ids[i + 1])
+    for i in range(len(sorted_place_ids) - 1)
+):
     if seat_id + 1 != next_seat_id:
         u.answer_part_2(seat_id + 1)
         break
