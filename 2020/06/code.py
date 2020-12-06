@@ -7,9 +7,17 @@ with open(__file__ + ".input.txt", "r+") as file:
 
 
 def count_distinct_yes_questions_in_group(group):
+    # i would have loved to directly return
+    # len(set(group).discard('\n'))
+    # but discard() returns None...
     unique_chars = set(group)
     unique_chars.discard("\n")
     return len(unique_chars)
+
+
+def count_distinct_yes_questions_in_group(group):
+    # discard \n before counting unique characters
+    return len(set(group.replace("\n", "")))
 
 
 def count_the_thingie_the_part_1_wants(airplane):
