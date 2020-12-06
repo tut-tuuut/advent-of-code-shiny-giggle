@@ -58,3 +58,28 @@ u.answer_part_1(count_the_thingie_the_part_1_wants(raw_input))
 print(len(raw_input.split("\n\n")))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def count_unanimous_answers_in_group(group):
+    individual_answers = group.splitlines()
+    # we are looking for characters which are in *all* answers:
+    # so they are in the first answer.
+    first_answer = individual_answers[0]
+    # count all characters of the first answer we can find in every answer.
+    return sum(
+        1
+        for character in first_answer
+        if all(character in answer for answer in individual_answers)
+    )
+
+
+def count_the_thingie_the_part_2_wants(airplane):
+    return sum(
+        count_unanimous_answers_in_group(group) for group in airplane.split("\n\n")
+    )
+
+
+u.assert_equals(count_unanimous_answers_in_group(example_group), 3)
+u.assert_equals(count_the_thingie_the_part_2_wants(example_airplane), 6)
+
+u.answer_part_2(count_the_thingie_the_part_2_wants(raw_input))
