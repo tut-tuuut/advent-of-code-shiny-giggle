@@ -64,3 +64,27 @@ ruleset = parse_rules(raw_input)
 u.answer_part_1(len(get_parent_colors(ruleset, MY_BAG)))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def calculate_luggage_cost(rules, color):
+    return sum(
+        qty + qty * calculate_luggage_cost(rules, child_color)
+        for child_color, qty in rules[color].items()
+    )
+
+
+u.assert_equals(calculate_luggage_cost(example_ruleset, MY_BAG), 32)
+
+another_example_raw_ruleset = """shiny gold bags contain 2 dark red bags.
+dark red bags contain 2 dark orange bags.
+dark orange bags contain 2 dark yellow bags.
+dark yellow bags contain 2 dark green bags.
+dark green bags contain 2 dark blue bags.
+dark blue bags contain 2 dark violet bags.
+dark violet bags contain no other bags."""
+
+another_example_ruleset = parse_rules(another_example_raw_ruleset)
+
+u.assert_equals(calculate_luggage_cost(another_example_ruleset, MY_BAG), 126)
+
+u.answer_part_2(calculate_luggage_cost(ruleset, MY_BAG))
