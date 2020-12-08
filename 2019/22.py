@@ -81,10 +81,11 @@ example_instructions = """deal with increment 7
 deal with increment 9
 cut -2"""
 expected = "6 3 0 7 4 1 8 5 2 9"
-
 for instruction in example_instructions.splitlines():
+    print(deck)
     deck = execute_instruction(deck, instruction)
-
+    print(instruction)
+print(deck)
 print(" ".join(map(str, deck)) == expected)
 
 # example 4 --------------------
@@ -132,9 +133,7 @@ def get_previous_index_of_card(index, deck_length, instruction):
         if "deal" in instruction:
             # i don't know why it works
             # https://twitter.com/tut_tuuut/status/1335683048264884230
-            return (
-                1 + index // number + number * (number - index % number)
-            ) % deck_length
+            return (deck_length - index * (deck_length // number)) % deck_length
         elif "cut" in instruction:
             return (index + number) % deck_length
         else:
@@ -142,48 +141,28 @@ def get_previous_index_of_card(index, deck_length, instruction):
             return deck
 
 
-# result 0 3 6 9 2 5 8 1 4 7
-index = 9
-for instr in reversed(
-    """deal with increment 7
-deal into new stack
-deal into new stack""".splitlines()
-):
-    index = get_previous_index_of_card(index, 10, instr)
-print("should be 7:", index)
-print("------")
-
-
-# result 3 0 7 4 1 8 5 2 9 6
-index = 8
-for instr in reversed(
-    """cut 6
+example_instructions = """deal into new stack
+cut -2
 deal with increment 7
-deal into new stack""".splitlines()
-):
-    index = get_previous_index_of_card(index, 10, instr)
-print("should be 9:", index)
-print("------")
-
-# result 6 3 0 7 4 1 8 5 2 9
-index = 0
-for instr in reversed(
-    """deal with increment 7
+cut 8
+cut -4
+deal with increment 7
+cut 3
 deal with increment 9
-cut -2""".splitlines()
-):
+deal with increment 3
+cut -1"""
+deck = list(range(10))
+
+for instruction in example_instructions.splitlines():
+    print(deck, deck.index(6))
+    deck = execute_instruction(deck, instruction)
+    print(instruction)
+print(deck)
+
+index = 9
+
+for instruction in reversed(example_instructions.splitlines()):
     print(index)
-    index = get_previous_index_of_card(index, 10, instr)
-print("should be 6:", index)
-print("------")
-
-
-index = 2020
-deck_length = 119315717514047
-instructions = list(raw_input.splitlines())
-instructions.reverse()
-for instruction in instructions:
-    index = get_previous_index_of_card(index, deck_length, instruction)
-    if index == 2020:
-        print("aha!")
+    print(f"reverse {instruction} for index {index}")
+    index = get_previous_index_of_card(index, 10, instruction)
 print(index)
