@@ -52,6 +52,27 @@ def check_number_validity(number, previous_numbers):
 
 u.assert_equals(extract_first_invalid_number(example_raw_input, 5), 127)
 
-u.answer_part_1(extract_first_invalid_number(raw_input, 25))
+answer_part_1 = extract_first_invalid_number(raw_input, 25)
+
+u.answer_part_1(answer_part_1)
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def h4ck_th3_airplane_seat(target, raw_input):
+    """return the sum of 1st and last number of a sequence in raw_input
+    which sums up to target"""
+    nb_list = tuple(map(int, raw_input.splitlines()))
+    for window_length in range(2, len(nb_list)):
+        # we would do a lot of optimization here if the input was sorted...
+        # but it's not
+        for window in more_itertools.windowed(nb_list, window_length):
+            if min(window) >= target:
+                continue
+            if sum(window) == target:
+                return min(window) + max(window)
+
+
+u.assert_equals(h4ck_th3_airplane_seat(127, example_raw_input), 62)
+
+u.answer_part_2(h4ck_th3_airplane_seat(answer_part_1, raw_input))
