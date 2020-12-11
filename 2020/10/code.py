@@ -1,4 +1,7 @@
 import math
+
+from more_itertools import windowed
+
 import utils as u
 
 with open(__file__ + ".input.txt", "r+") as file:
@@ -77,9 +80,9 @@ def find_all_combinations_of_adapters(raw_list_of_adapters_in_my_bag):
     new_group = []
     # find groups of adjacent or almost adjacent v… joltages,
     # which are the ones that "multiply" the number of possibilities
-    for i in range(1, len(joltages)):
-        if joltages[i] < joltages[i - 1] + 3:
-            new_group.append(joltages[i])
+    for previous, current in windowed(joltages, 2):
+        if current < previous + 3:
+            new_group.append(current)
         else:
             groups.append(new_group)
             new_group = []
