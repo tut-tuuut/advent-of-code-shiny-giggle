@@ -32,8 +32,6 @@ def draw_grid(layout):
                 color = "darkred"
             else:
                 continue
-            if x == 9 and y == 0:
-                color = "purple"
             drawing.rectangle((5 * x, 5 * y, 5 * x + 3, 5 * y + 3), color)
     imgFile.show()
 
