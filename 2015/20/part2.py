@@ -32,6 +32,16 @@ import utils as u
 # elf 200 will visit 200 to 10000
 # so elves will v isit only if their nb is between H/50 and H
 
+# target = 36M
+# we are looking for x such as some numbers between x/50 and x/2
+# sum up to 36M/11
+# so x/50 + x/2 ~ 3,6M
+# x ~ 7M
+# for x = 7M it works, but I fear it's too high
+
+# 1501920 is too high
+# 803982
+
 
 def get_number_of_gifts(house_number):
     return house_number + sum(
@@ -43,12 +53,20 @@ def get_number_of_gifts(house_number):
 
 get_number_of_gifts(991)
 
-starting_point = 838377
+# I tried using an increment of 410 to have numbers which
+# N/2 and N/3 and N/7 and N/4 would be in the sum…
+# It gave me answer 1330560 which is too high.
+
+starting_point = 95970
+increment = 6
+max_gifts = 1377855
+
 TARGET = 36000000
 init_time = time.time()
-max_gifts = 0
 
-for i in range(starting_point, starting_point + 1000):
+# use 210 increment so we are targeting multiples of 2 and 3 and 5 and 7,
+# so N/2 and N/3 and n/5 and n/7 will be in the sum
+for i in range(starting_point, starting_point + 3200 * increment, increment):
     gifts = get_number_of_gifts(i)
     print(
         f"------ house {i} - {gifts:08} gifts - time {time.time() - init_time} -------",
