@@ -66,3 +66,47 @@ ferry = Ferry()
 u.answer_part_1(ferry.followNavigationInstructions(raw_input))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+class FerryWithWayPoint(Ferry):
+    def __init__(self):
+        self.waypoint = [10, 1]
+        self.position = [0, 0]
+
+    def moveWaypointInDirection(self, direction, distance):
+        self.waypoint[0] += direction[0] * distance
+        self.waypoint[1] += direction[1] * distance
+
+    def rotateWayPoint(self, angle):
+        x, y = self.waypoint
+        if angle == 180:
+            self.waypoint = [-x, -y]
+        elif angle == 90:
+            self.waypoint = [-y, x]
+        elif angle == 270:
+            self.waypoint = [y, -x]
+
+    def executeInstruction(self, raw_instruction):
+        instruction = raw_instruction[0]
+        argument = int(raw_instruction[1:])
+        if instruction == "N":
+            self.moveWaypointInDirection(self.DIRECTIONS[90], argument)
+        elif instruction == "S":
+            self.moveWaypointInDirection(self.DIRECTIONS[270], argument)
+        elif instruction == "E":
+            self.moveWaypointInDirection(self.DIRECTIONS[0], argument)
+        elif instruction == "W":
+            self.moveWaypointInDirection(self.DIRECTIONS[180], argument)
+        elif instruction == "F":
+            self.moveInDirection(self.waypoint, argument)
+        elif instruction == "R":
+            self.rotateWayPoint(-argument % 360)
+        elif instruction == "L":
+            self.rotateWayPoint(argument)
+
+
+example_ferry = FerryWithWayPoint()
+u.assert_equals(example_ferry.followNavigationInstructions(example_input), 286)
+
+ferry = FerryWithWayPoint()
+u.answer_part_2(ferry.followNavigationInstructions(raw_input))
