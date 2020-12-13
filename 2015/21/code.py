@@ -1,3 +1,4 @@
+from itertools import combinations, chain
 from math import ceil
 
 import utils as u
@@ -28,6 +29,7 @@ SHOP = {
         (0, 3): 53,
         (0, 4): 75,
         (0, 5): 102,
+        (0, 0): 0,  # you can choose to go naked, it's free!
     },
     "Rings": {
         (1, 0): 25,
@@ -36,6 +38,7 @@ SHOP = {
         (0, 1): 20,
         (0, 2): 40,
         (0, 3): 80,
+        (0, 0): 0,  # ring is not mandatory either
     },
 }
 
@@ -109,12 +112,16 @@ def poutrage_index(player, boss):
     or like in "le boss m’a poutré·e", referring to the fact you could as well have used some poutres
     to win/lose the fight.
     """
+    if player.attack == boss.armor:
+        return -9999
+    if player.armor == boss.attack:
+        return 9999
     rounds_for_player_to_win = ceil(boss.hp / (player.attack - boss.armor))
     rounds_for_boss_to_win = ceil(player.hp / (boss.attack - player.armor))
     return rounds_for_boss_to_win - rounds_for_player_to_win
 
 
-def stuff_player(base_player_stats, stuff_stats):
+def stuff_player(base_player_stats, *stuff_stats):
     return Bonhomme(
         base_player_stats[0],
         base_player_stats[1],
@@ -135,6 +142,65 @@ def stuff_player(base_player_stats, stuff_stats):
 boss_stats = ("🐹", 109, 8, 2)
 player_stats = ("🎅", 100, 0, 0)
 
-player_stuff = ((8, 0), (0, 2))
+player_stuff = (8, 0), (0, 2)
 
-grandiose_fight(stuff_player(player_stats, player_stuff), Bonhomme(*boss_stats))
+grandiose_fight(stuff_player(player_stats, (8, 0), (0, 2)), Bonhomme(*boss_stats))
+
+# ----------------------------------------------------------------------------------
+# PART 1 : What is the least amount of gold you can spend and still win the fight?
+# ----------------------------------------------------------------------------------
+
+
+def find_the_most_radine_way_to_victory(boss_stats, player_stats):
+    """Find the lowest amount of gold which leads to a positive poutrage index"""
+    # since there are only 660 possibilities of equipment,
+    # (5 weapons * 5+1 armor * (15 + 6 + 1) rings)
+    # (mandatory)  (1 or 0)    (15 possibilities for 2 + 6 possibilities for 1 + 1 possibility for 0)
+    # try everything and keep the cheapest victory.
+    return min(
+        weapon_cost + armor_cost + SHOP["Rings"][ring_l] + SHOP["Rings"][ring_r]
+        for ring_l, ring_r in chain(
+            combinations(SHOP["Rings"], 2),  # all combination of 2 distinct rings
+            [((0, 0), (0, 0))],  # the combination 2 bare hands
+        )
+        for armor, armor_cost in SHOP["Armor"].items()
+        for weapon, weapon_cost in SHOP["Weapons"].items()
+        if (
+            poutrage_index(
+                stuff_player(player_stats, weapon, armor, ring_l, ring_r),
+                Bonhomme(*boss_stats),
+            )
+            >= 0
+        )
+    )
+    # for posterity, this is the first version of this function:
+    # for weapon, weapon_cost in SHOP["Weapons"].items():
+    #     for armor, armor_cost in SHOP["Armor"].items():
+    #         for ring_l, ring_r in chain(
+    #             combinations(SHOP["Rings"], 2),  # all combination of 2 distinct rings
+    #             [((0, 0), (0, 0))],  # the combination 2 bare hands
+    #         ):
+    #             if (
+    #                 poutrage_index(
+    #                     stuff_player(player_stats, weapon, armor, ring_l, ring_r),
+    #                     Bonhomme(*boss_stats),
+    #                 )
+    #                 >= 0
+    #             ):
+    #                 equipment_cost = (
+    #                     weapon_cost
+    #                     + armor_cost
+    #                     + SHOP["Rings"][ring_l]
+    #                     + SHOP["Rings"][ring_r]
+    #                 )
+
+    #                 if equipment_cost < cheapest_price:
+    #                     cheapest_price = equipment_cost
+    # return cheapest_price
+
+
+u.answer_part_1(find_the_most_radine_way_to_victory(boss_stats, player_stats))
+
+# ----------------------------------------------------------------------------------
+# PART 2 : What is the most amount of gold you can spend and still lose the fight?
+# ----------------------------------------------------------------------------------
