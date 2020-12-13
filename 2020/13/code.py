@@ -71,6 +71,7 @@ def win_the_shuttle_company_contest(bus_lines):
         progress += 1
         print("█" * progress + "░" * (1 + len(bus_lines) - progress) + f" {timestamp}")
     return abs(timestamp - step)  # why not just timestamp? I don't know
+    #                                ↑ because I had pâté in my eyes
 
 
 example_bus_lines = extract_bus_lines_for_part_2(example_postit)
