@@ -112,9 +112,9 @@ def poutrage_index(player, boss):
     or like in "le boss m’a poutré·e", referring to the fact you could as well have used some poutres
     to win/lose the fight.
     """
-    if player.attack == boss.armor:
+    if player.attack <= boss.armor:  # invulnerable boss
         return -9999
-    if player.armor == boss.attack:
+    if player.armor >= boss.attack:  # invulnerable player
         return 9999
     rounds_for_player_to_win = ceil(boss.hp / (player.attack - boss.armor))
     rounds_for_boss_to_win = ceil(player.hp / (boss.attack - player.armor))
@@ -204,3 +204,29 @@ u.answer_part_1(find_the_most_radine_way_to_victory(boss_stats, player_stats))
 # ----------------------------------------------------------------------------------
 # PART 2 : What is the most amount of gold you can spend and still lose the fight?
 # ----------------------------------------------------------------------------------
+
+
+def find_the_most_expensive_way_to_lose(boss_stats, player_stats):
+    """Find the highest amount of gold which leads to a negative poutrage index"""
+    # like before, try every possibility and keep the cheap… i mean, the most expensive.
+    return max(
+        weapon_cost + armor_cost + SHOP["Rings"][ring_l] + SHOP["Rings"][ring_r]
+        for ring_l, ring_r in chain(
+            combinations(SHOP["Rings"], 2),  # all combination of 2 distinct rings
+            [((0, 0), (0, 0))],  # the combination 2 bare hands
+        )
+        for armor, armor_cost in SHOP["Armor"].items()
+        for weapon, weapon_cost in SHOP["Weapons"].items()
+        if (
+            poutrage_index(
+                stuff_player(player_stats, weapon, armor, ring_l, ring_r),
+                Bonhomme(*boss_stats),
+            )
+            < 0
+        )
+    )
+
+
+u.answer_part_2(find_the_most_expensive_way_to_lose(boss_stats, player_stats))
+# 296 is too high :(
+# => there was an issue with the formula of poutrage index, when player or boss are invulnerable
