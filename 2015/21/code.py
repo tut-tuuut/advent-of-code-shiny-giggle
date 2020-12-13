@@ -1,3 +1,5 @@
+from math import ceil
+
 import utils as u
 
 raw_input = """Hit Points: 109
@@ -10,6 +12,32 @@ NORMAL = "\033[0m"
 GREEN = "\033[92m"
 
 DISPLAY_WIDTH = 50
+
+SHOP = {
+    # (atq, def) : price
+    "Weapons": {
+        (4, 0): 8,
+        (5, 0): 10,
+        (6, 0): 25,
+        (7, 0): 40,
+        (8, 0): 74,
+    },
+    "Armor": {
+        (0, 1): 13,
+        (0, 2): 31,
+        (0, 3): 53,
+        (0, 4): 75,
+        (0, 5): 102,
+    },
+    "Rings": {
+        (1, 0): 25,
+        (2, 0): 50,
+        (3, 0): 100,
+        (0, 1): 20,
+        (0, 2): 40,
+        (0, 3): 80,
+    },
+}
 
 
 def draw_progress_bar(value, max_value, avatar):
