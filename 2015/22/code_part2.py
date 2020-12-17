@@ -34,10 +34,6 @@ Situation = namedtuple(
 
 def find_neighbor_situations(situation: Situation):
 
-    # debug_situation(situation)
-
-    if type(situation) == str:
-        return []
     # 0. Check victory/defeat
     if situation.boss_hp <= 0:
         return []
@@ -46,7 +42,11 @@ def find_neighbor_situations(situation: Situation):
 
     # 1. apply effects
     boss_hp = situation.boss_hp
-    player_hp = situation.player_hp - 1
+    player_hp = situation.player_hp
+    if situation.player_turn:
+        player_hp -= 1
+        if situation.player_hp <= 0:
+            return []
     player_mp = situation.player_mp
     player_armor = 0
     if situation.poison_timer > 0:
@@ -59,8 +59,6 @@ def find_neighbor_situations(situation: Situation):
     if player_mp < 53:  # if the player cannot cast any spell, they lose
         return []
     if boss_hp <= 0:  # if the boss is dead by poison, it's a victory
-        return []
-    if situation.player_hp <= 0:
         return []
 
     # prepare timers for next turn
@@ -163,25 +161,23 @@ def is_victory(s: Situation):
     # 0. Check victory/defeat
     if situation.boss_hp <= 0:
         return V
-    if situation.player_hp <= 1:
+    if situation.player_turn and situation.player_hp <= 1:
+        return D
+    if not situation.player_turn and situation.player_hp <= 0:
         return D
 
     # 1. apply effects
     boss_hp = situation.boss_hp
-    player_hp = situation.player_hp
     player_mp = situation.player_mp
-    player_armor = 0
     if situation.poison_timer > 0:
         boss_hp -= 3
-    if situation.shield_timer > 0:
-        player_armor = 7
+        if boss_hp <= 0:  # if the boss is dead by poison, it's a victory
+            return V
+
     if situation.recharge_timer > 0:
         player_mp += 101
-
     if player_mp < 53:  # if the player cannot cast any spell, they lose
         return D
-    if boss_hp <= 0:  # if the boss is dead by poison, it's a victory
-        return V
 
 
 # Part 2 ---------------------------------------------------
@@ -203,13 +199,17 @@ for i in range(5555555):
         continue
     if is_victory(situation) == V:
         if situation.spent_mp < cheapest_victory_cost:
+            debug_situation(situation)
             cheapest_victory_cost = situation.spent_mp
             print(f"cheapest victory cost: {cheapest_victory_cost}")
+            print("---------")
         continue
     elif is_victory == D:
         continue
     for next_situation in find_neighbor_situations(situation):
         todo_list.append(next_situation)
+
+u.assert_equals(cheapest_victory_cost, 1289)  # cf pompage.py
 
 u.answer_part_2(cheapest_victory_cost)
 # 1408 too high 296455 iterations
