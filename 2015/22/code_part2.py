@@ -12,23 +12,9 @@ D = "DEFEAT"
 my_input = """Hit Points: 55
 Damage: 8"""
 
-"""
-On each of your turns, you must select one of your spells to cast. If you cannot afford to cast any spell, you lose. Spells cost mana; you start with 500 mana, but have no maximum limit. You must have enough mana to cast a spell, and its cost is immediately deducted when you cast it. Your spells are Magic Missile, Drain, Shield, Poison, and Recharge.
-
-    Recharge costs 229 mana. It starts an effect that lasts for 5 turns.
-    At the start of each turn while it is active, it gives you 101 new mana.
-
-Effects all work the same way. Effects apply at the start of both the player's
-turns and the boss' turns. Effects are created with a timer (the number of turns they last);
-at the start of each turn, after they apply any effect they have, their timer is decreased by one.
-If this decreases the timer to zero, the effect ends.
-You cannot cast a spell that would start an effect which is already active.
-However, effects can be started on the same turn they end.
-"""
-
 Situation = namedtuple(
     "Situation",
-    "player_turn spent_mp boss_hp player_hp player_mp shield_timer poison_timer recharge_timer",
+    "player_turn spent_mp boss_hp player_hp player_mp shield_timer poison_timer recharge_timer cast_spells",
 )
 
 
@@ -79,6 +65,7 @@ def find_neighbor_situations(situation: Situation):
                 player_hp,
                 player_mp - 53,
                 *next_timers,
+                situation.cast_spells + " missile",
             )
 
         # Drain : costs 73 mana. Instantly does 2 damage and heals player 2 HP
@@ -90,6 +77,7 @@ def find_neighbor_situations(situation: Situation):
                 player_hp + 2,
                 player_mp - 73,
                 *next_timers,
+                situation.cast_spells + " drain",
             )
 
         # Shield : costs 113 mana, starts "shield" effect for 6 turns
@@ -102,6 +90,7 @@ def find_neighbor_situations(situation: Situation):
                 player_mp - 113,
                 6,
                 *next_timers[1:],
+                situation.cast_spells + " shield",
             )
 
         # Poison : 173 mana, starts "poison" effect for 6 turns
@@ -115,6 +104,7 @@ def find_neighbor_situations(situation: Situation):
                 next_timers[0],
                 6,
                 next_timers[2],
+                situation.cast_spells + " poison",
             )
 
         # Recharge : 229 mana, starts "recharge" effect for 5 turns
@@ -127,6 +117,7 @@ def find_neighbor_situations(situation: Situation):
                 player_mp - 229,
                 *next_timers[:-1],
                 5,
+                situation.cast_spells + " recharge",
             )
 
     # 2.b. Boss’ turn
@@ -139,6 +130,7 @@ def find_neighbor_situations(situation: Situation):
             player_hp - damage,
             player_mp,
             *next_timers,
+            situation.cast_spells + " •",
         )
 
 
@@ -182,7 +174,7 @@ def is_victory(s: Situation):
 
 # Part 2 ---------------------------------------------------
 
-initial_situation = Situation(True, 0, 55, 50, 500, 0, 0, 0)
+initial_situation = Situation(True, 0, 55, 50, 500, 0, 0, 0, "")
 
 todo_list = deque()
 todo_list.append(initial_situation)
@@ -199,7 +191,7 @@ for i in range(5555555):
         continue
     if is_victory(situation) == V:
         if situation.spent_mp < cheapest_victory_cost:
-            debug_situation(situation)
+            print(situation.cast_spells)
             cheapest_victory_cost = situation.spent_mp
             print(f"cheapest victory cost: {cheapest_victory_cost}")
             print("---------")
@@ -213,6 +205,10 @@ u.assert_equals(cheapest_victory_cost, 1289)  # cf pompage.py
 
 u.answer_part_2(cheapest_victory_cost)
 # 1408 too high 296455 iterations
-# 1295 too high 4563918 iterations
+# 1295 too high 4563918 iterations, I keep finding this one
 # 847 too low 2980515 iterations
 # 900 WRONG 4230201 iterations
+# 1295:
+# recharge • poison • shield • missile • missile • recharge • poison • shield • missile • missile • missile
+# 1289:
+# Poison -> Magic Missile -> Recharge -> Poison -> Shield -> Recharge -> Poison -> Drain -> Drain

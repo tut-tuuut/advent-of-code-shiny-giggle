@@ -147,11 +147,11 @@ if __name__ == "__main__":
     start = State(player_hp, player_mana, boss_hp, boss_attack)
     end = search_a_star(start)
     print("Part 1:", end.mana_spent)
-    if "-v" in sys.argv:
+    if True:
         print(*end.iter_path(), sep=" -> ")
 
     start.hard = True
     end = search_a_star(start)
     print("Part 2:", end.mana_spent)
-    if "-v" in sys.argv:
+    if True:
         print(*end.iter_path(), sep=" -> ")
