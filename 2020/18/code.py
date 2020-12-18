@@ -77,6 +77,21 @@ def calculate_with_advanced_christmas_precedence(calculus: str):
     return math.prod(map(int, calculus.split()[::2]))
 
 
+def calculate_with_advanced_christmas_precedence(calculus: str):
+    # replace parenthesis with their calculus results
+    while calculus.count("(") > 0:
+        calculus = re.sub(
+            CALCULUS_IN_PARENTHESIS,
+            lambda m: f" {calculate_with_advanced_christmas_precedence(m.group(1))} ",
+            calculus,
+        )
+    return math.prod(
+        sum(int(x) for x in sums.split("+")) for sums in calculus.split("*")
+    )
+    # with a map it works too:
+    # return math.prod(sum(map(int, sums.split("+"))) for sums in calculus.split("*"))
+
+
 examples = {
     "1 + 2 * 3 + 4 * 5 + 6": 231,
     "1 + (2 * 3) + (4 * (5 + 6))": 51,
