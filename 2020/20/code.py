@@ -82,7 +82,8 @@ class Tile:
         for border in self.borders:
             if border == border[::-1]:
                 print(f"{self.id} will be a problem")
-        self.inner = [row[1:-1] for row in tile_data[1:-1]]
+        # self.inner = [row[1:-1] for row in tile_data[1:-1]]
+        self.inner = tile_data
         self.size = len(self.inner[0])
         self.neighbors = {}
         self.locked = False
@@ -103,6 +104,7 @@ class Tile:
             self.inner = [row[::-1] for row in self.inner[::-1]]
 
     def flip(self, axis: int):
+        print(f"flip {self.id} on axis {DIRECTIONS[axis]}")
         if axis == TOP or axis == BOTTOM:
             # vertical axis: flip every row individually
             self.inner = [row[::-1] for row in self.inner]
@@ -158,14 +160,6 @@ def analyze_graph(graph: nx.Graph):
         print(f"{u.GREEN}Your graph is OK!{u.NORMAL}")
 
 
-examples = build_tile_objects_dict(example_input)
-example_graph = build_contact_graph(example_input)
-analyze_graph(example_graph)
-
-first_corner_id = find_corner_tiles(example_input)[0]
-first_corner = examples[first_corner_id]
-
-
 def tuple_intersection(t: tuple, u: tuple):
     for tx in t:
         if tx in u:
@@ -175,29 +169,38 @@ def tuple_intersection(t: tuple, u: tuple):
 def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
     if not locked.locked:
         print("uh that smells!")
-    if neighbor.locked:
-        return
+    print("---")
     print(f"placing tile {neighbor.id} next to {locked.id}")
+    print(f"tile {neighbor.id}:")
+    print(neighbor)
+    print(f"tile {locked.id} (locked):")
+    print(locked)
     common_border = tuple_intersection(locked.borders, neighbor.borders)
     if common_border:
         direction_for_locked = locked.borders.index(common_border)
         direction_for_neighbor = neighbor.borders.index(common_border)
+        print(f"direction for {locked.id}: {DIRECTIONS[direction_for_locked]}")
+        print(f"direction for {neighbor.id}: {DIRECTIONS[direction_for_neighbor]}")
         if (direction_for_locked - direction_for_neighbor) % 4 == 2:
+            print("diff == 2")
             locked.addNeighbor(direction_for_locked, neighbor)
             neighbor.addNeighbor(direction_for_neighbor, locked)
             neighbor.locked = True
         elif direction_for_locked == direction_for_neighbor:
+            print("diff == 0")
             neighbor.flip((direction_for_locked + 1) % 4)
             locked.addNeighbor(direction_for_locked, neighbor)
             neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
             neighbor.locked = True
         elif direction_for_locked == (direction_for_neighbor + 1) % 4:
-            neighbor.rotate_clockwise(1)
+            print("diff == 1")
+            neighbor.rotate_clockwise(3)
             locked.addNeighbor(direction_for_locked, neighbor)
             neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
             neighbor.locked = True
         elif direction_for_locked == (direction_for_neighbor - 1) % 4:
-            neighbor.rotate_clockwise(3)
+            print("diff == -1")
+            neighbor.rotate_clockwise(1)
             locked.addNeighbor(direction_for_locked, neighbor)
             neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
             neighbor.locked = True
@@ -207,41 +210,72 @@ def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
         )
         direction_for_locked = locked.borders.index(common_border)
         direction_for_neighbor = neighbor.borders.index(common_border[::-1])
+        print(f"direction for {locked.id}: {DIRECTIONS[direction_for_locked]}")
+        print(f"direction for {neighbor.id}: {DIRECTIONS[direction_for_neighbor]}")
         if direction_for_locked == direction_for_neighbor:
+            print("fdiff == 0")
             neighbor.rotate_clockwise(2)
             locked.addNeighbor(direction_for_locked, neighbor)
             neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
+            neighbor.locked = True
         elif (direction_for_locked - direction_for_neighbor) % 4 == 2:
-            neighbor.flip((direction_for_locked + 1) % 4)
+            print("fdiff == 2")
+            neighbor.flip((direction_for_locked) % 4)
             locked.addNeighbor(direction_for_locked, neighbor)
             neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
+            neighbor.locked = True
         elif direction_for_locked == (direction_for_neighbor + 1) % 4:
+            print("fdiff == 1")
             print("todo 4")
         elif direction_for_locked == (direction_for_neighbor - 1) % 4:
+            print("fdiff == -1")
             print("todo 5")
 
 
-todo_list = [first_corner]
-
-while len(todo_list) > 0:
-    todo = todo_list.pop()
-    todo.locked = True
-    for neighbor_id in nx.neighbors(example_graph, todo.id):
-        neighbor = examples[neighbor_id]
-        if neighbor.locked:
+def assemble_jigsaw(tiles: dict, contacts: nx.Graph):
+    any_tile_id = next(iter(tiles))
+    todo_list = [tiles[any_tile_id]]
+    while len(todo_list) > 0:
+        todo = todo_list.pop(0)
+        todo.locked = True
+        if len(todo.neighbors) == 4:
             continue
-        place_neighbor_of_locked_tile(todo, neighbor)
-        todo_list.append(neighbor)
+        for neighbor_id in nx.neighbors(contacts, todo.id):
+            neighbor = tiles[neighbor_id]
+            place_neighbor_of_locked_tile(todo, neighbor)
+            todo_list.append(neighbor)
+        if 0 == sum(1 for tile in tiles.values() if not tile.locked):
+            break
 
+
+examples = build_tile_objects_dict(example_input)
+example_graph = build_contact_graph(example_input)
+analyze_graph(example_graph)
+assemble_jigsaw(examples, example_graph)
+
+first_corner_id = find_corner_tiles(example_input)[0]
+first_corner = examples[first_corner_id]
 
 # 1951    2311    3079
 # 2729    1427    2473
 # 2971    1489    1171
+top_left_corner = [
+    tile
+    for tile in examples.values()
+    if TOP not in tile.neighbors and LEFT not in tile.neighbors
+][0]
 
-# top_left_corner = [
-#     tile
-#     for tile in examples.values()
-#     if tile.neighbors[TOP] == None and tile.neighbors[LEFT] == None
-# ][0]
+print(f"top left corner : {top_left_corner.id}")
+while True:
+    display = top_left_corner
+    while True:
+        print(display.id, end=" ")
+        if RIGHT not in display.neighbors:
+            break
+        display = display.neighbors[RIGHT]
+    print("")
+    if BOTTOM not in top_left_corner.neighbors:
+        break
+    top_left_corner = top_left_corner.neighbors[BOTTOM]
 # graph = build_contact_graph(raw_input)
 # analyze_graph(graph)
