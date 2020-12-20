@@ -81,7 +81,7 @@ class Tile:
         ]
         for border in self.borders:
             if border == border[::-1]:
-                print(f"{self.id} will be a problem")
+                u.red(f"{self.id} will be a problem")
         # self.inner = [row[1:-1] for row in tile_data[1:-1]]
         self.inner = tile_data
         self.size = len(self.inner[0])
@@ -93,9 +93,16 @@ class Tile:
 
     def rotate_clockwise(self, times: int):
         print(f"rotate {self.id} {times} times")
+        if self.inner[0] != self.borders[TOP]:
+            print(
+                f"{u.RED}first content row: {self.inner[0]}, top border = {self.borders[TOP]}{u.NORMAL}"
+            )
         if times % 4 == 0:
             return
-        self.borders = [self.borders[(i - times) % 4] for i in range(4)]
+        for _ in range(times):
+            self.borders = self.borders[-1:] + self.borders[:-1]
+            self.borders[2] = self.borders[2][::-1]
+            self.borders[0] = self.borders[0][::-1]
         if times == 1 or times == 3:
             self.inner = [
                 "".join(row[i] for row in self.inner[::-1]) for i in range(self.size)
@@ -105,15 +112,29 @@ class Tile:
 
     def flip(self, axis: int):
         print(f"flip {self.id} on axis {DIRECTIONS[axis]}")
+        if self.inner[0] != self.borders[TOP]:
+            print(
+                f"{u.RED}first content row: {self.inner[0]}, top border = {self.borders[TOP]}{u.NORMAL}"
+            )
         if axis == TOP or axis == BOTTOM:
             # vertical axis: flip every row individually
             self.inner = [row[::-1] for row in self.inner]
             # flip top and bottom borders
             self.borders[TOP] = self.borders[TOP][::-1]
             self.borders[BOTTOM] = self.borders[BOTTOM][::-1]
+            # left and right borders are switched
+            self.borders[LEFT], self.borders[RIGHT] = (
+                self.borders[RIGHT],
+                self.borders[LEFT],
+            )
         if axis == LEFT or axis == RIGHT:
             # horizontal axis: flip row order without flipping them individually
             self.inner = self.inner[::-1]
+            # top and bottom borders are switched
+            self.borders[TOP], self.borders[BOTTOM] = (
+                self.borders[BOTTOM],
+                self.borders[TOP],
+            )
             # flip left and right borders
             self.borders[LEFT] = self.borders[LEFT][::-1]
             self.borders[RIGHT] = self.borders[RIGHT][::-1]
@@ -121,8 +142,12 @@ class Tile:
     def addNeighbor(self, direction: int, neighbor):
         if direction not in self.neighbors:
             self.neighbors[direction] = neighbor
-            print(f"placing {neighbor.id} at {DIRECTIONS[direction]} of {self.id}.")
+            u.green(f"placing {neighbor.id} at {DIRECTIONS[direction]} of {self.id}.")
         elif self.neighbors[direction] != neighbor:
+            # print(f"tile {self.id}")
+            # print(self)
+            # print(f"tile {neighbor.id}")
+            # print(neighbor)
             raise RuntimeError(
                 f"two tiles at the same place! {neighbor.id} and {self.neighbors[direction].id}"
             )
@@ -179,6 +204,8 @@ def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
     if common_border:
         direction_for_locked = locked.borders.index(common_border)
         direction_for_neighbor = neighbor.borders.index(common_border)
+        if neighbor.locked and (direction_for_neighbor - direction_for_locked) % 4 != 2:
+            print(f"{u.RED}THAT SMELLS BAD FOR {neighbor.id} vs {locked.id}{u.NORMAL}")
         print(f"direction for {locked.id}: {DIRECTIONS[direction_for_locked]}")
         print(f"direction for {neighbor.id}: {DIRECTIONS[direction_for_neighbor]}")
         if (direction_for_locked - direction_for_neighbor) % 4 == 2:
@@ -194,7 +221,14 @@ def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
             neighbor.locked = True
         elif direction_for_locked == (direction_for_neighbor + 1) % 4:
             print("diff == 1")
-            neighbor.rotate_clockwise(3)
+            print(neighbor.borders)
+            neighbor.rotate_clockwise(1)
+            u.yellow(f"{neighbor.id} after rotation:")
+            print(neighbor)
+            neighbor.flip(direction_for_locked)
+            u.yellow(f"{neighbor.id} after transformation:")
+            print(neighbor)
+            print(neighbor.borders)
             locked.addNeighbor(direction_for_locked, neighbor)
             neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
             neighbor.locked = True
@@ -210,6 +244,10 @@ def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
         )
         direction_for_locked = locked.borders.index(common_border)
         direction_for_neighbor = neighbor.borders.index(common_border[::-1])
+        if neighbor.locked:
+            print(
+                f"{u.RED}SOMETHING SMELLS BAD FOR {neighbor.id} vs {locked.id}{u.NORMAL}"
+            )
         print(f"direction for {locked.id}: {DIRECTIONS[direction_for_locked]}")
         print(f"direction for {neighbor.id}: {DIRECTIONS[direction_for_neighbor]}")
         if direction_for_locked == direction_for_neighbor:
@@ -226,10 +264,10 @@ def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
             neighbor.locked = True
         elif direction_for_locked == (direction_for_neighbor + 1) % 4:
             print("fdiff == 1")
-            print("todo 4")
+            u.yellow("todo 4")
         elif direction_for_locked == (direction_for_neighbor - 1) % 4:
             print("fdiff == -1")
-            print("todo 5")
+            u.yellow("todo 5")
 
 
 def assemble_jigsaw(tiles: dict, contacts: nx.Graph):
@@ -248,34 +286,108 @@ def assemble_jigsaw(tiles: dict, contacts: nx.Graph):
             break
 
 
+def display_assembled_tile_ids(tiles: dict):
+    top_left_corner = [
+        tile
+        for tile in tiles.values()
+        if TOP not in tile.neighbors and LEFT not in tile.neighbors
+    ][0]
+    print(f"---- ---- ---- ---- ---- ----")
+    while True:
+        display = top_left_corner
+        while True:
+            print(display.id, end=" ")
+            if RIGHT not in display.neighbors:
+                break
+            display = display.neighbors[RIGHT]
+        print("")
+        if BOTTOM not in top_left_corner.neighbors:
+            break
+        top_left_corner = top_left_corner.neighbors[BOTTOM]
+
+
+def display_assembled_tile_contents(tiles: dict):
+    top_left_corner = [
+        tile
+        for tile in tiles.values()
+        if TOP not in tile.neighbors and LEFT not in tile.neighbors
+    ][0]
+    while True:
+        display = top_left_corner
+        rows = [[] for _ in top_left_corner.inner]
+        while True:
+            for i, row in enumerate(display.inner):
+                rows[i].append(row)
+            if RIGHT not in display.neighbors:
+                break
+            display = display.neighbors[RIGHT]
+        print("\n".join("|".join(row) for row in rows))
+        print("")
+        if BOTTOM not in top_left_corner.neighbors:
+            break
+        top_left_corner = top_left_corner.neighbors[BOTTOM]
+
+
 examples = build_tile_objects_dict(example_input)
 example_graph = build_contact_graph(example_input)
 analyze_graph(example_graph)
 assemble_jigsaw(examples, example_graph)
-
-first_corner_id = find_corner_tiles(example_input)[0]
-first_corner = examples[first_corner_id]
+display_assembled_tile_ids(examples)
+display_assembled_tile_contents(examples)
 
 # 1951    2311    3079
 # 2729    1427    2473
 # 2971    1489    1171
-top_left_corner = [
-    tile
-    for tile in examples.values()
-    if TOP not in tile.neighbors and LEFT not in tile.neighbors
-][0]
 
-print(f"top left corner : {top_left_corner.id}")
-while True:
-    display = top_left_corner
-    while True:
-        print(display.id, end=" ")
-        if RIGHT not in display.neighbors:
-            break
-        display = display.neighbors[RIGHT]
-    print("")
-    if BOTTOM not in top_left_corner.neighbors:
-        break
-    top_left_corner = top_left_corner.neighbors[BOTTOM]
+# tiles = build_tile_objects_dict(raw_input)
 # graph = build_contact_graph(raw_input)
 # analyze_graph(graph)
+# assemble_jigsaw(tiles, graph)
+# display_assembled_tile_ids(tiles)
+# display_assembled_tile_contents(tiles)
+
+
+t = Tile(
+    """Tile 1234:
+1234
+5678
+abcd
+efgh"""
+)
+
+u.assert_equals(t.id, 1234, "tile id")
+u.assert_equals(
+    str(t),
+    """1234
+5678
+abcd
+efgh""",
+    "tile content before rotation",
+)
+u.assert_equals(t.borders[TOP], "1234", "top border")
+u.assert_equals(t.borders[RIGHT], "48dh", "right border")
+u.assert_equals(t.borders[BOTTOM], "efgh", "bottom border")
+u.assert_equals(t.borders[LEFT], "15ae", "left border")
+
+t.rotate_clockwise(1)
+u.assert_equals(t.borders[TOP], "ea51", "top border after rotation")
+u.assert_equals(t.borders[RIGHT], "1234", "right border after rotation")
+u.assert_equals(t.borders[BOTTOM], "hd84", "bottom border after rotation")
+u.assert_equals(t.borders[LEFT], "efgh", "left border after rotation")
+
+print(t)
+t.flip(LEFT)
+print(t)
+u.assert_equals(t.borders[TOP], "hd84", "top border after flip/horiz axis")
+u.assert_equals(t.borders[RIGHT], "4321", "right border after flip/horiz axis")
+u.assert_equals(t.borders[BOTTOM], "ea51", "bottom border after flip/horiz axis")
+u.assert_equals(t.borders[LEFT], "hgfe", "left border after flip/horiz axis")
+
+print(t)
+t.flip(TOP)
+print(t)
+
+u.assert_equals(t.borders[TOP], "48dh", "top border after flip/vertical axis")
+u.assert_equals(t.borders[RIGHT], "hgfe", "right border after flip/vertical axis")
+u.assert_equals(t.borders[BOTTOM], "15ae", "bottom border after flip/vertical axis")
+u.assert_equals(t.borders[LEFT], "4321", "left border after flip/vertical axis")
