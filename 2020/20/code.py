@@ -223,12 +223,7 @@ def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
             print("diff == 1")
             print(neighbor.borders)
             neighbor.rotate_clockwise(1)
-            u.yellow(f"{neighbor.id} after rotation:")
-            print(neighbor)
-            neighbor.flip(direction_for_locked)
-            u.yellow(f"{neighbor.id} after transformation:")
-            print(neighbor)
-            print(neighbor.borders)
+            neighbor.flip((direction_for_locked + 1) % 4)
             locked.addNeighbor(direction_for_locked, neighbor)
             neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
             neighbor.locked = True
@@ -339,14 +334,6 @@ display_assembled_tile_contents(examples)
 # 2729    1427    2473
 # 2971    1489    1171
 
-# tiles = build_tile_objects_dict(raw_input)
-# graph = build_contact_graph(raw_input)
-# analyze_graph(graph)
-# assemble_jigsaw(tiles, graph)
-# display_assembled_tile_ids(tiles)
-# display_assembled_tile_contents(tiles)
-
-
 t = Tile(
     """Tile 1234:
 1234
@@ -356,38 +343,37 @@ efgh"""
 )
 
 u.assert_equals(t.id, 1234, "tile id")
-u.assert_equals(
-    str(t),
-    """1234
-5678
-abcd
-efgh""",
-    "tile content before rotation",
-)
+
 u.assert_equals(t.borders[TOP], "1234", "top border")
 u.assert_equals(t.borders[RIGHT], "48dh", "right border")
 u.assert_equals(t.borders[BOTTOM], "efgh", "bottom border")
 u.assert_equals(t.borders[LEFT], "15ae", "left border")
 
 t.rotate_clockwise(1)
+
 u.assert_equals(t.borders[TOP], "ea51", "top border after rotation")
 u.assert_equals(t.borders[RIGHT], "1234", "right border after rotation")
 u.assert_equals(t.borders[BOTTOM], "hd84", "bottom border after rotation")
 u.assert_equals(t.borders[LEFT], "efgh", "left border after rotation")
 
-print(t)
 t.flip(LEFT)
-print(t)
+
 u.assert_equals(t.borders[TOP], "hd84", "top border after flip/horiz axis")
 u.assert_equals(t.borders[RIGHT], "4321", "right border after flip/horiz axis")
 u.assert_equals(t.borders[BOTTOM], "ea51", "bottom border after flip/horiz axis")
 u.assert_equals(t.borders[LEFT], "hgfe", "left border after flip/horiz axis")
 
-print(t)
 t.flip(TOP)
-print(t)
 
 u.assert_equals(t.borders[TOP], "48dh", "top border after flip/vertical axis")
 u.assert_equals(t.borders[RIGHT], "hgfe", "right border after flip/vertical axis")
 u.assert_equals(t.borders[BOTTOM], "15ae", "bottom border after flip/vertical axis")
 u.assert_equals(t.borders[LEFT], "4321", "left border after flip/vertical axis")
+
+
+tiles = build_tile_objects_dict(raw_input)
+graph = build_contact_graph(raw_input)
+analyze_graph(graph)
+assemble_jigsaw(tiles, graph)
+display_assembled_tile_ids(tiles)
+display_assembled_tile_contents(tiles)
