@@ -200,35 +200,38 @@ def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
     if common_border:
         direction_for_locked = locked.borders.index(common_border)
         direction_for_neighbor = neighbor.borders.index(common_border)
-        if neighbor.locked and (direction_for_neighbor - direction_for_locked) % 4 != 2:
+        diff = (direction_for_neighbor - direction_for_locked) % 4
+        if neighbor.locked and diff != 2:
             print(f"{u.RED}THAT SMELLS BAD FOR {neighbor.id} vs {locked.id}{u.NORMAL}")
-        print(f"direction for {locked.id}: {DIRECTIONS[direction_for_locked]}")
-        print(f"direction for {neighbor.id}: {DIRECTIONS[direction_for_neighbor]}")
-        if (direction_for_locked - direction_for_neighbor) % 4 == 2:
-            print("diff == 2")
-            locked.addNeighbor(direction_for_locked, neighbor)
-            neighbor.addNeighbor(direction_for_neighbor, locked)
-            neighbor.locked = True
-        elif direction_for_locked == direction_for_neighbor:
-            print("diff == 0")
+        print(f"direction for fixed {locked.id}: {DIRECTIONS[direction_for_locked]}")
+        print(f"direction for new {neighbor.id}: {DIRECTIONS[direction_for_neighbor]}")
+        print(f"diff = {diff}")
+        if diff == 0:
             neighbor.flip((direction_for_locked + 1) % 4)
-            locked.addNeighbor(direction_for_locked, neighbor)
-            neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
-            neighbor.locked = True
-        elif direction_for_locked == (direction_for_neighbor + 1) % 4:
-            print("diff == 1")
-            print(neighbor.borders)
-            # pourquoi parfois je dois faire rotate_clockwise(3)
-            # et parfois je dois faire rotate1+flip ??
-            neighbor.rotate_clockwise(3)
-            # neighbor.flip((direction_for_locked + 1) % 4)
-            print(neighbor.borders)
-            locked.addNeighbor(direction_for_locked, neighbor)
-            neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
-            neighbor.locked = True
-        elif direction_for_locked == (direction_for_neighbor - 1) % 4:
-            print("diff == -1")
-            neighbor.rotate_clockwise(1)
+        elif diff == 1:
+            if direction_for_locked in (RIGHT, LEFT):
+                neighbor.rotate_clockwise(1)
+            elif direction_for_locked in (BOTTOM, TOP):
+                neighbor.rotate_clockwise(1)  # direct it to top
+                neighbor.flip(TOP)
+            else:
+                u.yellow("todo 1")
+        elif diff == 2:
+            pass  # nothing to do, they already are well oriented
+        elif diff == 3:
+            if direction_for_locked in (TOP,):
+                neighbor.rotate_clockwise(3)
+            elif direction_for_locked in (RIGHT, LEFT):
+                neighbor.rotate_clockwise(1)
+                neighbor.flip(TOP)
+            else:
+                u.yellow("todo 3")
+        if (
+            neighbor.borders[(direction_for_locked + 2) % 4]
+            != locked.borders[direction_for_locked]
+        ):
+            u.red("WRONG")
+        else:
             locked.addNeighbor(direction_for_locked, neighbor)
             neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
             neighbor.locked = True
@@ -238,34 +241,40 @@ def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
         )
         direction_for_locked = locked.borders.index(common_border)
         direction_for_neighbor = neighbor.borders.index(common_border[::-1])
+        diff = (direction_for_neighbor - direction_for_locked) % 4
         if neighbor.locked:
             print(
                 f"{u.RED}SOMETHING SMELLS BAD FOR {neighbor.id} vs {locked.id}{u.NORMAL}"
             )
-        print(f"direction for {locked.id}: {DIRECTIONS[direction_for_locked]}")
-        print(f"direction for {neighbor.id}: {DIRECTIONS[direction_for_neighbor]}")
-        if direction_for_locked == direction_for_neighbor:
-            print("fdiff == 0")
+        print(f"direction for fixed {locked.id}: {DIRECTIONS[direction_for_locked]}")
+        print(f"direction for new {neighbor.id}: {DIRECTIONS[direction_for_neighbor]}")
+        print(f"diff = *{diff}*")
+        if diff == 0:
             neighbor.rotate_clockwise(2)
-            locked.addNeighbor(direction_for_locked, neighbor)
-            neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
-            neighbor.locked = True
-        elif (direction_for_locked - direction_for_neighbor) % 4 == 2:
-            print("fdiff == 2")
+        elif diff == 1:
+            if direction_for_locked in (BOTTOM, TOP):
+                neighbor.rotate_clockwise(1)
+            if direction_for_locked in (RIGHT,):
+                neighbor.rotate_clockwise(1)
+                neighbor.flip(RIGHT)
+            else:
+                u.yellow("todo *1*")
+        elif diff == 2:
             neighbor.flip(direction_for_locked)
-            locked.addNeighbor(direction_for_locked, neighbor)
-            neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
-            neighbor.locked = True
-        elif direction_for_locked == (direction_for_neighbor + 1) % 4:
-            print("fdiff == -1")
-            neighbor.rotate_clockwise(1)
-            neighbor.flip((direction_for_locked + 1) % 4)
-            locked.addNeighbor(direction_for_locked, neighbor)
-            neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
-            neighbor.locked = True
-        elif direction_for_locked == (direction_for_neighbor - 1) % 4:
-            print("fdiff == 1")
-            neighbor.rotate_clockwise(1)
+        elif diff == 3:
+            if direction_for_locked in (TOP, BOTTOM):
+                neighbor.rotate_clockwise(1)
+                neighbor.flip(LEFT)
+            elif direction_for_locked in (LEFT,):
+                neighbor.rotate_clockwise(3)
+            else:
+                u.yellow("todo *3*")
+        if (
+            neighbor.borders[(direction_for_locked + 2) % 4]
+            != locked.borders[direction_for_locked]
+        ):
+            u.red("WRONG")
+        else:
             locked.addNeighbor(direction_for_locked, neighbor)
             neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
             neighbor.locked = True
@@ -274,15 +283,18 @@ def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
 def assemble_jigsaw(tiles: dict, contacts: nx.Graph):
     any_tile_id = next(iter(tiles))
     todo_list = [tiles[any_tile_id]]
+    done = set()
     while len(todo_list) > 0:
         todo = todo_list.pop(0)
         todo.locked = True
+        done.add(todo.id)
         if len(todo.neighbors) == 4:
             continue
         for neighbor_id in nx.neighbors(contacts, todo.id):
             neighbor = tiles[neighbor_id]
             place_neighbor_of_locked_tile(todo, neighbor)
-            todo_list.append(neighbor)
+            if neighbor_id not in done:
+                todo_list.append(neighbor)
         if 0 == sum(1 for tile in tiles.values() if not tile.locked):
             break
 
