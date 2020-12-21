@@ -151,6 +151,8 @@ class Tile:
             raise RuntimeError(
                 f"two tiles at the same place! {neighbor.id} and {self.neighbors[direction].id}"
             )
+        else:
+            print(f"{self.neighbors[direction].id} is already a neighbor of {self.id}")
 
 
 def build_tile_objects_dict(raw_tileset: str):
@@ -192,14 +194,8 @@ def tuple_intersection(t: tuple, u: tuple):
 
 
 def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
-    if not locked.locked:
-        print("uh that smells!")
     print("---")
     print(f"placing tile {neighbor.id} next to {locked.id}")
-    print(f"tile {neighbor.id}:")
-    print(neighbor)
-    print(f"tile {locked.id} (locked):")
-    print(locked)
     common_border = tuple_intersection(locked.borders, neighbor.borders)
     if common_border:
         direction_for_locked = locked.borders.index(common_border)
@@ -222,8 +218,11 @@ def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
         elif direction_for_locked == (direction_for_neighbor + 1) % 4:
             print("diff == 1")
             print(neighbor.borders)
-            neighbor.rotate_clockwise(1)
-            neighbor.flip((direction_for_locked + 1) % 4)
+            # pourquoi parfois je dois faire rotate_clockwise(3)
+            # et parfois je dois faire rotate1+flip ??
+            neighbor.rotate_clockwise(3)
+            # neighbor.flip((direction_for_locked + 1) % 4)
+            print(neighbor.borders)
             locked.addNeighbor(direction_for_locked, neighbor)
             neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
             neighbor.locked = True
@@ -253,16 +252,23 @@ def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
             neighbor.locked = True
         elif (direction_for_locked - direction_for_neighbor) % 4 == 2:
             print("fdiff == 2")
-            neighbor.flip((direction_for_locked) % 4)
+            neighbor.flip(direction_for_locked)
             locked.addNeighbor(direction_for_locked, neighbor)
             neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
             neighbor.locked = True
         elif direction_for_locked == (direction_for_neighbor + 1) % 4:
-            print("fdiff == 1")
-            u.yellow("todo 4")
-        elif direction_for_locked == (direction_for_neighbor - 1) % 4:
             print("fdiff == -1")
-            u.yellow("todo 5")
+            neighbor.rotate_clockwise(1)
+            neighbor.flip((direction_for_locked + 1) % 4)
+            locked.addNeighbor(direction_for_locked, neighbor)
+            neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
+            neighbor.locked = True
+        elif direction_for_locked == (direction_for_neighbor - 1) % 4:
+            print("fdiff == 1")
+            neighbor.rotate_clockwise(1)
+            locked.addNeighbor(direction_for_locked, neighbor)
+            neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
+            neighbor.locked = True
 
 
 def assemble_jigsaw(tiles: dict, contacts: nx.Graph):
