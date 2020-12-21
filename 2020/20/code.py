@@ -1,6 +1,7 @@
 import random
 import re
 from math import prod
+from more_itertools import windowed, locate
 
 import networkx as nx
 
@@ -69,21 +70,12 @@ LEFT = 3
 
 DIRECTIONS = ("Top", "Right", "Bottom", "Left")
 
-SEA_MONSTER = """
-                  # 
-#    ##    ##    ###
- #  #  #  #  #  #   
-"""
 
 SEA_MONSTER = """
                   _ 
 *    __    __    ^^>
  \  /  \  /  \  /   
 """
-
-HEAD = re.compile(r"(..................)#")
-BODY = re.compile(r"#(....)##(....)##(....)###")
-FEET = re.compile(r"(.)#(..)#(..)#(..)#(..)#(..)#")
 
 
 class Tile:
@@ -380,44 +372,70 @@ class Map:
         self.inner = [row[::-1] for row in self.inner]
 
 
-def look_for_sea_monsters(raw_map: str):
-    the_map = Map(raw_map)
+SEA_MONSTER = """
+                  # 
+#    ##    ##    ###
+ #  #  #  #  #  #   
+01234567890123456
+"""
+#                     01234457890123456789
+MIDDLE = re.compile(r"#....##....##....###")
+
+
+def look_for_sea_monsters(sea: Map):
     found_sea_monsters = 0
-    for turn in range(9):
-        for i, _ in enumerate(the_map.inner[1:-1], start=1):
-            top, row, bottom = the_map.inner[i - 1 : i + 2]
-            match = re.search(BODY, row)
-            if match:
-                index = row.index(match.group(0))
-                if len(re.findall(BODY, row)) > 1:
-                    u.red(f"found {len(re.findall(BODY, row))} middles in that row!")
-                print(f"found a sea monster middle at index {index}")
-                match_bottom = re.search(FEET, bottom[index:])
-                match_top = re.search(HEAD, top[index:])
-                if match_bottom and match_top:
-                    u.purple("found a sea monster!")
+    for turn in range(8):
+        for latitude, row in enumerate(sea.inner[1:-1], 1):
+            north, south = sea.inner[latitude - 1], sea.inner[latitude + 1]
+            for body in re.findall(MIDDLE, row):
+                index = row.index(body)
+                if (
+                    south[index + 1 : index + 17 : 3] == "######"
+                    and north[index + 18] == "#"
+                ):
+                    found_sea_monsters += 1
+                    l = list(sea.inner[latitude])
+                    for i in (0, 5, 6, 11, 12, 17, 18, 19):
+                        if l[index + i] != "#":
+                            u.red(f"prout 1 - {i}")
+                        l[index + i] = "■"
+                    sea.inner[latitude] = "".join(l)
+                    l = list(sea.inner[latitude + 1])
+                    for i in (1, 4, 7, 10, 13, 16):
+                        if l[index + i] != "#":
+                            u.red(f"prout 2 - {i}")
+                        l[index + i] = "■"
+                    sea.inner[latitude + 1] = "".join(l)
+                    l = list(sea.inner[latitude - 1])
+                    if l[index + 18] != "#":
+                        u.red(f"prout 3")
+                    l[index + 18] = "■"
+                    sea.inner[latitude - 1] = "".join(l)
+            # for longitude, window in enumerate(windowed(row, 20)):
+            # print(window)
+            # if re.match(MIDDLE, window):
+            #    print(f"found a middle of sea monster at {latitude}:{longitude}")
         if found_sea_monsters > 0:
             break
-        print("rotate!")
-        the_map.rotate_clockwise()
-        if turn == 4:
-            print("flip!")
-            the_map.flip()
-    print(f"found {found_sea_monsters} sea monsters!")
+        sea.rotate_clockwise()
+        if turn == 3:
+            sea.flip()
+    print(sea)
+    return found_sea_monsters
 
 
 examples = build_tile_objects_dict(example_input)
 example_graph = build_contact_graph(example_input)
 analyze_graph(example_graph)
 assemble_jigsaw(examples, example_graph)
-display_assembled_tile_ids(examples)
-display_assembled_tile_contents(examples)
+# isplay_assembled_tile_ids(examples)
+# display_assembled_tile_contents(examples)
 print("------")
 example_map = extract_assembled_map(examples)
-print(example_map)
-look_for_sea_monsters(example_map)
+example_sea = Map(example_map)
+look_for_sea_monsters(example_sea)
 
-
+u.assert_equals(str(example_sea).count("#"), 273, "example sea roughness")
 # 1951    2311    3079
 # 2729    1427    2473
 # 2971    1489    1171
@@ -459,14 +477,16 @@ look_for_sea_monsters(example_map)
 # u.assert_equals(t.borders[LEFT], "4321", "left border after flip/vertical axis")
 
 
-# tiles = build_tile_objects_dict(raw_input)
-# graph = build_contact_graph(raw_input)
-# analyze_graph(graph)
-# assemble_jigsaw(tiles, graph)
-# display_assembled_tile_ids(tiles)
-# display_assembled_tile_contents(tiles)
+tiles = build_tile_objects_dict(raw_input)
+graph = build_contact_graph(raw_input)
+analyze_graph(graph)
+assemble_jigsaw(tiles, graph)
+display_assembled_tile_ids(tiles)
 
-# print("------")
-# i_map = extract_assembled_map(tiles)
-# print(i_map)
-# look_for_sea_monsters(i_map)
+print("------")
+i_map = extract_assembled_map(tiles)
+sea = Map(i_map)
+look_for_sea_monsters(sea)
+
+u.answer_part_2(str(sea).count("#"))
+# 2534 too high
