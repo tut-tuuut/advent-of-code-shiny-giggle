@@ -83,8 +83,8 @@ class Tile:
         for border in self.borders:
             if border == border[::-1]:
                 u.red(f"{self.id} will be a problem")
-        # self.inner = [row[1:-1] for row in tile_data[1:-1]]
-        self.inner = tile_data
+        self.inner = [row[1:-1] for row in tile_data[1:-1]]
+        # self.inner = tile_data # for debug
         self.size = len(self.inner[0])
         self.neighbors = {}
         self.locked = False
@@ -94,11 +94,7 @@ class Tile:
         return "\n".join(self.inner)
 
     def rotate_clockwise(self, times: int):
-        print(f"rotate {self.id} {times} times")
-        if self.inner[0] != self.borders[TOP]:
-            print(
-                f"{u.RED}first content row: {self.inner[0]}, top border = {self.borders[TOP]}{u.NORMAL}"
-            )
+        # print(f"rotate {self.id} {times} times")
         if times % 4 == 0:
             return
         for _ in range(times):
@@ -113,11 +109,7 @@ class Tile:
             self.inner = [row[::-1] for row in self.inner[::-1]]
 
     def flip(self, axis: int):
-        print(f"flip {self.id} on axis {DIRECTIONS[axis]}")
-        if self.inner[0] != self.borders[TOP]:
-            print(
-                f"{u.RED}first content row: {self.inner[0]}, top border = {self.borders[TOP]}{u.NORMAL}"
-            )
+        # print(f"flip {self.id} on axis {DIRECTIONS[axis]}")
         if axis == TOP or axis == BOTTOM:
             # vertical axis: flip every row individually
             self.inner = [row[::-1] for row in self.inner]
@@ -146,10 +138,6 @@ class Tile:
             self.neighbors[direction] = neighbor
             # u.green(f"placing {neighbor.id} at {DIRECTIONS[direction]} of {self.id}.")
         elif self.neighbors[direction] != neighbor:
-            # print(f"tile {self.id}")
-            # print(self)
-            # print(f"tile {neighbor.id}")
-            # print(neighbor)
             raise RuntimeError(
                 f"two tiles at the same place! {neighbor.id} and {self.neighbors[direction].id}"
             )
@@ -335,57 +323,84 @@ def display_assembled_tile_contents(tiles: dict):
         top_left_corner = top_left_corner.neighbors[BOTTOM]
 
 
+def extract_assembled_map(tiles: dict):
+    top_left_corner = [
+        tile
+        for tile in tiles.values()
+        if TOP not in tile.neighbors and LEFT not in tile.neighbors
+    ][0]
+    content = []
+    while True:
+        display = top_left_corner
+        rows = [[] for _ in top_left_corner.inner]
+        while True:
+            for i, row in enumerate(display.inner):
+                rows[i].append(row)
+            if RIGHT not in display.neighbors:
+                break
+            display = display.neighbors[RIGHT]
+        content.append("\n".join("".join(row) for row in rows))
+        if BOTTOM not in top_left_corner.neighbors:
+            break
+        top_left_corner = top_left_corner.neighbors[BOTTOM]
+    return "\n".join(content)
+
+
 examples = build_tile_objects_dict(example_input)
 example_graph = build_contact_graph(example_input)
 analyze_graph(example_graph)
 assemble_jigsaw(examples, example_graph)
 display_assembled_tile_ids(examples)
 display_assembled_tile_contents(examples)
-
+print("------")
+print(extract_assembled_map(examples))
 # 1951    2311    3079
 # 2729    1427    2473
 # 2971    1489    1171
 
-t = Tile(
-    """Tile 1234:
-1234
-5678
-abcd
-efgh"""
-)
+# t = Tile(
+#     """Tile 1234:
+# 1234
+# 5678
+# abcd
+# efgh"""
+# )
 
-u.assert_equals(t.id, 1234, "tile id")
+# u.assert_equals(t.id, 1234, "tile id")
 
-u.assert_equals(t.borders[TOP], "1234", "top border")
-u.assert_equals(t.borders[RIGHT], "48dh", "right border")
-u.assert_equals(t.borders[BOTTOM], "efgh", "bottom border")
-u.assert_equals(t.borders[LEFT], "15ae", "left border")
+# u.assert_equals(t.borders[TOP], "1234", "top border")
+# u.assert_equals(t.borders[RIGHT], "48dh", "right border")
+# u.assert_equals(t.borders[BOTTOM], "efgh", "bottom border")
+# u.assert_equals(t.borders[LEFT], "15ae", "left border")
 
-t.rotate_clockwise(1)
+# t.rotate_clockwise(1)
 
-u.assert_equals(t.borders[TOP], "ea51", "top border after rotation")
-u.assert_equals(t.borders[RIGHT], "1234", "right border after rotation")
-u.assert_equals(t.borders[BOTTOM], "hd84", "bottom border after rotation")
-u.assert_equals(t.borders[LEFT], "efgh", "left border after rotation")
+# u.assert_equals(t.borders[TOP], "ea51", "top border after rotation")
+# u.assert_equals(t.borders[RIGHT], "1234", "right border after rotation")
+# u.assert_equals(t.borders[BOTTOM], "hd84", "bottom border after rotation")
+# u.assert_equals(t.borders[LEFT], "efgh", "left border after rotation")
 
-t.flip(LEFT)
+# t.flip(LEFT)
 
-u.assert_equals(t.borders[TOP], "hd84", "top border after flip/horiz axis")
-u.assert_equals(t.borders[RIGHT], "4321", "right border after flip/horiz axis")
-u.assert_equals(t.borders[BOTTOM], "ea51", "bottom border after flip/horiz axis")
-u.assert_equals(t.borders[LEFT], "hgfe", "left border after flip/horiz axis")
+# u.assert_equals(t.borders[TOP], "hd84", "top border after flip/horiz axis")
+# u.assert_equals(t.borders[RIGHT], "4321", "right border after flip/horiz axis")
+# u.assert_equals(t.borders[BOTTOM], "ea51", "bottom border after flip/horiz axis")
+# u.assert_equals(t.borders[LEFT], "hgfe", "left border after flip/horiz axis")
 
-t.flip(TOP)
+# t.flip(TOP)
 
-u.assert_equals(t.borders[TOP], "48dh", "top border after flip/vertical axis")
-u.assert_equals(t.borders[RIGHT], "hgfe", "right border after flip/vertical axis")
-u.assert_equals(t.borders[BOTTOM], "15ae", "bottom border after flip/vertical axis")
-u.assert_equals(t.borders[LEFT], "4321", "left border after flip/vertical axis")
+# u.assert_equals(t.borders[TOP], "48dh", "top border after flip/vertical axis")
+# u.assert_equals(t.borders[RIGHT], "hgfe", "right border after flip/vertical axis")
+# u.assert_equals(t.borders[BOTTOM], "15ae", "bottom border after flip/vertical axis")
+# u.assert_equals(t.borders[LEFT], "4321", "left border after flip/vertical axis")
 
 
-tiles = build_tile_objects_dict(raw_input)
-graph = build_contact_graph(raw_input)
-analyze_graph(graph)
-assemble_jigsaw(tiles, graph)
-display_assembled_tile_ids(tiles)
-display_assembled_tile_contents(tiles)
+# tiles = build_tile_objects_dict(raw_input)
+# graph = build_contact_graph(raw_input)
+# analyze_graph(graph)
+# assemble_jigsaw(tiles, graph)
+# display_assembled_tile_ids(tiles)
+# display_assembled_tile_contents(tiles)
+
+# print("------")
+# print(extract_assembled_map(tiles))
