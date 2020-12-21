@@ -1,3 +1,4 @@
+import random
 from math import prod
 
 import networkx as nx
@@ -87,6 +88,7 @@ class Tile:
         self.size = len(self.inner[0])
         self.neighbors = {}
         self.locked = False
+        self.first = False
 
     def __str__(self):
         return "\n".join(self.inner)
@@ -142,7 +144,7 @@ class Tile:
     def addNeighbor(self, direction: int, neighbor):
         if direction not in self.neighbors:
             self.neighbors[direction] = neighbor
-            u.green(f"placing {neighbor.id} at {DIRECTIONS[direction]} of {self.id}.")
+            # u.green(f"placing {neighbor.id} at {DIRECTIONS[direction]} of {self.id}.")
         elif self.neighbors[direction] != neighbor:
             # print(f"tile {self.id}")
             # print(self)
@@ -151,8 +153,6 @@ class Tile:
             raise RuntimeError(
                 f"two tiles at the same place! {neighbor.id} and {self.neighbors[direction].id}"
             )
-        else:
-            print(f"{self.neighbors[direction].id} is already a neighbor of {self.id}")
 
 
 def build_tile_objects_dict(raw_tileset: str):
@@ -194,18 +194,11 @@ def tuple_intersection(t: tuple, u: tuple):
 
 
 def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
-    print("---")
-    print(f"placing tile {neighbor.id} next to {locked.id}")
     common_border = tuple_intersection(locked.borders, neighbor.borders)
     if common_border:
         direction_for_locked = locked.borders.index(common_border)
         direction_for_neighbor = neighbor.borders.index(common_border)
         diff = (direction_for_neighbor - direction_for_locked) % 4
-        if neighbor.locked and diff != 2:
-            print(f"{u.RED}THAT SMELLS BAD FOR {neighbor.id} vs {locked.id}{u.NORMAL}")
-        print(f"direction for fixed {locked.id}: {DIRECTIONS[direction_for_locked]}")
-        print(f"direction for new {neighbor.id}: {DIRECTIONS[direction_for_neighbor]}")
-        print(f"diff = {diff}")
         if diff == 0:
             neighbor.flip((direction_for_locked + 1) % 4)
         elif diff == 1:
@@ -219,7 +212,7 @@ def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
         elif diff == 2:
             pass  # nothing to do, they already are well oriented
         elif diff == 3:
-            if direction_for_locked in (TOP,):
+            if direction_for_locked in (TOP, BOTTOM):
                 neighbor.rotate_clockwise(3)
             elif direction_for_locked in (RIGHT, LEFT):
                 neighbor.rotate_clockwise(1)
@@ -246,15 +239,13 @@ def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
             print(
                 f"{u.RED}SOMETHING SMELLS BAD FOR {neighbor.id} vs {locked.id}{u.NORMAL}"
             )
-        print(f"direction for fixed {locked.id}: {DIRECTIONS[direction_for_locked]}")
-        print(f"direction for new {neighbor.id}: {DIRECTIONS[direction_for_neighbor]}")
-        print(f"diff = *{diff}*")
+
         if diff == 0:
             neighbor.rotate_clockwise(2)
         elif diff == 1:
             if direction_for_locked in (BOTTOM, TOP):
                 neighbor.rotate_clockwise(1)
-            if direction_for_locked in (RIGHT,):
+            elif direction_for_locked in (RIGHT, LEFT):
                 neighbor.rotate_clockwise(1)
                 neighbor.flip(RIGHT)
             else:
@@ -265,7 +256,7 @@ def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
             if direction_for_locked in (TOP, BOTTOM):
                 neighbor.rotate_clockwise(1)
                 neighbor.flip(LEFT)
-            elif direction_for_locked in (LEFT,):
+            elif direction_for_locked in (LEFT, RIGHT):
                 neighbor.rotate_clockwise(3)
             else:
                 u.yellow("todo *3*")
@@ -273,7 +264,7 @@ def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
             neighbor.borders[(direction_for_locked + 2) % 4]
             != locked.borders[direction_for_locked]
         ):
-            u.red("WRONG")
+            u.red(f"WRONG for {locked.id}/{neighbor.id}")
         else:
             locked.addNeighbor(direction_for_locked, neighbor)
             neighbor.addNeighbor((direction_for_locked + 2) % 4, locked)
@@ -281,22 +272,23 @@ def place_neighbor_of_locked_tile(locked: Tile, neighbor: Tile):
 
 
 def assemble_jigsaw(tiles: dict, contacts: nx.Graph):
-    any_tile_id = next(iter(tiles))
-    todo_list = [tiles[any_tile_id]]
-    done = set()
+    any_tile_id = random.choice(list(tiles.keys()))
+    print(f"assembling beginning at tile {any_tile_id}")
+    first_tile = tiles[any_tile_id]
+    first_tile.first = True
+    todo_list = [first_tile]
+    done_ids = set()
     while len(todo_list) > 0:
-        todo = todo_list.pop(0)
+        todo = todo_list.pop()
         todo.locked = True
-        done.add(todo.id)
-        if len(todo.neighbors) == 4:
+        if todo.id in done_ids:
             continue
+        done_ids.add(todo.id)
+        # print(f"placing neighbors of {todo.id}")
         for neighbor_id in nx.neighbors(contacts, todo.id):
             neighbor = tiles[neighbor_id]
             place_neighbor_of_locked_tile(todo, neighbor)
-            if neighbor_id not in done:
-                todo_list.append(neighbor)
-        if 0 == sum(1 for tile in tiles.values() if not tile.locked):
-            break
+            todo_list.append(neighbor)
 
 
 def display_assembled_tile_ids(tiles: dict):
@@ -305,11 +297,13 @@ def display_assembled_tile_ids(tiles: dict):
         for tile in tiles.values()
         if TOP not in tile.neighbors and LEFT not in tile.neighbors
     ][0]
-    print(f"---- ---- ---- ---- ---- ----")
     while True:
         display = top_left_corner
         while True:
-            print(display.id, end=" ")
+            if display.first:
+                print(f"{u.YELLOW}{display.id}{u.NORMAL}", end=" ")
+            else:
+                print(display.id, end=" ")
             if RIGHT not in display.neighbors:
                 break
             display = display.neighbors[RIGHT]
