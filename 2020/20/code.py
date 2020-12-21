@@ -1,4 +1,5 @@
 import random
+import re
 from math import prod
 
 import networkx as nx
@@ -67,6 +68,22 @@ BOTTOM = 2
 LEFT = 3
 
 DIRECTIONS = ("Top", "Right", "Bottom", "Left")
+
+SEA_MONSTER = """
+                  # 
+#    ##    ##    ###
+ #  #  #  #  #  #   
+"""
+
+SEA_MONSTER = """
+                  _ 
+*    __    __    ^^>
+ \  /  \  /  \  /   
+"""
+
+HEAD = re.compile(r"(..................)#")
+BODY = re.compile(r"#(....)##(....)##(....)###")
+FEET = re.compile(r"(.)#(..)#(..)#(..)#(..)#(..)#")
 
 
 class Tile:
@@ -346,6 +363,49 @@ def extract_assembled_map(tiles: dict):
     return "\n".join(content)
 
 
+class Map:
+    def __init__(self, raw_content):
+        self.inner = raw_content.splitlines()
+        self.size = len(self.inner[0])
+
+    def __str__(self):
+        return "\n".join(self.inner)
+
+    def rotate_clockwise(self):
+        self.inner = [
+            "".join(row[i] for row in self.inner[::-1]) for i in range(self.size)
+        ]
+
+    def flip(self):
+        self.inner = [row[::-1] for row in self.inner]
+
+
+def look_for_sea_monsters(raw_map: str):
+    the_map = Map(raw_map)
+    found_sea_monsters = 0
+    for turn in range(9):
+        for i, _ in enumerate(the_map.inner[1:-1], start=1):
+            top, row, bottom = the_map.inner[i - 1 : i + 2]
+            match = re.search(BODY, row)
+            if match:
+                index = row.index(match.group(0))
+                if len(re.findall(BODY, row)) > 1:
+                    u.red(f"found {len(re.findall(BODY, row))} middles in that row!")
+                print(f"found a sea monster middle at index {index}")
+                match_bottom = re.search(FEET, bottom[index:])
+                match_top = re.search(HEAD, top[index:])
+                if match_bottom and match_top:
+                    u.purple("found a sea monster!")
+        if found_sea_monsters > 0:
+            break
+        print("rotate!")
+        the_map.rotate_clockwise()
+        if turn == 4:
+            print("flip!")
+            the_map.flip()
+    print(f"found {found_sea_monsters} sea monsters!")
+
+
 examples = build_tile_objects_dict(example_input)
 example_graph = build_contact_graph(example_input)
 analyze_graph(example_graph)
@@ -353,7 +413,11 @@ assemble_jigsaw(examples, example_graph)
 display_assembled_tile_ids(examples)
 display_assembled_tile_contents(examples)
 print("------")
-print(extract_assembled_map(examples))
+example_map = extract_assembled_map(examples)
+print(example_map)
+look_for_sea_monsters(example_map)
+
+
 # 1951    2311    3079
 # 2729    1427    2473
 # 2971    1489    1171
@@ -403,4 +467,6 @@ print(extract_assembled_map(examples))
 # display_assembled_tile_contents(tiles)
 
 # print("------")
-# print(extract_assembled_map(tiles))
+# i_map = extract_assembled_map(tiles)
+# print(i_map)
+# look_for_sea_monsters(i_map)

@@ -2,6 +2,7 @@ RED = "\033[91m"
 GREEN = "\033[92m"
 YELLOW = "\033[93m"
 NORMAL = "\033[0m"
+PURPLE = "\033[0;35m"
 
 
 def red(message):
@@ -14,6 +15,10 @@ def green(message):
 
 def yellow(message):
     print(f"{YELLOW}{message}{NORMAL}")
+
+
+def purple(message):
+    print(f"{PURPLE}{message}{NORMAL}")
 
 
 def assert_equals(tested, expected, comment=""):
