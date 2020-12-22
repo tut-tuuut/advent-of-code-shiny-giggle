@@ -32,12 +32,12 @@ def get_winner_deck(input: str):
             card1 = deck1.popleft()
         except IndexError:
             print(f"player1 has lost after {turn} turns!")
-            return list(deck2)
+            return deck2
         try:
             card2 = deck2.popleft()
         except IndexError:
             print(f"player2 has lost after {turn} turns!")
-            return list(deck1)
+            return deck1
         if card1 > card2:
             deck1.append(card1)
             deck1.append(card2)
@@ -47,7 +47,7 @@ def get_winner_deck(input: str):
 
 
 def count_points(deck):
-    return sum(idx * card for idx, card in enumerate(deck[::-1], start=1))
+    return sum(idx * card for idx, card in enumerate(reversed(deck), start=1))
 
 
 deck = get_winner_deck(example_input)
