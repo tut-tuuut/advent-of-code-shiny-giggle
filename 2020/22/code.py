@@ -59,7 +59,7 @@ u.answer_part_1(count_points(deck))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
-COLORS = (u.RED, u.GREEN, u.YELLOW, u.PURPLE)
+COLORS = (u.RED, u.GREEN, u.YELLOW, u.PURPLE, u.CYAN, u.PINK)
 
 
 def extract_decks_from_raw_input(input: str):
