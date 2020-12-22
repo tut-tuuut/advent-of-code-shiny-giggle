@@ -111,7 +111,10 @@ def play_recursive_combat(deck1: deque, deck2: deque, level):
             return 1, deck1
 
         if card1 <= len(deck1) and card2 <= len(deck2):
-            winner, _ = play_recursive_combat(deck1.copy(), deck2.copy(), level + 1)
+            # launch a recursive combat
+            sub_deck_1 = deque(list(deck1)[:card1])  # pick only the <card1> first cards
+            sub_deck_2 = deque(list(deck2)[:card2])  # pick only the <card2> first cards
+            winner, _ = play_recursive_combat(sub_deck_1, sub_deck_2, level + 1)
         elif card1 > card2:
             winner = 1
         elif card2 > card1:
@@ -145,6 +148,6 @@ Player 2:
 )
 play_recursive_combat(deck1, deck2, 0)
 
-# deck1, deck2 = extract_decks_from_raw_input(raw_input)
-# winner, deck = play_recursive_combat(deck1, deck2, 0)
-# u.answer_part_2(count_points(deck))
+deck1, deck2 = extract_decks_from_raw_input(raw_input)
+winner, deck = play_recursive_combat(deck1, deck2, 0)
+u.answer_part_2(count_points(deck))
