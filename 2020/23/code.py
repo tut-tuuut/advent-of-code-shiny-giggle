@@ -1,3 +1,4 @@
+import time
 from collections import deque
 import utils as u
 
@@ -19,45 +20,51 @@ def debug_cups(cups: list, current: int):
 
 def crab_moves_cups(cups: deque, rounds=10):
     current = cups[0]
+    mini = min(cups)
+    maxi = max(cups)
+    l = len(cups)
+    init_time = time.time()
     for turn in range(rounds):
+        if turn % 500 == 0:
+            duration = time.time() - init_time
+            print(f"{duration:.4} - turn {turn}")
         current = cups.popleft()
-        # The crab picks up the three cups that are immediately clockwise of the current cup.
-        # They are removed from the circle; cup spacing is adjusted as necessary to maintain the circle.
+        print(f"current {current}")
         picked = [cups.popleft() for _ in range(3)]
+        print(f"pick {picked}")
         cups.appendleft(current)
-        # destination cup: the cup with a label equal to the current cup's label minus one.
-        # If this would select one of the cups that was just picked up, the crab will keep
-        # subtracting one until it finds a cup that wasn't just picked up.
-        # If at any point in this process the value goes below the lowest value on any cup's label,
-        # it wraps around to the highest value on any cup's label instead.
         destination = current - 1
-        while destination not in cups:
+        while destination in picked or destination < mini:
             destination -= 1
-            if destination < min(cups):
-                destination = max(cups)
-        # The crab places the cups it just picked up so that they are immediately clockwise
-        # of the destination cup. They keep the same order as when they were picked up.
-        destination_index = cups.index(destination)
-        cups.rotate(
-            5 - destination_index
-        )  # this places the destination at the end of the deque
-        cups.extend(picked)
+            if destination < mini:
+                destination = maxi
+        # THIS is slow: searching a value in a deque
+        destination_index = cups.index(destination) + 1
+        print(f"destination {destination} at idx {destination_index}")
+        for add in reversed(picked):
+            cups.insert(destination_index, add)
         # The crab selects a new current cup: the cup which is immediately clockwise of the current cup.
-        current_index = (cups.index(current) + 1) % 9
-        cups.rotate(
-            -current_index
-        )  # this places the new current cup at the beginning of the deque
+        cups.rotate(-1)  # this places the new current cup at the beginning of the deque
     return cups
 
 
 example_cups = deque(map(int, list(example_labeling)))
-crab_moves_cups(example_cups)
+example_cups = crab_moves_cups(example_cups)
+u.assert_equals("".join(map(str, example_cups)), "837419265")
 
 my_cups = deque(map(int, list(my_labeling)))
 cups_after_100_moves = crab_moves_cups(my_cups, 100)
 index_of_one = cups_after_100_moves.index(1)
 cups_after_100_moves.rotate(-index_of_one)  # put 1 at the beginning of the deque
 cups_after_100_moves.popleft()  # remove the one
-u.answer_part_1("".join(map(str, cups_after_100_moves)))
+answer_part_1 = "".join(map(str, cups_after_100_moves))
+
+u.assert_equals(answer_part_1, "25368479")
+u.answer_part_1(answer_part_1)
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+example_cups = deque(map(int, list(example_labeling)))
+example_cups.extend(range(10, 101))
+
+cups = crab_moves_cups(example_cups, 50)
