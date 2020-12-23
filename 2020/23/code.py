@@ -17,8 +17,7 @@ def debug_cups(cups: list, current: int):
     print("")
 
 
-def crab_moves_cups(labeling, rounds=10):
-    cups = deque(map(int, list(labeling)))
+def crab_moves_cups(cups: deque, rounds=10):
     current = cups[0]
     for turn in range(rounds):
         current = cups.popleft()
@@ -48,13 +47,14 @@ def crab_moves_cups(labeling, rounds=10):
         cups.rotate(
             -current_index
         )  # this places the new current cup at the beginning of the deque
-    debug_cups(cups, cups[0])
     return cups
 
 
-crab_moves_cups(example_labeling)
+example_cups = deque(map(int, list(example_labeling)))
+crab_moves_cups(example_cups)
 
-cups_after_100_moves = crab_moves_cups(my_labeling, 100)
+my_cups = deque(map(int, list(my_labeling)))
+cups_after_100_moves = crab_moves_cups(my_cups, 100)
 index_of_one = cups_after_100_moves.index(1)
 cups_after_100_moves.rotate(-index_of_one)  # put 1 at the beginning of the deque
 cups_after_100_moves.popleft()  # remove the one
