@@ -3,32 +3,81 @@ import utils as u
 with open(__file__ + ".input.txt", "r+") as file:
     raw_input = file.read()
 
-"""
---- Day 21: Allergen Assessment ---
-
-You reach the train's last stop and the closest you can get to your vacation island without getting wet. There aren't even any boats here, but nothing can stop you now: you build a raft. You just need a few days' worth of food for your journey.
-
-You don't speak the local language, so you can't read any ingredients lists. However, sometimes, allergens are listed in a language you do understand. You should be able to use this information to determine which ingredient contains which allergen and work out which foods are safe to take with you on your trip.
-
-You start by compiling a list of foods (your puzzle input), one food per line. Each line includes that food's ingredients list followed by some or all of the allergens the food contains.
-
-Each allergen is found in exactly one ingredient. Each ingredient contains zero or one allergen. Allergens aren't always marked; when they're listed (as in (contains nuts, shellfish) after an ingredients list), the ingredient that contains each listed allergen will be somewhere in the corresponding ingredients list. However, even if an allergen isn't listed, the ingredient that contains that allergen could still be present: maybe they forgot to label it, or maybe it was labeled in a language you don't know.
-
-For example, consider the following list of foods:
-
-mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
+example = """mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
 trh fvjkl sbzzf mxmxvkd (contains dairy)
 sqjhc fvjkl (contains soy)
-sqjhc mxmxvkd sbzzf (contains fish)
-
-The first food in the list has four ingredients (written in a language you don't understand): mxmxvkd, kfcds, sqjhc, and nhms. While the food might contain other allergens, a few allergens the food definitely contains are listed afterward: dairy and fish.
-
-The first step is to determine which ingredients can't possibly contain any of the allergens in any food in your list. In the above example, none of the ingredients kfcds, nhms, sbzzf, or trh can contain an allergen. Counting the number of times any of these ingredients appear in any ingredients list produces 5: they all appear once each except sbzzf, which appears twice.
-
-Determine which ingredients cannot possibly contain any of the allergens in your list. How many times do any of those ingredients appear?
-"""
+sqjhc mxmxvkd sbzzf (contains fish)"""
 
 # part 1 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
 
+def extract_ingredients_and_allergens(raw_input: str):
+    foods = []
+    for row in raw_input.splitlines():
+        ingredients, allergens = row[:-1].split(" (contains ")
+        foods.append([set(ingredients.split()), set(allergens.split(", "))])
+    return foods
+
+
+def search_allergens_in_ingredients(foods: list):
+    all_allergens = set()
+    all_ingredients = set()
+    allergen_ingredients = dict()
+    for ingredients, allergens in foods:
+        all_allergens.update(allergens)
+        all_ingredients.update(ingredients)
+    print(
+        f"{len(all_allergens)} allergen to find in {len(all_ingredients)} ingredients..."
+    )
+    while len(allergen_ingredients) < len(all_allergens):
+        for allergen in all_allergens:
+            ingredient_candidates = all_ingredients.copy()
+            for food_ingredients, food_allergens in foods:
+                if allergen in food_allergens:
+                    ingredient_candidates &= food_ingredients
+            if len(ingredient_candidates) == 1:
+                guilty = ingredient_candidates.pop()
+                allergen_ingredients[allergen] = guilty
+                all_ingredients.remove(guilty)
+    return allergen_ingredients
+
+
+def count_non_allergen_ingredients_occurrences(allergen_ingredients: dict, foods: list):
+    guilties = set(allergen_ingredients.values())
+    return sum(
+        1
+        for (ingredients, _) in foods
+        for ingredient in ingredients
+        if ingredient not in guilties
+    )
+
+
+example_foods = extract_ingredients_and_allergens(example)
+example_allergen_ingredients = search_allergens_in_ingredients(example_foods)
+u.assert_equals(
+    count_non_allergen_ingredients_occurrences(
+        example_allergen_ingredients, example_foods
+    ),
+    5,
+)
+my_foods = extract_ingredients_and_allergens(raw_input)
+allergen_ingredients = search_allergens_in_ingredients(my_foods)
+u.answer_part_1(
+    count_non_allergen_ingredients_occurrences(allergen_ingredients, my_foods)
+)
+
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def generate_canonical_dangerous_list(allergen_ingredients: dict):
+    return ",".join(
+        allergen_ingredients[allergen] for allergen in sorted(allergen_ingredients)
+    )
+
+
+u.assert_equals(
+    generate_canonical_dangerous_list(example_allergen_ingredients),
+    "mxmxvkd,sqjhc,fvjkl",
+)
+
+u.answer_part_2(generate_canonical_dangerous_list(allergen_ingredients))
