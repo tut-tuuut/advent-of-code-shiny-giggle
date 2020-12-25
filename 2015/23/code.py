@@ -11,15 +11,14 @@ tpl a
 inc a"""
 
 
-def exec_program(program: str):
-    registries = {"a": 0, "b": 0}
+def exec_program(program: str, starting_a=0):
+    registries = {"a": starting_a, "b": 0}
     pointer = 0
     rows = program.splitlines()
     try:
         while True:
             row = rows[pointer]
             instruction = row[:3]
-            u.blue(instruction)
             if instruction == "hlf":  # hlf a
                 target = row[4]
                 registries[target] //= 2
@@ -53,6 +52,13 @@ def exec_program(program: str):
         return registries
 
 
-print(exec_program(example_program))
+example = exec_program(example_program)
 
-print(exec_program(raw_input))
+u.assert_equals(example["a"], 2)
+
+result = exec_program(raw_input)
+u.assert_equals(result["b"], 170)
+u.answer_part_1(result["b"])
+
+result = exec_program(raw_input, starting_a=1)
+u.answer_part_2(result["b"])
