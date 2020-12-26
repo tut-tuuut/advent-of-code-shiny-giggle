@@ -21,10 +21,7 @@ def find_loop_size(public_key: int):
 
 
 def find_encryption_key(public_key: int, loop_size_of_other_device: int):
-    encryption_key = 1
-    for _ in range(loop_size_of_other_device):
-        encryption_key = (encryption_key * public_key) % MODULO
-    return encryption_key
+    return pow(public_key, loop_size_of_other_device, MODULO)
 
 
 u.assert_equals(find_loop_size(5764801), 8)
