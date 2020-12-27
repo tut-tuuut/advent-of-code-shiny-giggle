@@ -1,6 +1,7 @@
 import utils as u
 from collections import deque
 from itertools import count
+from time import time
 
 puzzle_input = "077201"
 
@@ -43,16 +44,20 @@ u.answer_part_1(look_for_ten_recipes_after_nth(int(puzzle_input)))
 
 
 def look_for_pattern_in_recipes(pattern: str):
-    score = deque([3, 7])
+    score = "37"
     elves_position = [0, 1]
-    int_pattern = tuple(map(int, list(pattern)))
-    l = len(pattern)
+    init = time()
     for i in count():
-        new_scores = str(sum(score[pos] for pos in elves_position))
-        new_scores_list = map(int, list(new_scores))
-        score.extend(new_scores_list)
-        elves_position = [(pos + score[pos] + 1) % len(score) for pos in elves_position]
-        break
+        if i % 10000 == 0:
+            print(f"round {i} - len = {len(score)} - time = {time() - init}", end="\r")
+        new_scores = str(sum(int(score[pos]) for pos in elves_position))
+        score += new_scores
+        elves_position = [
+            (pos + int(score[pos]) + 1) % len(score) for pos in elves_position
+        ]
+        if pattern in score[-7:]:
+            print(f"round {i} - len = {len(score)} - time = {time() - init}")
+            return score.index(pattern)
 
 
 u.assert_equals(look_for_pattern_in_recipes("51589"), 9)
