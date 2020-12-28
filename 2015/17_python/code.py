@@ -1,4 +1,5 @@
 import re
+import itertools
 from PIL import Image
 from collections import defaultdict
 
@@ -83,33 +84,62 @@ def evolve_grid(grid: dict, source_x: int, source_y: int):
         grid[x, y] = "|"
         y += 1
         if y > max_y:
-            return
-    # clay is found, analyze if it is a bassine
-    clay_left = min(
-        clay_x
-        for clay_x, clay_y in grid
-        if (clay_y == y and grid[clay_x, clay_y] == "#")
-    )
-    clay_right = max(
-        clay_x
-        for clay_x, clay_y in grid
-        if (clay_y == y and grid[clay_x, clay_y] == "#")
-    )
+            return []
+    # clay is found, analyze its width
+    try:
+        clay_left = 1 + max(
+            clay_x for clay_x in range(min_x, x) if grid[clay_x, y] != "#"
+        )
+    except ValueError:
+        clay_left = min_x
+    try:
+        clay_right = -1 + min(
+            clay_x for clay_x in range(x + 1, max_x + 1) if grid[clay_x, y] != "#"
+        )
+    except ValueError:
+        clay_right = max_x
+    # fill the bassine if there is one
     fill_y = y - 1
     while grid[clay_left, fill_y] == "#" and grid[clay_right, fill_y] == "#":
         for fill_x in range(clay_left, clay_right + 1):
             if grid[fill_x, fill_y] in ("|", "."):
                 grid[fill_x, fill_y] = "~"
         fill_y -= 1
+    # flow to left and right
+    next_sources = []
+    for flow_x in itertools.count(x, 1):  # to the right
+        if grid[flow_x, fill_y] == "#":
+            break  # stop when meeting clay
+        if grid[flow_x, fill_y + 1] not in ("#", "~"):
+            grid[flow_x, fill_y] = "|"
+            next_sources.append((flow_x, fill_y))
+            break
+        grid[flow_x, fill_y] = "|"
+        # flow to left and right
+    for flow_x in itertools.count(x, -1):  # to the left
+        if grid[flow_x, fill_y] == "#":
+            break  # stop when meeting clay
+        if grid[flow_x, fill_y + 1] not in ("#", "~"):
+            grid[flow_x, fill_y] = "|"
+            next_sources.append((flow_x, fill_y))
+            break
+        grid[flow_x, fill_y] = "|"
+    return next_sources
 
 
 grid = parse_input(example_input)
-debug_grid(grid)
-evolve_grid(grid, 500, 0)
-debug_grid(grid)
-evolve_grid(grid, 502, 2)
+sources = [(500, 0)]
+while len(sources):
+    source = sources.pop()
+    print(f"source {source}")
+    next_sources = evolve_grid(grid, *source)
+    sources.extend(next_sources)
 debug_grid(grid)
 
 grid = parse_input(raw_input)
-evolve_grid(grid, 500, 0)
+sources = [(500, 0)]
+while len(sources):
+    source = sources.pop()
+    next_sources = evolve_grid(grid, *source)
+    sources.extend(next_sources)
 draw_grid(grid)
