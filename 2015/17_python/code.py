@@ -41,6 +41,14 @@ def find_min_max_coordinates(grid: dict):
     return (min_x, max_x, 0, max_y)
 
 
+def find_min_max_clay_coordinates(grid: dict):
+    min_x = min(x for x, y in grid if grid[x, y] == "#")
+    max_x = max(x for x, y in grid if grid[x, y] == "#")
+    max_y = max(y for x, y in grid if grid[x, y] == "#")
+    min_y = min(y for x, y in grid if grid[x, y] == "#")
+    return (min_x, max_x, min_y, max_y)
+
+
 def debug_grid(grid: dict):
     min_x, max_x, min_y, max_y = find_min_max_coordinates(grid)
     for y in range(min_y, max_y + 1):
@@ -137,53 +145,45 @@ def evolve_grid(grid: dict, source_x: int, source_y: int):
             next_sources.append((flow_x, fill_y))
             break
         grid[flow_x, fill_y] = "|"
-    # detect suspicious situations
-    # for ns_x, ns_y in next_sources.copy():
-    #     if clay_left < ns_x < clay_right:
-    #         next_sources.append((source_x, source_y))
-    #         # transform every | into ~ on the horizontal of this source
-    #         for suspicious_x in range(clay_left, clay_right):
-    #             grid[suspicious_x, ns_y] = "~"
     return next_sources
-    # check if we are in a disposition like #||||||||||||||#
-    # if all(
-    #     grid[check_x, fill_y] == "|" for check_x in range(clay_left + 1, clay_right)
-    # ):
-    #     for check_x in range(clay_left + 1, clay_right):
-    #         grid[check_x, fill_y] = "~"
-    #         # put previous source in todo list again
-    #         draw_grid(grid)
-    #         return [(source_x, source_y)]
-    # else:
-    #     return []
 
 
-grid = parse_input(example_input)
-sources = [(500, 0)]
-seen_sources = set()
-while len(sources):
-    source = sources.pop(0)
-    if source in seen_sources:
-        continue
-    seen_sources.add(source)
-    print(f"source {source}")
-    next_sources = evolve_grid(grid, *source)
-    sources.extend(next_sources)
-    debug_grid(grid)
-debug_grid(grid)
+def remove_floating_water(grid: dict):
+    min_x, max_x, min_y, max_y = find_min_max_coordinates(grid)
+    for x in range(min_x, max_x):
+        for y in range(min_y, max_y):
+            if grid[x, y] in ("|", "~") and grid[x, y + 1] == ".":
+                grid[x, y + 1] = "~"
+
+
+def evolve_grid_until_everything_is_filled(grid: dict):
+    sources = deque([(500, 0)])
+    seen_sources = set()
+    while len(sources) > 0:
+        source = sources.popleft()
+        if source in seen_sources:
+            continue
+        seen_sources.add(source)
+        next_sources = evolve_grid(grid, *source)
+        sources.extend(next_sources)
+    remove_floating_water(grid)
+
+
+def count_wet_squares(grid: dict):
+    min_x, max_x, min_y, max_y = find_min_max_clay_coordinates(grid)
+    return sum(
+        1
+        for x in range(min_x, max_x + 1)
+        for y in range(min_y, max_y + 1)
+        if grid[x, y] in ("~", "|")
+    )
+
+
+example_grid = parse_input(example_input)
+evolve_grid_until_everything_is_filled(example_grid)
+u.assert_equals(count_wet_squares(example_grid), 57)
 
 grid = parse_input(raw_input)
-sources = deque([(500, 0)])
-count = 0
-seen_sources = set()
-while len(sources) > 0:
-    source = sources.popleft()
-    if source in seen_sources:
-        continue
-    seen_sources.add(source)
-    next_sources = evolve_grid(grid, *source)
-    sources.extend(next_sources)
-    count += 1
-    if count % 10 == 0:
-        draw_grid(grid)
-draw_grid(grid)
+evolve_grid_until_everything_is_filled(grid)
+u.answer_part_1(count_wet_squares(grid))
+# 37277 is too low
