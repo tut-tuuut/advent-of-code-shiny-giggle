@@ -42,8 +42,8 @@ def find_min_max_coordinates(grid: dict):
 
 
 def find_min_max_clay_coordinates(grid: dict):
-    min_x = min(x for x, y in grid if grid[x, y] == "#")
-    max_x = max(x for x, y in grid if grid[x, y] == "#")
+    min_x = min(x for x, y in grid)
+    max_x = max(x for x, y in grid)
     max_y = max(y for x, y in grid if grid[x, y] == "#")
     min_y = min(y for x, y in grid if grid[x, y] == "#")
     return (min_x, max_x, min_y, max_y)
@@ -185,5 +185,7 @@ u.assert_equals(count_wet_squares(example_grid), 57)
 
 grid = parse_input(raw_input)
 evolve_grid_until_everything_is_filled(grid)
+draw_grid(grid)
 u.answer_part_1(count_wet_squares(grid))
 # 37277 is too low
+# 38364 good answer, I was missing the "every x coordinate is valid"
