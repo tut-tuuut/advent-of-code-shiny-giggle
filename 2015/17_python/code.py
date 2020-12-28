@@ -179,6 +179,16 @@ def count_wet_squares(grid: dict):
     )
 
 
+def count_resting_water_squares(grid: dict):
+    min_x, max_x, min_y, max_y = find_min_max_clay_coordinates(grid)
+    return sum(
+        1
+        for x in range(min_x, max_x + 1)
+        for y in range(min_y, max_y + 1)
+        if grid[x, y] == "~"
+    )
+
+
 example_grid = parse_input(example_input)
 evolve_grid_until_everything_is_filled(example_grid)
 u.assert_equals(count_wet_squares(example_grid), 57)
@@ -189,3 +199,6 @@ draw_grid(grid)
 u.answer_part_1(count_wet_squares(grid))
 # 37277 is too low
 # 38364 good answer, I was missing the "every x coordinate is valid"
+
+u.assert_equals(count_resting_water_squares(example_grid), 29)
+u.answer_part_2(count_resting_water_squares(grid))
