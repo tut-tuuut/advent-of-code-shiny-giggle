@@ -1,7 +1,7 @@
 import re
 import itertools
 from PIL import Image
-from collections import defaultdict
+from collections import defaultdict, deque
 
 import utils as u
 
@@ -88,23 +88,37 @@ def evolve_grid(grid: dict, source_x: int, source_y: int):
     # clay is found, analyze its width
     try:
         clay_left = 1 + max(
-            clay_x for clay_x in range(min_x, x) if grid[clay_x, y] != "#"
+            clay_x for clay_x in range(min_x, x) if grid[clay_x, y] not in ("#", "~")
         )
     except ValueError:
         clay_left = min_x
     try:
         clay_right = -1 + min(
-            clay_x for clay_x in range(x + 1, max_x + 1) if grid[clay_x, y] != "#"
+            clay_x
+            for clay_x in range(x + 1, max_x + 1)
+            if grid[clay_x, y] not in ("#", "~")
         )
     except ValueError:
         clay_right = max_x
     # fill the bassine if there is one
     fill_y = y - 1
-    while grid[clay_left, fill_y] == "#" and grid[clay_right, fill_y] == "#":
-        for fill_x in range(clay_left, clay_right + 1):
+    fill_left = clay_left
+    fill_right = clay_right
+    while grid[fill_left, fill_y] == "#" and grid[fill_right, fill_y] == "#":
+        for fill_x in range(fill_left, fill_right + 1):
             if grid[fill_x, fill_y] in ("|", "."):
                 grid[fill_x, fill_y] = "~"
-        fill_y -= 1
+        fill_y -= 1  # go up
+        # check right side is still clay
+        for check_x in range(x, clay_right + 1):
+            if grid[check_x, fill_y] == "#":
+                fill_right = check_x
+                break
+        # check left side is still clay
+        for check_x in range(x, clay_left - 1, -1):
+            if grid[check_x, fill_y] == "#":
+                fill_left = check_x
+                break
     # flow to left and right
     next_sources = []
     for flow_x in itertools.count(x, 1):  # to the right
@@ -115,7 +129,6 @@ def evolve_grid(grid: dict, source_x: int, source_y: int):
             next_sources.append((flow_x, fill_y))
             break
         grid[flow_x, fill_y] = "|"
-        # flow to left and right
     for flow_x in itertools.count(x, -1):  # to the left
         if grid[flow_x, fill_y] == "#":
             break  # stop when meeting clay
@@ -124,22 +137,53 @@ def evolve_grid(grid: dict, source_x: int, source_y: int):
             next_sources.append((flow_x, fill_y))
             break
         grid[flow_x, fill_y] = "|"
+    # detect suspicious situations
+    # for ns_x, ns_y in next_sources.copy():
+    #     if clay_left < ns_x < clay_right:
+    #         next_sources.append((source_x, source_y))
+    #         # transform every | into ~ on the horizontal of this source
+    #         for suspicious_x in range(clay_left, clay_right):
+    #             grid[suspicious_x, ns_y] = "~"
     return next_sources
+    # check if we are in a disposition like #||||||||||||||#
+    # if all(
+    #     grid[check_x, fill_y] == "|" for check_x in range(clay_left + 1, clay_right)
+    # ):
+    #     for check_x in range(clay_left + 1, clay_right):
+    #         grid[check_x, fill_y] = "~"
+    #         # put previous source in todo list again
+    #         draw_grid(grid)
+    #         return [(source_x, source_y)]
+    # else:
+    #     return []
 
 
 grid = parse_input(example_input)
 sources = [(500, 0)]
+seen_sources = set()
 while len(sources):
-    source = sources.pop()
+    source = sources.pop(0)
+    if source in seen_sources:
+        continue
+    seen_sources.add(source)
     print(f"source {source}")
     next_sources = evolve_grid(grid, *source)
     sources.extend(next_sources)
+    debug_grid(grid)
 debug_grid(grid)
 
 grid = parse_input(raw_input)
-sources = [(500, 0)]
-while len(sources):
-    source = sources.pop()
+sources = deque([(500, 0)])
+count = 0
+seen_sources = set()
+while len(sources) > 0:
+    source = sources.popleft()
+    if source in seen_sources:
+        continue
+    seen_sources.add(source)
     next_sources = evolve_grid(grid, *source)
     sources.extend(next_sources)
+    count += 1
+    if count % 10 == 0:
+        draw_grid(grid)
 draw_grid(grid)
