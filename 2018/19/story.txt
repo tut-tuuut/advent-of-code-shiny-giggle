@@ -1,15 +1,4 @@
 
-Advent of Code
-
-    [About][Events][Shop][Settings][Log Out]
-
-tut-tuuut (AoC++) 30*
-  {year=>2018}
-
-    [Calendar][AoC++][Sponsors][Leaderboard][Stats]
-
-Our sponsors help make Advent of Code possible:
-Halite - Build a game-playing AI bot and compete in our global challenge!
 --- Day 19: Go With The Flow ---
 
 With the Elves well on their way constructing the North Pole base, you turn your attention back to understanding the inner workings of programming the device.
@@ -56,8 +45,39 @@ In detail, when running this program, the following events occur:
 
 What value is left in register 0 when the background process halts?
 
-To begin, get your puzzle input.
+Addition:
 
-Answer:
+    addr (add register) stores into register C the result of adding register A and register B.
+    addi (add immediate) stores into register C the result of adding register A and value B.
 
-You can also [Shareon ] this puzzle.
+Multiplication:
+
+    mulr (multiply register) stores into register C the result of multiplying register A and register B.
+    muli (multiply immediate) stores into register C the result of multiplying register A and value B.
+
+Bitwise AND:
+
+    banr (bitwise AND register) stores into register C the result of the bitwise AND of register A and register B.
+    bani (bitwise AND immediate) stores into register C the result of the bitwise AND of register A and value B.
+
+Bitwise OR:
+
+    borr (bitwise OR register) stores into register C the result of the bitwise OR of register A and register B.
+    bori (bitwise OR immediate) stores into register C the result of the bitwise OR of register A and value B.
+
+Assignment:
+
+    setr (set register) copies the contents of register A into register C. (Input B is ignored.)
+    seti (set immediate) stores value A into register C. (Input B is ignored.)
+
+Greater-than testing:
+
+    gtir (greater-than immediate/register) sets register C to 1 if value A is greater than register B. Otherwise, register C is set to 0.
+    gtri (greater-than register/immediate) sets register C to 1 if register A is greater than value B. Otherwise, register C is set to 0.
+    gtrr (greater-than register/register) sets register C to 1 if register A is greater than register B. Otherwise, register C is set to 0.
+
+Equality testing:
+
+    eqir (equal immediate/register) sets register C to 1 if value A is equal to register B. Otherwise, register C is set to 0.
+    eqri (equal register/immediate) sets register C to 1 if register A is equal to value B. Otherwise, register C is set to 0.
+    eqrr (equal register/register) sets register C to 1 if register A is equal to register B. Otherwise, register C is set to 0.
