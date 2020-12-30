@@ -77,6 +77,7 @@ def pythoned_program(initial_register_zero):
     #  0  1  2  3  4  5 => zero un deux trois quatre cinq
     z, u, d, t, q, c = initial_register_zero, 0, 0, 0, 0, 0
     # 00. addi 2 16 2 => Goto 17
+
     # 17. addi 1 2 1
     u += 2
     # 18. mulr 1 1 1
@@ -96,23 +97,33 @@ def pythoned_program(initial_register_zero):
     # 25. addr 2 0 2
     # u = 892  # q unrelevant here
     if z == 0:
-        print(f"this should be 892: {u}")
         for divisor in range(1, u + 1):
             if u % divisor == 0:
                 z += divisor
         return z
     if z == 1:
-        pass
-    # 27. setr 2 3 4
-    # 28. mulr 4 2 4
-    # 29. addr 2 4 4
-    # 30. mulr 2 4 4
-    # 31. muli 4 14 4
-    # 32. mulr 4 2 4
-    # 33. addr 1 4 1
-    # 34. seti 0 1 0
-    # 35. seti 0 4 2
+        # 27. setr 2 3 4
+        q = 27
+        # 28. mulr 4 2 4
+        q = q * 28
+        # 29. addr 2 4 4
+        q = q + 29
+        # 30. mulr 2 4 4
+        q = 30 * q
+        # 31. muli 4 14 4
+        q = q * 14
+        # 32. mulr 4 2 4
+        q = q * 32
+        # 33. addr 1 4 1
+        u = u + q
+        # 34. seti 0 1 0
+        z = 0
+        # 35. seti 0 4 2
+        for divisor in range(1, u + 1):
+            if u % divisor == 0:
+                z += divisor
+        return z
 
 
 u.assert_equals(pythoned_program(0), 1568)
-print(pythoned_program(1))
+u.answer_part_2(pythoned_program(1))
