@@ -18,6 +18,8 @@ def execute_program(raw_program: str, initial_register_zero=0):
     ip = register[ip_idx]
     init_time = time()
     for i in count(1):
+        if ip == 26:
+            print(register[1])
         row = program[ip]
         instruction = row[:4]
         a, b, c = map(int, row[5:].split())
@@ -59,9 +61,9 @@ def execute_program(raw_program: str, initial_register_zero=0):
 example_registers = execute_program(example_input)
 u.assert_equals(example_registers, [6, 5, 6, 0, 0, 9])
 
-my_registers = execute_program(raw_input)
-u.assert_equals(my_registers[0], 1568)
-u.answer_part_1(my_registers[0])
+# my_registers = execute_program(raw_input)
+# u.assert_equals(my_registers[0], 1568)
+# u.answer_part_1(my_registers[0])
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
@@ -72,60 +74,35 @@ u.answer_part_1(my_registers[0])
 
 def pythoned_program(initial_register_zero):
     # registers:
-    #  1  2  3  4  5
+    #  0  1  2  3  4  5 => zero un deux trois quatre cinq
     z, u, d, t, q, c = initial_register_zero, 0, 0, 0, 0, 0
     # 00. addi 2 16 2 => Goto 17
-    d += 16
-    d += 1
-
     # 17. addi 1 2 1
     u += 2
     # 18. mulr 1 1 1
-    u = u * u
+    u *= u
     # 19. mulr 2 1 1
-    u = 19 * u  # normally here d == 19
+    u *= 19
     # 20. muli 1 11 1
     u *= 11
     # 21. addi 4 2 4
-    q += 4
+    q += 2
     # 22. mulr 4 2 4
-    q = q * 22  # normally here d == 22 always
+    q *= 22
     # 23. addi 4 12 4
-    q += 4
+    q += 12
     # 24. addr 1 4 1
-    u = u + q
+    u += q
     # 25. addr 2 0 2
-    d += z
-    # => if z == 0, just continue to 26
-
-    # 26. seti 0 9 2
-    d = 0
-    # => goto to 1
-
-    # 01. seti 1 8 5
-    c = 1
-
-    # 02. seti 1 0 3
-    t = 1
-
-    # 03. mulr 5 3 4
-    q = c * t
-
-    # 04. eqrr 4 1 4
-    q = int(q == u)
-    # 05. addr 4 2 2
-    # 06. addi 2 1 2
-    # 07. addr 5 0 0
-    # 08. addi 3 1 3
-    # 09. gtrr 3 1 4
-    # 10. addr 2 4 2
-    # 11. seti 2 1 2
-    # 12. addi 5 1 5
-    # 13. gtrr 5 1 4
-    # 14. addr 4 2 2
-    # 15. seti 1 1 2
-    # 16. mulr 2 2 2
-
+    # u = 892  # q unrelevant here
+    if z == 0:
+        print(f"this should be 892: {u}")
+        for divisor in range(1, u + 1):
+            if u % divisor == 0:
+                z += divisor
+        return z
+    if z == 1:
+        pass
     # 27. setr 2 3 4
     # 28. mulr 4 2 4
     # 29. addr 2 4 4
@@ -137,4 +114,5 @@ def pythoned_program(initial_register_zero):
     # 35. seti 0 4 2
 
 
-pythoned_program(0)
+u.assert_equals(pythoned_program(0), 1568)
+print(pythoned_program(1))
