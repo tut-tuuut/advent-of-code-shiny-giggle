@@ -1,4 +1,5 @@
 import networkx as nx
+from collections import deque
 from PIL import Image, ImageDraw
 import utils as u
 
@@ -16,12 +17,11 @@ examples = {
 # part 1 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
 
-def build_map_from_regex(map: nx.Graph, regex, index=0, position=(0, 0), start=(0, 0)):
-    x, y = position
-    print(x, y)
-    for i, char in enumerate(regex[index:], index):
-        print(x, y)
-        print(char)
+def build_map_from_regex(regex):
+    map = nx.Graph()
+    x, y = 0, 0  # initial position
+    crossways = deque()
+    for char in regex:
         if char == "W":
             map.add_edge((x - 1, y), (x, y))
             x -= 1
@@ -35,15 +35,25 @@ def build_map_from_regex(map: nx.Graph, regex, index=0, position=(0, 0), start=(
             map.add_edge((x, y + 1), (x, y))
             y += 1
         elif char == "(":
-            pass
+            crossways.append((x, y))
         elif char == ")":
-            pass
+            x, y = crossways.pop()
         elif char == "|":
-            pass
+            x, y = crossways[-1]
         elif char == "^":
             pass
         elif char == "$":
             pass
+    return map
+
+
+def longest_shortest_path(map: nx.Graph):
+    """That's it. That's the method name.
+    find the room for which the shortest path from your starting location to that room
+    would require passing through the most doors;
+    what is the fewest doors you can pass through to reach it?
+    """
+    return -1 + max(len(nx.shortest_path(map, z, (0, 0))) for z in map.nodes())
 
 
 def draw_map(map: nx.Graph):
@@ -69,8 +79,6 @@ def draw_map(map: nx.Graph):
     # ImageDraw.regular_polygon
     # https://pillow.readthedocs.io/en/stable/reference/ImageDraw.html#PIL.ImageDraw.ImageDraw.regular_polygon
     for x, y in map.nodes():
-        print("node", x, y)
-        print(fix_x(x), fix_y(y))
         drawing.regular_polygon((fix_x(x), fix_y(y), w), 4, fill=room_color)
     for a, b in map.edges():
         xa, ya = a
@@ -83,8 +91,13 @@ def draw_map(map: nx.Graph):
     imgFile.show()
 
 
-map_0 = nx.Graph()
-build_map_from_regex(map_0, list("^WNE$"))
-draw_map(map_0)
+for regex, expected in examples.items():
+    map = build_map_from_regex(regex)
+    # draw_map(map)
+    u.assert_equals(longest_shortest_path(map), expected)
+
+map = build_map_from_regex(raw_input)
+draw_map(map)  # whoa, this place is HUGE indeed
+u.answer_part_1(longest_shortest_path(map))  # 3885
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
