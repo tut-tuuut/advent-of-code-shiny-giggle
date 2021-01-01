@@ -1,6 +1,8 @@
 import networkx as nx
 from collections import deque
 from PIL import Image, ImageDraw
+from time import time
+
 import utils as u
 
 with open(__file__ + ".input.txt", "r+") as file:
@@ -47,13 +49,8 @@ def build_map_from_regex(regex):
     return map
 
 
-def longest_shortest_path(map: nx.Graph):
-    """That's it. That's the method name.
-    find the room for which the shortest path from your starting location to that room
-    would require passing through the most doors;
-    what is the fewest doors you can pass through to reach it?
-    """
-    return -1 + max(len(nx.shortest_path(map, z, (0, 0))) for z in map.nodes())
+def calculate_shortest_paths(map: nx.Graph):
+    return {z: -1 + len(nx.shortest_path(map, z, (0, 0))) for z in map.nodes()}
 
 
 def draw_map(map: nx.Graph):
@@ -93,11 +90,21 @@ def draw_map(map: nx.Graph):
 
 for regex, expected in examples.items():
     map = build_map_from_regex(regex)
-    # draw_map(map)
-    u.assert_equals(longest_shortest_path(map), expected)
+    path_lengths = calculate_shortest_paths(map)
+    u.assert_equals(max(path_lengths.values()), expected)
 
 map = build_map_from_regex(raw_input)
 draw_map(map)  # whoa, this place is HUGE indeed
-u.answer_part_1(longest_shortest_path(map))  # 3885
+
+print(f"calculating path lengths...")
+init_time = time()
+path_lengths = calculate_shortest_paths(map)
+print(f"Done! It took {time() - init_time:.2f} seconds.")
+
+max_length = max(path_lengths.values())
+u.assert_equals(max_length, 3885)
+u.answer_part_1(max_length)  # 3885
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+u.answer_part_2(sum(1 for length in path_lengths.values() if length >= 1000))
