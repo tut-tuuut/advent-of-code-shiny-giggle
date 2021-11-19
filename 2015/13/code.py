@@ -2,24 +2,29 @@ import utils as u
 import networkx as nx
 import re
 
-parseRegex = r'^(\w+)\s.*(gain|lose)\s(\d+)\s.*\s(\w+)\.$'
+parseRegex = r"^(\w+)\s.*(gain|lose)\s(\d+)\s.*\s(\w+)\.$"
 regex = re.compile(parseRegex, re.MULTILINE)
 # https://regex101.com/r/SX25wx/1/
+
 
 def buildGraphFromInputString(inputStr):
     graph = nx.Graph()
     info = regex.findall(inputStr)
     for row in info:
         person1, sign, amount, person2 = row
-        if sign == 'lose':
+        if sign == "lose":
             amount = -1 * int(amount)
-        elif sign == 'gain':
+        elif sign == "gain":
             amount = int(amount)
         graph.add_node(person1)
         graph.add_node(person2)
-        amount = amount + graph.get_edge_data(person1, person2, {'happiness': 0})['happiness']
+        amount = (
+            amount
+            + graph.get_edge_data(person1, person2, {"happiness": 0})["happiness"]
+        )
         graph.add_edge(person1, person2, happiness=amount)
     return graph
+
 
 class HappinessOptimizer:
     def __init__(self, graph):
@@ -45,11 +50,12 @@ class HappinessOptimizer:
             self.visit(n, path.copy())
 
     def analyzePlacement(self, path):
-        happiness = nx.path_weight(self.graph, path, 'happiness')
-        happiness = happiness + self.graph.get_edge_data(path[0], path[-1])['happiness']
+        happiness = nx.path_weight(self.graph, path, "happiness")
+        happiness = happiness + self.graph.get_edge_data(path[0], path[-1])["happiness"]
         if happiness > self.maxHappiness:
             self.maxHappiness = happiness
             self.optimumPlacement = path
+
 
 example = """Alice would gain 54 happiness units by sitting next to Bob.
 Alice would lose 79 happiness units by sitting next to Carol.
@@ -69,7 +75,7 @@ ho = HappinessOptimizer(graph)
 
 u.assert_equals(ho.findOptimalHappiness(), 330)
 
-with open(__file__+'.input.txt', "r+") as file:
+with open(__file__ + ".input.txt", "r+") as file:
     inputStr = file.read()
     graph = buildGraphFromInputString(inputStr)
     ho = HappinessOptimizer(graph)
@@ -78,7 +84,7 @@ with open(__file__+'.input.txt', "r+") as file:
     graph = graph.copy()
     guests = list(graph.nodes)
     for n in guests:
-        graph.add_edge(n, 'Me', happiness=0)
-    
+        graph.add_edge(n, "Me", happiness=0)
+
     ho = HappinessOptimizer(graph)
     u.answer_part_2(ho.findOptimalHappiness())

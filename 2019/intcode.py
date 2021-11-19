@@ -1,5 +1,6 @@
 import itertools as it
 
+
 class Computer:
     OPCODE_STOP = 99
     OPCODE_ADD = 1
@@ -12,16 +13,16 @@ class Computer:
     OPCODE_EQUALS = 8
     OPCODE_ADJUST_RELATIVE_BASE = 9
 
-    def __init__(self, program, output_mode='yield'):
+    def __init__(self, program, output_mode="yield"):
         self.program = program
-        self.i = 0 # instruction pointer
-        self.rb = 0 # relative base
+        self.i = 0  # instruction pointer
+        self.rb = 0  # relative base
         self.verbose = False
         self.output_mode = output_mode
 
     @classmethod
     def str_to_program(self, strProgram):
-        return list(map(int, strProgram.split(',')))
+        return list(map(int, strProgram.split(",")))
 
     def reinit(self):
         self.i = 0
@@ -30,23 +31,23 @@ class Computer:
     def run(self, inputs):
         inputs = iter(inputs)
         while self.i < len(self.program):
-            if (self.verbose):
-                print(f'instruction pointer {self.i}')
+            if self.verbose:
+                print(f"instruction pointer {self.i}")
             instruction = str(self.program[self.i])
-            if (self.verbose):
-                print(f'instruction: {instruction}')
+            if self.verbose:
+                print(f"instruction: {instruction}")
             opcode = int(instruction[-2:])
             params = self.get_params_values(instruction)
-            target = params['target']
-            params = params['values']
+            target = params["target"]
+            params = params["values"]
             if opcode == self.OPCODE_STOP:
                 return None
             elif opcode == self.OPCODE_ADD:
                 if self.verbose:
-                    print('will store something in address #{target}')
+                    print("will store something in address #{target}")
                 self.program[target] = params[0] + params[1]
                 if self.verbose:
-                    print(f'stored {self.program[target]} at address #{target}')
+                    print(f"stored {self.program[target]} at address #{target}")
                 self.i += 4
             elif opcode == self.OPCODE_MULTIPLY:
                 self.program[target] = params[0] * params[1]
@@ -84,35 +85,44 @@ class Computer:
             elif opcode == self.OPCODE_ADJUST_RELATIVE_BASE:
                 self.rb += params[0]
                 if self.verbose:
-                    print(f'adjust relative base to {self.rb} (added {params[0]})')
+                    print(f"adjust relative base to {self.rb} (added {params[0]})")
                 self.i += 2
-    
+
     def get_params_values(self, strInstructions):
-        strInstructions = strInstructions.rjust(5, '0')
+        strInstructions = strInstructions.rjust(5, "0")
         opcode = int(strInstructions[-2:])
         params = []
         nbParameters = 0
-        if opcode in (self.OPCODE_ADD, self.OPCODE_MULTIPLY, self.OPCODE_EQUALS, self.OPCODE_LESSTHAN):
+        if opcode in (
+            self.OPCODE_ADD,
+            self.OPCODE_MULTIPLY,
+            self.OPCODE_EQUALS,
+            self.OPCODE_LESSTHAN,
+        ):
             nbParameters = 3
         elif opcode in (self.OPCODE_JUMPIFFALSE, self.OPCODE_JUMPIFTRUE):
             nbParameters = 2
-        elif opcode in (self.OPCODE_OUTPUT, self.OPCODE_INPUT, self.OPCODE_ADJUST_RELATIVE_BASE):
+        elif opcode in (
+            self.OPCODE_OUTPUT,
+            self.OPCODE_INPUT,
+            self.OPCODE_ADJUST_RELATIVE_BASE,
+        ):
             nbParameters = 1
         address = 0
-        for p in range(1, nbParameters+1):
-            if strInstructions[-p-2] == '0':
-                address = int(self.program[self.i+p])
+        for p in range(1, nbParameters + 1):
+            if strInstructions[-p - 2] == "0":
+                address = int(self.program[self.i + p])
                 if address >= len(self.program):
-                    self.program.extend( it.repeat(0, 1 + address - len(self.program)) )
+                    self.program.extend(it.repeat(0, 1 + address - len(self.program)))
                 if self.verbose:
-                    print(f'looking for something at address {address}')
+                    print(f"looking for something at address {address}")
                 value = self.program[address]
-            elif strInstructions[-p-2] == '2':
-                address = self.rb + int(self.program[self.i+p])
+            elif strInstructions[-p - 2] == "2":
+                address = self.rb + int(self.program[self.i + p])
                 if address >= len(self.program):
-                    self.program.extend( it.repeat(0, 1 + address - len(self.program)) )
+                    self.program.extend(it.repeat(0, 1 + address - len(self.program)))
                 value = self.program[address]
             else:
-                value = self.program[self.i+p]
+                value = self.program[self.i + p]
             params.append(value)
-        return {'values':list(map(int,params)),'target':address}
+        return {"values": list(map(int, params)), "target": address}

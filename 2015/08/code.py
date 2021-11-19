@@ -19,45 +19,46 @@ the total number of characters in memory for string values (0 + 3 + 7 + 1 = 11)
 is 23 - 11 = 12.
 """
 
+
 def getDifferenceBetweenCodeAndResult(string):
     initialLength = len(string)
 
     # remove leading and trailing " on each line
-    string = re.sub(r'^"','',string, flags=re.MULTILINE)
-    string = re.sub(r'"$','',string, flags=re.MULTILINE)
-
+    string = re.sub(r'^"', "", string, flags=re.MULTILINE)
+    string = re.sub(r'"$', "", string, flags=re.MULTILINE)
 
     # escaped \\ and \" add 1 to the difference
-    string = string.replace('\\\\', 'S')
-    string = string.replace('\\"', 'T')
-    string = re.sub(r'\\x[a-f0-9]{2}', 'U', string)
-    #print(string)
+    string = string.replace("\\\\", "S")
+    string = string.replace('\\"', "T")
+    string = re.sub(r"\\x[a-f0-9]{2}", "U", string)
+    # print(string)
     return initialLength - len(string)
+
 
 def getDifferenceResultAndCode(string):
     initialLength = len(string)
 
     # leading and trailing " each result in 3 characters in resulting string
-    string = re.sub(r'^"','mmm',string, flags=re.MULTILINE)
-    string = re.sub(r'"$','mmm',string, flags=re.MULTILINE)
-
+    string = re.sub(r'^"', "mmm", string, flags=re.MULTILINE)
+    string = re.sub(r'"$', "mmm", string, flags=re.MULTILINE)
 
     # escape \ and "
-    string = string.replace('\\', 'SS')
-    string = string.replace('"', 'TT')
+    string = string.replace("\\", "SS")
+    string = string.replace('"', "TT")
 
     return initialLength - len(string)
 
-with open(__file__+'.input.example.txt', "r+") as file:
+
+with open(__file__ + ".input.example.txt", "r+") as file:
     inputStr = file.read()
-    print('this should be 12:')
+    print("this should be 12:")
     print(getDifferenceBetweenCodeAndResult(inputStr))
 
-with open(__file__+'.input.txt', "r+") as file:
+with open(__file__ + ".input.txt", "r+") as file:
     inputStr = file.read()
-    print('this is answer to part 1:')
+    print("this is answer to part 1:")
     print(getDifferenceBetweenCodeAndResult(inputStr))
-    print('this is answer to part 2:')
+    print("this is answer to part 2:")
     print(getDifferenceResultAndCode(inputStr))
     # 1349 is too high
     # 1340 too

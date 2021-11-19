@@ -2,16 +2,17 @@ import utils as u
 import re
 import json
 
-with open(__file__+'.input.txt', "r+") as file:
+with open(__file__ + ".input.txt", "r+") as file:
     inputStr = file.read()
 
+
 def sumOfAllNumbers(string):
-    regex = r'-?\d+'
+    regex = r"-?\d+"
     return sum(map(int, re.findall(regex, string)))
 
 
 def removeRedObjects(s):
-    objectsWithoutChildren = r'\{[^\{\}]*\}'
+    objectsWithoutChildren = r"\{[^\{\}]*\}"
     # \{        an opening moustache,
     # [^\{\}]*  some characters which are not moustaches,
     # \}        a closing moustache
@@ -24,24 +25,27 @@ def removeRedObjects(s):
 
     i = 0
     while len(re.findall(objectsWithoutChildren, s)) > 0:
-        i = i+1
+        i = i + 1
         print(f"iteration {i} length {len(s)}")
         while len(re.findall(redObjects, s)) > 0:
-            print(f'remove {len(re.findall(redObjects, s))} red objects')
-            s = re.sub(redObjects, '> 0 <', s)
-        print(f'factorize {len(re.findall(objectsWithoutChildren, s))} non red objects')
-        s = re.sub(objectsWithoutChildren, lambda x: f'> {sumOfAllNumbers(x.group(0))} <', s)
-        print('--------')
+            print(f"remove {len(re.findall(redObjects, s))} red objects")
+            s = re.sub(redObjects, "> 0 <", s)
+        print(f"factorize {len(re.findall(objectsWithoutChildren, s))} non red objects")
+        s = re.sub(
+            objectsWithoutChildren, lambda x: f"> {sumOfAllNumbers(x.group(0))} <", s
+        )
+        print("--------")
 
-    #print(string)
+    # print(string)
     return s
 
+
 # [1,2,3] and {"a":2,"b":4} both have a sum of 6
-u.assert_equals(sumOfAllNumbers('[1,2,3]'), 6)
+u.assert_equals(sumOfAllNumbers("[1,2,3]"), 6)
 u.assert_equals(sumOfAllNumbers('{"a":2,"b":4}'), 6)
 
 # [[[3]]] and {"a":{"b":4},"c":-1} both have a sum of 3.
-u.assert_equals(sumOfAllNumbers('[[[3]]]'), 3)
+u.assert_equals(sumOfAllNumbers("[[[3]]]"), 3)
 u.assert_equals(sumOfAllNumbers('{"a":{"b":4},"c":-1}'), 3)
 
 # {"a":[-1,1]} and [-1,{"a":1}] both have a sum of 0.
@@ -49,8 +53,8 @@ u.assert_equals(sumOfAllNumbers('{"a":[-1,1]}'), 0)
 u.assert_equals(sumOfAllNumbers('[-1,{"a":1}]'), 0)
 
 # [] and {} both have a sum of 0.
-u.assert_equals(sumOfAllNumbers('[]'), 0)
-u.assert_equals(sumOfAllNumbers(r'{}'), 0)
+u.assert_equals(sumOfAllNumbers("[]"), 0)
+u.assert_equals(sumOfAllNumbers(r"{}"), 0)
 
 u.answer_part_1(sumOfAllNumbers(inputStr))
 

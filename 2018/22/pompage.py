@@ -9,8 +9,8 @@ valid_regions = {torch: (rocky, narrow), gear: (rocky, wet), neither: (wet, narr
 def get_cave(file):
     with open(file) as f:
         lines = iter([line.strip() for line in f.read().strip().splitlines()])
-        depth = int(next(lines)[len("depth: "):])
-        target = tuple([int(n) for n in next(lines)[len("target: "):].split(",")])
+        depth = int(next(lines)[len("depth: ") :])
+        target = tuple([int(n) for n in next(lines)[len("target: ") :].split(",")])
     return depth, target
 
 
@@ -27,7 +27,7 @@ def generate_grid(depth, corner):
             elif y == 0:
                 geo = x * 16807
             else:
-                geo = grid[(x-1, y)][1] * grid[(x, y-1)][1]
+                geo = grid[(x - 1, y)][1] * grid[(x, y - 1)][1]
             ero = (geo + depth) % 20183
             risk = ero % 3
             grid[(x, y)] = (geo, ero, risk)
@@ -42,7 +42,7 @@ def dijkstra(grid, corner, target):
             items = valid_items[grid[(x, y)]]
             graph.add_edge((x, y, items[0]), (x, y, items[1]), weight=7)
             for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
-                new_x, new_y = x+dx, y+dy
+                new_x, new_y = x + dx, y + dy
                 if 0 <= new_x <= corner[0] and 0 <= new_y <= corner[1]:
                     new_items = valid_items[grid[(new_x, new_y)]]
                     for item in set(items).intersection(set(new_items)):
