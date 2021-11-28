@@ -12,12 +12,18 @@ def count_constellations(raw_input):
         tuple(int(d) for d in row.split(",")) for row in raw_input.splitlines()
     )
     constellation_numbers = list(range(len(points)))
-    for idx,point in enumerate(points):
-        for i in range(idx+1, len(constellation_numbers)):
+    for idx, point in enumerate(points):
+        for i in range(idx + 1, len(constellation_numbers)):
             other_point = points[i]
             if d(other_point, point) <= 3:
-                constellation_numbers[i] = constellation_numbers[idx]
+                plops = (constellation_numbers[idx], constellation_numbers[i])
+                new_constellation_number = min(plops)
+                constellation_numbers = [
+                    x if x not in plops else new_constellation_number
+                    for x in constellation_numbers
+                ]
     return len(set(constellation_numbers))
+
 
 def d(a, b):
     return sum(abs(b[i] - a[i]) for i in range(len(a)))
@@ -72,5 +78,7 @@ u.assert_equals(count_constellations(example_1), 2)
 u.assert_equals(count_constellations(example_2), 4)
 u.assert_equals(count_constellations(example_3), 3)
 u.assert_equals(count_constellations(example_4), 8)
+
+u.answer_part_1(count_constellations(raw_input))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
