@@ -53,7 +53,7 @@ class Group:
         self.compute_effective_power()
 
     def compute_effective_power(self):
-        self.effective_power = (self.units * self.attack_amount)
+        self.effective_power = self.units * self.attack_amount
 
     def potential_damage_from(self, other_group):
         if self.targeted == True:
@@ -78,19 +78,19 @@ class Group:
         if self.effective_power == 0:
             return
         damage = target.actual_damage_from(self)
-        print(f"group {self} attacks {target}")
+        # print(f"group {self} attacks {target}")
         total_target_hp = target.units * target.hp
         if total_target_hp <= damage:
-            print(f"  {target.units} killed")
+            # print(f"  {target.units} killed")
             target.units = 0
             target.compute_effective_power()
-            print(f"  target {target} is destroyed")
+            # print(f"  target {target} is destroyed")
             return
         units_killed = damage // target.hp
         target.units -= units_killed
         target.compute_effective_power()
-        print(f"  {units_killed} killed")
-        print(f"  {target.units} remaining in {target}")
+        # print(f"  {units_killed} killed")
+        # print(f"  {target.units} remaining in {target}")
 
     def __str__(self):
         return f"{self.id} / HP {self.hp} / units {self.units} / Power {self.effective_power}"
@@ -113,7 +113,7 @@ class Army:
             if target.potential_damage_from(group) > 0:
                 group.target = target
                 target.targeted = True
-                print(f"{group} targets {target}")
+                # print(f"{group} targets {target}")
 
     def attack_phase(army):
         army.groups.sort(key=attrgetter("initiative", "effective_power"), reverse=True)
@@ -178,15 +178,12 @@ def fight(raw_input):
             counted_groups = dict(army.counting_groups())
 
     counted_groups = dict(army.counting_groups())
-    print(counted_groups)
+    # print(counted_groups)
     for i in range(1000):
-        print(f"---- ROUND {i+1} ----")
         army.targeting_phase()
-        #print("-----ATTACK------")
         army.attack_phase()
-        print(f"----AFTER ROUND {i+1} ----")
         counted_groups = dict(army.counting_groups())
-        print(counted_groups)
+        # print(counted_groups)
         if 0 in counted_groups.values():
             break
     return max(counted_groups.values())
