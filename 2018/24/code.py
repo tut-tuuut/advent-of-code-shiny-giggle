@@ -1,6 +1,6 @@
 import re
-from collections import defaultdict
-from operator import itemgetter, attrgetter
+from itertools import count
+from operator import attrgetter
 
 import utils as u
 
@@ -74,21 +74,22 @@ class Group:
 
     def attack(self, target):
         if target is None:
-            return
+            return 0
         if self.effective_power == 0:
-            return
+            return 0
         damage = target.actual_damage_from(self)
         # print(f"group {self} attacks {target}")
         total_target_hp = target.units * target.hp
         if total_target_hp <= damage:
-            # print(f"  {target.units} killed")
+            killed = target.units
             target.units = 0
             target.compute_effective_power()
             # print(f"  target {target} is destroyed")
-            return
+            return killed
         units_killed = damage // target.hp
         target.units -= units_killed
         target.compute_effective_power()
+        return units_killed
         # print(f"  {units_killed} killed")
         # print(f"  {target.units} remaining in {target}")
 
@@ -97,11 +98,9 @@ class Group:
 
 
 class Army:
-    name = ""
-    groups = []
-
     def __init__(self, name):
         self.name = name
+        self.groups = []
 
     def add_group(self, desc, side):
         self.groups.append(Group(desc, side))
@@ -109,22 +108,44 @@ class Army:
     def targeting_phase(army):
         army.groups.sort(key=attrgetter("effective_power", "initiative"), reverse=True)
         for group in army.groups:
-            target = max(army.groups, key=lambda g: g.potential_damage_from(group))
+            max_damage = max(g.potential_damage_from(group) for g in army.groups)
+            if max_damage == 0:
+                next
+            potential_targets = [
+                g for g in army.groups if max_damage == g.potential_damage_from(group)
+            ]
+            max_power = max(g.effective_power for g in potential_targets)
+            potential_targets = [
+                g for g in potential_targets if g.effective_power == max_power
+            ]
+            potential_targets.sort(key=attrgetter("initiative"), reverse=True)
+            # if len(potential_targets) > 1:
+            # print([str(t) for t in potential_targets])
+            target = potential_targets[0]
             if target.potential_damage_from(group) > 0:
                 group.target = target
                 target.targeted = True
                 # print(f"{group} targets {target}")
 
     def attack_phase(army):
+        something_happened = False
         army.groups.sort(key=attrgetter("initiative", "effective_power"), reverse=True)
         for group in army.groups:
             if group.target:
-                group.attack(group.target)
+                units_killed = group.attack(group.target)
                 group.target.targeted = False
                 group.target = None
+                if units_killed > 0:
+                    something_happened = True
+        return something_happened
+
+    def cleaning_phase(self):
+        for group in self.groups:
+            group.compute_effective_power()
+        self.groups = [g for g in self.groups if g.effective_power > 0]
 
     def counting_groups(self):
-        d = defaultdict(lambda: 0)
+        d = {"Infection": 0, "Immune System": 0}
         for group in self.groups:
             d[group.side] += group.units
         return d
@@ -179,10 +200,14 @@ def fight(raw_input):
 
     counted_groups = dict(army.counting_groups())
     # print(counted_groups)
-    for i in range(1000):
+    for i in range(10000):
+        # print(f"------ ROUND {i} -----------")
         army.targeting_phase()
-        army.attack_phase()
+        something_happened = army.attack_phase()
         counted_groups = dict(army.counting_groups())
+        if not something_happened:
+            print("nothing happens")
+            break
         # print(counted_groups)
         if 0 in counted_groups.values():
             break
@@ -198,3 +223,50 @@ u.answer_part_1(fight(raw_input))
 # 23385 !
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def boosted_fight(input_str, boost):
+    army = Army(f"xxxx")
+    side = "Immune System"
+    for row in filter(None, input_str.splitlines()):
+        if row == "Immune System:":
+            side = "Immune System"
+        elif row == "Infection:":
+            side = "Infection"
+        else:
+            army.add_group(row, side)
+            counted_groups = dict(army.counting_groups())
+    for group in army.groups:
+        if group.side == "Immune System":
+            group.attack_amount += boost
+            group.compute_effective_power()
+    counted_groups = dict(army.counting_groups())
+    for counter in count():
+        army.targeting_phase()
+        something_happened = army.attack_phase()
+        if not something_happened:
+            print("blah, nothing happened this phase")
+            break
+        army.cleaning_phase()
+        counted_groups = dict(army.counting_groups())
+        if 0 in counted_groups.values():
+            print(f"phew! fight is over after {counter} rounds")
+            break
+    print(counted_groups)
+    return max(counted_groups.values()), counted_groups["Infection"] == 0
+
+
+u.assert_equals(boosted_fight(example, 0), (5216, False))
+u.assert_equals(boosted_fight(example, 1570), (51, True))
+u.assert_equals(boosted_fight(raw_input, 0), (23385, False))
+
+for i in range(85, 100):
+    remaining, immune_has_won = boosted_fight(raw_input, i)
+    if immune_has_won:
+        u.answer_part_2(f"{remaining} units with a boost of {i}")
+        break
+
+# boosted_fight(raw_input, 92)
+
+# 3516 too high with boost 92
+# 2344 units with boost 88 ?
