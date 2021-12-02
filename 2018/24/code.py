@@ -25,8 +25,6 @@ class Group:
         Group.counter += 1
         self.side = side
         self.id = f"{side}-{Group.counter}"
-        # 18 units each with 729 hit points (weak to fire; immune to cold, slashing)
-        # with an attack that does 8 radiation damage at initiative 10
         first_regex = re.compile(
             r"(?P<nb_units>\d+) units each with (?P<hp>\d+) hit points.+with an attack that does (?P<attack>\d+) (?P<attack_type>\w+) damage at initiative (?P<initiative>\d+)"
         )
@@ -52,9 +50,10 @@ class Group:
             self.weak_to = weakness_match.group("weakness").split(", ")
         else:
             self.weak_to = []
+        self.compute_effective_power()
 
-    def effective_power(self):
-        return self.units * self.attack_amount
+    def compute_effective_power(self):
+        self.effective_power = (self.units * self.attack_amount)
 
     def potential_damage_from(self, other_group):
         if self.targeted == True:
@@ -68,7 +67,7 @@ class Group:
             or other_group.attack_type in self.immune_to
         ):
             return 0
-        damage = other_group.effective_power()
+        damage = other_group.effective_power
         if other_group.attack_type in self.weak_to:
             damage *= 2
         return damage
@@ -76,7 +75,7 @@ class Group:
     def attack(self, target):
         if target is None:
             return
-        if self.effective_power() == 0:
+        if self.effective_power == 0:
             return
         damage = target.actual_damage_from(self)
         print(f"group {self} attacks {target}")
@@ -84,15 +83,17 @@ class Group:
         if total_target_hp <= damage:
             print(f"  {target.units} killed")
             target.units = 0
+            target.compute_effective_power()
             print(f"  target {target} is destroyed")
             return
         units_killed = damage // target.hp
         target.units -= units_killed
+        target.compute_effective_power()
         print(f"  {units_killed} killed")
         print(f"  {target.units} remaining in {target}")
 
     def __str__(self):
-        return f"{self.id} / Power {self.effective_power()}"
+        return f"{self.id} / HP {self.hp} / units {self.units} / Power {self.effective_power}"
 
 
 class Army:
@@ -106,7 +107,7 @@ class Army:
         self.groups.append(Group(desc, side))
 
     def targeting_phase(army):
-        army.groups.sort(key=lambda g: g.effective_power(), reverse=True)
+        army.groups.sort(key=attrgetter("effective_power", "initiative"), reverse=True)
         for group in army.groups:
             target = max(army.groups, key=lambda g: g.potential_damage_from(group))
             if target.potential_damage_from(group) > 0:
@@ -115,11 +116,12 @@ class Army:
                 print(f"{group} targets {target}")
 
     def attack_phase(army):
-        army.groups.sort(attrgetter(initiative, effective_power), reverse=True)
+        army.groups.sort(key=attrgetter("initiative", "effective_power"), reverse=True)
         for group in army.groups:
-            group.attack(group.target)
-            group.targeted = False
-            group.target = None
+            if group.target:
+                group.attack(group.target)
+                group.target.targeted = False
+                group.target = None
 
     def counting_groups(self):
         d = defaultdict(lambda: 0)
@@ -139,7 +141,7 @@ def tests_groups():
     u.assert_equals(g1.attack_amount, 34)
     u.assert_equals(g1.attack_type, "cold")
     u.assert_equals(g1.initiative, 13)
-    u.assert_equals(g1.effective_power(), 18462)
+    u.assert_equals(g1.effective_power, 18462)
 
     g2 = Group(
         "688 units each with 1749 hit points (immune to slashing, radiation) with an attack that does 23 cold damage at initiative 7",
@@ -165,6 +167,7 @@ tests_groups()
 
 def fight(raw_input):
     army = Army("Example 1")
+    side = "Immune System"
     for row in filter(None, raw_input.splitlines()):
         if row == "Immune System:":
             side = "Immune System"
@@ -172,12 +175,16 @@ def fight(raw_input):
             side = "Infection"
         else:
             army.add_group(row, side)
+            counted_groups = dict(army.counting_groups())
+
+    counted_groups = dict(army.counting_groups())
+    print(counted_groups)
     for i in range(1000):
-        print("------TARGET---------")
+        print(f"---- ROUND {i+1} ----")
         army.targeting_phase()
-        print("-----ATTACK------")
+        #print("-----ATTACK------")
         army.attack_phase()
-        print("----AFTER THIS FIGHT----")
+        print(f"----AFTER ROUND {i+1} ----")
         counted_groups = dict(army.counting_groups())
         print(counted_groups)
         if 0 in counted_groups.values():
@@ -190,5 +197,7 @@ u.assert_equals(fight(example), 5216)
 u.answer_part_1(fight(raw_input))
 # 30454 too high
 # 25241 too high
+# 25241 again
+# 23385 !
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
