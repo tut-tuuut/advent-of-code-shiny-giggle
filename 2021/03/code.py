@@ -37,3 +37,29 @@ u.assert_equals(get_power_consumption(raw_example), 198)
 u.answer_part_1(get_power_consumption(raw_input))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def get_life_support_rating(raw_input):
+    rows = raw_input.splitlines()
+    first_row = rows[0]
+    width = len(first_row)
+    length = len(rows)
+    oxygen = rows.copy()
+    co2 = rows.copy()
+    for bit in range(width):
+        o2_sum = sum(int(r[bit]) for r in oxygen)
+        o2_criteria = str(int(o2_sum >= len(oxygen) / 2))
+        oxygen = [r for r in oxygen if r[bit] == o2_criteria]
+        if len(oxygen) == 1:
+            break
+    for bit in range(width):
+        co2_sum = sum(int(r[bit]) for r in co2)
+        co2_criteria = str(int(co2_sum < len(co2) / 2))
+        co2 = [r for r in co2 if r[bit] == co2_criteria]
+        if len(co2) == 1:
+            break
+    return int(oxygen[0], 2) * int(co2[0], 2)
+
+
+u.assert_equals(get_life_support_rating(raw_example), 230)
+u.answer_part_2(get_life_support_rating(raw_input))
