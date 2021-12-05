@@ -58,6 +58,13 @@ def points_on_line(line):
         return ((x1, y) for y in range(min(y1, y2), max(y1, y2) + 1))
     elif y1 == y2:
         return ((x, y1) for x in range(min(x1, x2), max(x1, x2) + 1))
+    else:
+        if x2 < x1:  # always have "left to right" segments
+            x1, y1, x2, y2 = x2, y2, x1, y1
+        if y1 < y2:  # "ascending" segment
+            return ((x1 + d, y1 + d) for d in range(y2 - y1 + 1))
+        else:
+            return ((x1 + d, y1 - d) for d in range(y1 - y2 + 1))
 
 
 def part_1(raw_input):
@@ -77,3 +84,30 @@ u.assert_equals(part_1(example_input), 5)
 u.answer_part_1(part_1(raw_input))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def debug_counts(counts):
+    max_x = max(p[0] for p in counts.keys())
+    max_y = max(p[1] for p in counts.keys())
+    grid = [["." for x in range(max_x + 1)] for y in range(max_y + 1)]
+    for point, value in counts.items():
+        x, y = point
+        grid[y][x] = str(value)
+    print(f"┌{'─'*len(grid[0])}┐")
+    for row in grid:
+        print(f"│{''.join(row)}│")
+    print(f"└{'─'*len(grid[0])}┘")
+
+
+def part_2(raw_input):
+    lines = parse_input(raw_input)
+    count_on_points = defaultdict(lambda: 0)
+    for line in lines:
+        for point in points_on_line(line):
+            count_on_points[point] += 1
+    counts = dict(count_on_points)
+    return sum(1 if val > 1 else 0 for val in counts.values())
+
+
+u.assert_equals(part_2(example_input), 12)
+u.answer_part_2(part_2(raw_input))
