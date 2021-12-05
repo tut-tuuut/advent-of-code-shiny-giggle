@@ -106,3 +106,31 @@ u.assert_equals(part_1(example_input), 4512)
 u.answer_part_1(part_1(raw_input))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def is_losing(board):
+    return not is_winning(board)
+
+
+def part_2(raw_input):
+    numbers, boards = extract_board_from_input(raw_input)
+    while len(boards) > 1:
+        drawed_number = numbers.pop(0)
+        boards = [
+            [["x" if n == drawed_number else n for n in row] for row in b]
+            for b in boards
+        ]
+        boards = list(filter(is_losing, boards))
+    last_board = boards.pop(0)
+    while is_losing(last_board):
+        drawed_number = numbers.pop(0)
+        last_board = [
+            ["x" if n == drawed_number else n for n in row] for row in last_board
+        ]
+    return drawed_number * sum(
+        sum(n if n != "x" else 0 for n in row) for row in last_board
+    )
+
+
+u.assert_equals(part_2(example_input), 1924)
+u.answer_part_2(part_2(raw_input))
