@@ -65,3 +65,22 @@ nb_bots = len(bots)
 
 # answer for test = (12,12,12) is in range of 5 nanobots => answer = 36
 u.assert_equals(how_many_in_range(12, 12, 12, bots), 5)
+
+
+def part_2(raw_input):
+    get_bots_from_raw_input(raw_input)
+    current_max = 0
+    distance = 0
+    for d in range(50):
+        for x in range(d):
+            for y in range(d - x):
+                local_nb = how_many_in_range(x, y, d - (x + y), bots)
+                if local_nb > current_max:
+                    current_max = local_nb
+                    distance = d
+                    print(f"{current_max} bots at distance {d}")
+    return distance
+
+
+u.assert_equals(part_2(raw_test_input_2), 36)
+part_2(raw_input)
