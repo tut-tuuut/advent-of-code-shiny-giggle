@@ -35,4 +35,4 @@ u.answer_part_1(how_many_fishes_after_x_days(raw_input, 80))
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
 u.assert_equals(how_many_fishes_after_x_days(example_input, 256), 26984457539)
-u.answer_part_1(how_many_fishes_after_x_days(raw_input, 256))
+u.answer_part_2(how_many_fishes_after_x_days(raw_input, 256))
