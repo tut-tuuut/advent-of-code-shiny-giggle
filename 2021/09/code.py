@@ -112,3 +112,53 @@ u.answer_part_1(sum_risk_levels_of_low_points(raw_input))
 # 613 : too high
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def find_bassins(grid):
+    low_points = extract_low_points(grid)
+    width = len(grid[0])
+    height = len(grid)
+    bassins = []
+    for low_point in low_points:
+        to_check = [low_point]
+        checked = []
+        bassin = []
+        while len(to_check) > 0:
+            r, c = to_check.pop(0)
+            if (r, c) in checked:
+                continue
+            if any(
+                (
+                    r >= height,  # ⎫
+                    r < 0,  # ⎬ off grid
+                    c >= width,  # ⎪
+                    c < 0,  # ⎭
+                )
+            ):
+                continue
+            checked.append((r, c))
+            if grid[r][c] == 9:  # bassin limit
+                continue
+            bassin.append((r, c))
+            to_check.extend(
+                (
+                    (r + 1, c),
+                    (r - 1, c),
+                    (r, c - 1),
+                    (r, c + 1),
+                )
+            )
+
+        bassins.append(bassin)
+    return bassins
+
+
+def multiply_size_of_three_largest_bassins(raw_input):
+    grid = tuple(tuple(int(x) for x in row) for row in raw_input.splitlines())
+    bassins = find_bassins(grid)
+    sizes = sorted([len(b) for b in bassins], reverse=True)
+    return sizes[0] * sizes[1] * sizes[2]
+
+
+u.assert_equals(multiply_size_of_three_largest_bassins(example_input), 1134)
+u.answer_part_2(multiply_size_of_three_largest_bassins(raw_input))
