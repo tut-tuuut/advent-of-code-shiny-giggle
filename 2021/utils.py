@@ -16,15 +16,21 @@ def green(message):
     print(f"{GREEN}{message}{NORMAL}")
 
 
-def yellow(message):
+def yellow(message, ret=False):
+    if ret:
+        return f"{YELLOW}{message}{NORMAL}"
     print(f"{YELLOW}{message}{NORMAL}")
 
 
-def purple(message):
+def purple(message, ret=False):
+    if ret:
+        return f"{PURPLE}{message}{NORMAL}"
     print(f"{PURPLE}{message}{NORMAL}")
 
 
-def blue(message):
+def blue(message, ret=False):
+    if ret:
+        return f"{CYAN}{message}{NORMAL}"
     print(f"{CYAN}{message}{NORMAL}")
 
 
