@@ -96,3 +96,15 @@ other_example = """11111
 
 # part_1(other_example,1)
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def part_2(raw_input):
+    grid = [[int(c) for c in row] for row in raw_input.splitlines()]
+    for step in range(1000):
+        grid, flashes = get_next_step(grid)
+        if flashes == 100:
+            return step + 1
+
+
+u.assert_equals(part_2(example_input), 195)
+u.answer_part_2(part_2(raw_input))
