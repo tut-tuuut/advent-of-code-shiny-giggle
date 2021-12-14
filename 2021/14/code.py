@@ -56,3 +56,36 @@ u.answer_part_1(part_1(raw_input))
 
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def part_2(raw_input, steps=10):
+    pairs = {}
+    initial = ""
+    for row in filter(None, raw_input.splitlines()):
+        if "->" in row:
+            source, new = row.split(" -> ")
+            pairs[source] = (f"{source[0]}{new}", f"{new}{source[1]}")
+        elif row:
+            initial = row
+    counts = defaultdict(int)
+    for pair in ("".join(t) for t in windowed(initial, 2)):
+        counts[pair] += 1
+    for _ in range(steps):
+        cur_counts = dict(counts)
+        counts = defaultdict(int)
+        for pair, count in cur_counts.items():
+            for new_pair in pairs[pair]:
+                counts[new_pair] += count
+    count_by_letter = defaultdict(int)
+    counts = dict(counts)
+    for pair, count in counts.items():
+        count_by_letter[pair[0]] += count
+        count_by_letter[pair[1]] += count
+    count_by_letter[initial[0]] += 1
+    count_by_letter[initial[-1]] += 1
+    return int((max(count_by_letter.values()) - min(count_by_letter.values())) / 2)
+
+
+u.assert_equals(part_2(example, 10), 1588)
+u.assert_equals(part_2(example, 40), 2188189693529)
+u.answer_part_2(part_2(raw_input, 40))
