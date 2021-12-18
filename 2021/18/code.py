@@ -28,6 +28,9 @@ class SnailfishNb:
                         right_string, level=self.level + 1, parent=self
                     )
 
+    def __str__(self):
+        return f"[{self.left},{self.right}]"
+
 
 examples = """[1,2]
 [[1,2],3]
@@ -37,8 +40,9 @@ examples = """[1,2]
 [[[9,[3,8]],[[0,9],6]],[[[3,7],[4,9]],3]]
 [[[[1,3],[5,3]],[[1,3],[8,7]]],[[[4,9],[6,9]],[[8,2],[7,3]]]]"""
 
+u.pink("-'*'-.,__,.-'*'-( parsing and __str__ tests )-'*'-.,__,.-'*'-")
 for x in examples.splitlines():
-    SnailfishNb(x)
+    u.assert_equals(str(SnailfishNb(x)), x)
 
 with open(__file__ + ".input.txt", "r+") as file:
     raw_input = file.read()
