@@ -31,6 +31,23 @@ class SnailfishNb:
     def __str__(self):
         return f"[{self.left},{self.right}]"
 
+    def __add__(self, other):
+        result = SnailfishNb("")
+        self.increase_level()
+        other.increase_level()
+        self.parent = result
+        other.parent = result
+        result.left = self
+        result.right = other
+        return result
+
+    def increase_level(self):
+        self.level += 1
+        if isinstance(self.left, self.__class__):
+            self.left.increase_level()
+        if isinstance(self.right, self.__class__):
+            self.right.increase_level()
+
 
 examples = """[1,2]
 [[1,2],3]
@@ -46,6 +63,17 @@ for x in examples.splitlines():
 
 with open(__file__ + ".input.txt", "r+") as file:
     raw_input = file.read()
+
+u.pink("-'*'-.,__,.-'*'-( simple __add__ test )-'*'-.,__,.-'*'-")
+
+result = SnailfishNb("[1,2]") + SnailfishNb("[[3,4],5]")
+u.assert_equals(str(result), "[[1,2],[[3,4],5]]")
+u.assert_equals(result.level, 0)
+u.assert_equals(result.left.parent, result)
+u.assert_equals(result.left.level, 1)
+u.assert_equals(result.right.parent, result)
+u.assert_equals(result.right.level, 1)
+u.assert_equals(result.right.left.level, 2)
 
 # part 1 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
