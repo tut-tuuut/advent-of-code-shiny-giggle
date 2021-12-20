@@ -59,3 +59,21 @@ u.assert_equals(part_1(example), 35)
 u.answer_part_1(part_1(raw_input))  # 5464! YAY
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def part_2(raw_input):
+    algorithm, lines = parse_input(raw_input)
+    if algorithm[0] == "1":
+        default_on_odd_turns = "1"
+    else:
+        default_on_odd_turns = "0"
+    for turn in range(50):
+        print("█" * turn, turn, end="\r")
+        default = default_on_odd_turns if turn % 2 == 1 else "0"
+        lines = calculate_next_grid(lines, algorithm, default=default)
+    print("\ndone!")
+    return sum(row.count("1") for row in lines)
+
+
+u.assert_equals(part_2(example), 3351)
+u.answer_part_2(part_2(raw_input))
