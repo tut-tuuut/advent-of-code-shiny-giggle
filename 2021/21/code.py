@@ -1,5 +1,6 @@
 import utils as u
 from collections import deque
+from functools import cache
 
 with open(__file__ + ".input.txt", "r+") as file:
     raw_input = file.read()
@@ -40,34 +41,42 @@ def debug_explored(dict_explored):
         print(f"scores :", scores)
 
 
+# Number of times each score arises from 3 throws.
+frequencies = {3: 1, 4: 3, 5: 6, 6: 7, 7: 6, 8: 3, 9: 1}
+u.assert_equals(sum(frequencies.values()), 3 * 3 * 3)
+
+
+@cache
+def get_positions_and_scores(dice_history, starting_positions):
+    if len(dice_history) == 0:
+        return starting_positions, (0, 0)
+    positions, scores = get_positions_and_scores(dice_history[:-1], starting_positions)
+    die_value = dice_history[-1]
+    player = (len(dice_history) - 1) % 2
+    new_positions = list(positions)
+    new_positions[player] = (new_positions[player] + die_value) % 10
+    new_scores = list(scores)
+    new_scores[player] += new_positions[player]
+    if new_positions[player] == 0:
+        new_scores[player] += 10
+    return tuple(new_positions), tuple(new_scores)
+
+
 def part_2(starting_position_one, starting_position_two):
-    positions = [starting_position_one, starting_position_two]
-    explored = {(): ((starting_position_one, starting_position_two), (0, 0))}
-    to_explore = deque([(1,), (2,), (3,)])
+    starting_positions = (starting_position_one, starting_position_two)
+    to_explore = deque((value,) for value in frequencies.keys())
     winning_universes = [0, 0]
-    while len(to_explore):
+    while len(to_explore) > 0:
         to_try = to_explore.popleft()
-        die_value = to_try[-1]
-        positions, scores = explored[to_try[:-1]]
-        player = ((len(to_try) - 1) // 3) % 2
-        new_positions = list(positions)
-        new_positions[player] = (new_positions[player] + die_value) % 10
-        if len(to_try) % 3 == 0:
-            new_scores = list(scores)
-            new_scores[player] += new_positions[player]
-            if new_positions[player] == 0:
-                new_scores[player] += 10
-        else:
-            new_scores = scores
-        if max(new_scores) < 21:
-            explored[to_try] = (tuple(new_positions), tuple(new_scores))
-            for new_dice_value in (1, 2, 3):
+        _, scores = get_positions_and_scores(to_try, starting_positions)
+        if max(scores) < 21:
+            for new_dice_value in frequencies.keys():
                 to_explore.appendleft(to_try + (new_dice_value,))
         else:
-            if new_scores[0] >= 21:
-                winning_universes[0] += 1
-            elif new_scores[1] >= 21:
-                winning_universes[1] += 1
+            if scores[0] >= 21:
+                winning_universes[0] += frequencies[to_try[-1]]
+            elif scores[1] >= 21:
+                winning_universes[1] += frequencies[to_try[-1]]
             print(sum(winning_universes), end="\r")
     return max(winning_universes)
 
