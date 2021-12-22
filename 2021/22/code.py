@@ -51,16 +51,16 @@ def part_1(raw_input):
     return sum(cubes.values())
 
 
-u.assert_equals(part_1(example_1), 39)
-u.assert_equals(part_1(example_2), 590784)
+# u.assert_equals(part_1(example_1), 39)
+# u.assert_equals(part_1(example_2), 590784)
 
-u.answer_part_1(part_1(raw_input))
+# u.answer_part_1(part_1(raw_input))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
 
 def intersect_segments(a, b, c, d):
-    if b <= c or d <= a:
+    if b < c or d < a:
         return None
     return (max(a, c), min(b, d))
 
@@ -74,6 +74,37 @@ def intersect_cuboids(a, b):
     return (*xrange, *yrange, *zrange)
 
 
+def divide_a_around_b(a, b):
+    # yield cuboids contained in a but not being b
+    if intersect_cuboids(a, b) != b:
+        return []
+    xa, xxa, ya, yya, za, zza = a
+    xb, xxb, yb, yyb, zb, zzb = b
+    xranges = [
+        (xb, xxb),
+    ]
+    if xa < xb:
+        xranges.append((xa, xb - 1))
+    if xxb < xxa:
+        xranges.append((xxb + 1, xxa))
+    yranges = [(yb, yyb)]
+    if ya < yb:
+        yranges.append((ya, yb - 1))
+    if yyb < yya:
+        yranges.append((yyb + 1, yya))
+    zranges = [(zb, zzb)]
+    if za < zb:
+        zranges.append((za, zb - 1))
+    if zzb < zza:
+        zranges.append((zzb + 1, zza))
+    for xrange in xranges:
+        for yrange in yranges:
+            for zrange in zranges:
+                if (*xrange, *yrange, *zrange) == b:
+                    continue
+                yield (*xrange, *yrange, *zrange)
+
+
 def volume(cuboid):
     if cuboid is None:
         return 0
@@ -81,39 +112,57 @@ def volume(cuboid):
     return (1 + x2 - x1) * (1 + y2 - y1) * (1 + z2 - z1)
 
 
+cuboid = (0, 99, 0, 99, 0, 0)
+u.assert_equals(volume(cuboid), 10000)
+sub = (0, 9, 0, 9, 0, 0)
+u.assert_equals(volume(sub), 100)
+for c in divide_a_around_b(cuboid, sub):
+    print(c)
+    print(volume(c))
+u.assert_equals(sum(volume(c) for c in divide_a_around_b(cuboid, sub)), 10000 - 100)
+
+
 def part_2(raw_input):
     regex = re.compile(
         r"(?:off|on) x=(-?\d+)\.\.(-?\d+),y=(-?\d+)\.\.(-?\d+),z=(-?\d+)\.\.(-?\d+)"
     )
-    on_cuboids = []
-    off_cuboids = []
-    nb_of_on_cubes = 0
+    on_cuboids = list()
     rows = raw_input.splitlines()
     for row in rows:
-        print(row)
         m = regex.match(row)
         new_cuboid = tuple(int(g) for g in m.groups())
+        new_cuboid_included_in_existing = False
         onoff = "ON" if row[1] == "n" else "OFF"
         if onoff == "ON":
-            nb_of_on_cubes += volume(new_cuboid)
-            for cuboid in on_cuboids:
-                nb_of_on_cubes -= volume(intersect_cuboids(new_cuboid, cuboid))
-                nb_of_on_cubes = max(0, nb_of_on_cubes)
-            for cuboid in off_cuboids:
-                nb_of_on_cubes += volume(intersect_cuboids(new_cuboid, cuboid))
-            on_cuboids.append(new_cuboid)
-        else:
-            for on_cuboid in on_cuboids:
-                new_off = intersect_cuboids(on_cuboid, new_cuboid)
-                if new_off is None:
+            new_on_cuboids = list()
+            for other in on_cuboids:
+                intersection = intersect_cuboids(new_cuboid, other)
+                if intersection is None:
+                    new_on_cuboids.append(other)
                     continue
-                nb_of_on_cubes -= volume(new_off)
-                for off_cuboid in off_cuboids:
-                    intersection = intersect_cuboids(off_cuboid, new_off)
-                    nb_of_on_cubes += volume(intersection)
-                off_cuboids.append(new_off)
-        print(f"--> {nb_of_on_cubes}")
-    return nb_of_on_cubes
+                if intersection == new_cuboid:
+                    new_cuboid_included_in_existing = True
+                    new_on_cuboids.append(other)
+                    continue
+                for small_new_cuboid in divide_a_around_b(other, intersection):
+                    new_on_cuboids.append(small_new_cuboid)
+            if not new_cuboid_included_in_existing:
+                new_on_cuboids.append(new_cuboid)
+            on_cuboids = new_on_cuboids
+        else:
+            new_on_cuboids = list()
+            for b in on_cuboids:
+                intersection = intersect_cuboids(new_cuboid, b)
+                if intersection is None:
+                    new_on_cuboids.append(b)
+                    continue
+                if intersection == b:
+                    # b is totally turned off
+                    continue
+                for small_new_cuboid in divide_a_around_b(b, intersection):
+                    new_on_cuboids.append(small_new_cuboid)
+            on_cuboids = new_on_cuboids
+    return sum(volume(c) for c in on_cuboids)
 
 
 example_3 = """on x=-5..47,y=-31..22,z=-19..33
@@ -177,8 +226,8 @@ off x=-70369..-16548,y=22648..78696,z=-1892..86821
 on x=-53470..21291,y=-120233..-33476,z=-44150..38147
 off x=-93533..-4276,y=-16170..68771,z=-104985..-24507"""
 
-# u.assert_equals(part_2(example_1), 39)
-# u.assert_equals(part_2(example_2), 590784)
+u.assert_equals(part_2(example_1), 39)
+u.assert_equals(part_2(example_2), 590784)
 
 example_handcrafted = """on x=1..10,y=1..10,z=1..10
 on x=1..2,y=1..2,z=1..2
@@ -186,4 +235,6 @@ off x=1..2,y=1..2,z=1..2
 off x=1..10,y=1..10,z=1..10"""
 
 u.assert_equals(part_2(example_handcrafted), 0)
-# u.assert_equals(part_2(example_3), 2758514936282235)
+u.assert_equals(part_2(example_3), 2758514936282235)
+
+u.answer_part_2(part_2(raw_input))
