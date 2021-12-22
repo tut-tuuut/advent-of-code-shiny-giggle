@@ -1,137 +1,106 @@
 import utils as u
+from itertools import product, count
 
-with open(__file__ + ".input.txt", "r+") as file:
-    raw_input = file.read()
-
-"""
-
-Advent of Code
-
-    [About][Events][Shop][Settings][Log Out]
-
-tut-tuuut (AoC++) 30*
-       λy.2021
-
-    [Calendar][AoC++][Sponsors][Leaderboard][Stats]
-
-Our sponsors help make Advent of Code possible:
-TwilioQuest - Learn to code and lead your intrepid crew on a mission to save The Cloud in TwilioQuest, a PC role-playing game inspired by classics of the 16-bit era. Free forever, and available now for Windows, Mac, and Linux.
---- Day 17: Trick Shot ---
-
-You finally decode the Elves' message. HI, the message says. You continue searching for the sleigh keys.
-
-Ahead of you is what appears to be a large ocean trench. Could the keys have fallen into it? You'd better send a probe to investigate.
-
-The probe launcher on your submarine can fire the probe with any integer velocity in the x (forward) and y (upward, or downward if negative) directions. For example, an initial x,y velocity like 0,10 would fire the probe straight up, while an initial velocity like 10,-1 would fire the probe forward at a slight downward angle.
-
-The probe's x,y position starts at 0,0. Then, it will follow some trajectory by moving in steps. On each step, these changes occur in the following order:
-
-    The probe's x position increases by its x velocity.
-    The probe's y position increases by its y velocity.
-    Due to drag, the probe's x velocity changes by 1 toward the value 0; that is, it decreases by 1 if it is greater than 0, increases by 1 if it is less than 0, or does not change if it is already 0.
-    Due to gravity, the probe's y velocity decreases by 1.
-
-For the probe to successfully make it into the trench, the probe must be on some trajectory that causes it to be within a target area after any step. The submarine computer has already calculated this target area (your puzzle input). For example:
-
-target area: x=20..30, y=-10..-5
-
-This target area means that you need to find initial x,y velocity values such that after any step, the probe's x position is at least 20 and at most 30, and the probe's y position is at least -10 and at most -5.
-
-Given this target area, one initial velocity that causes the probe to be within the target area after any step is 7,2:
-
-.............#....#............
-.......#..............#........
-...............................
-S........................#.....
-...............................
-...............................
-...........................#...
-...............................
-....................TTTTTTTTTTT
-....................TTTTTTTTTTT
-....................TTTTTTTT#TT
-....................TTTTTTTTTTT
-....................TTTTTTTTTTT
-....................TTTTTTTTTTT
-
-In this diagram, S is the probe's initial position, 0,0. The x coordinate increases to the right, and the y coordinate increases upward. In the bottom right, positions that are within the target area are shown as T. After each step (until the target area is reached), the position of the probe is marked with #. (The bottom-right # is both a position the probe reaches and a position in the target area.)
-
-Another initial velocity that causes the probe to be within the target area after any step is 6,3:
-
-...............#..#............
-...........#........#..........
-...............................
-......#..............#.........
-...............................
-...............................
-S....................#.........
-...............................
-...............................
-...............................
-.....................#.........
-....................TTTTTTTTTTT
-....................TTTTTTTTTTT
-....................TTTTTTTTTTT
-....................TTTTTTTTTTT
-....................T#TTTTTTTTT
-....................TTTTTTTTTTT
-
-Another one is 9,0:
-
-S........#.....................
-.................#.............
-...............................
-........................#......
-...............................
-....................TTTTTTTTTTT
-....................TTTTTTTTTT#
-....................TTTTTTTTTTT
-....................TTTTTTTTTTT
-....................TTTTTTTTTTT
-....................TTTTTTTTTTT
-
-One initial velocity that doesn't cause the probe to be within the target area after any step is 17,-4:
-
-S..............................................................
-...............................................................
-...............................................................
-...............................................................
-.................#.............................................
-....................TTTTTTTTTTT................................
-....................TTTTTTTTTTT................................
-....................TTTTTTTTTTT................................
-....................TTTTTTTTTTT................................
-....................TTTTTTTTTTT..#.............................
-....................TTTTTTTTTTT................................
-...............................................................
-...............................................................
-...............................................................
-...............................................................
-................................................#..............
-...............................................................
-...............................................................
-...............................................................
-...............................................................
-...............................................................
-...............................................................
-..............................................................#
-
-The probe appears to pass through the target area, but is never within it after any step. Instead, it continues down and to the right - only the first few steps are shown.
-
-If you're going to fire a highly scientific probe out of a super cool probe launcher, you might as well do it with style. How high can you make the probe go while still reaching the target area?
-
-In the above example, using an initial velocity of 6,9 is the best you can do, causing the probe to reach a maximum y position of 45. (Any higher initial y velocity causes the probe to overshoot the target area entirely.)
-
-Find the initial velocity that causes the probe to reach the highest y position and still eventually be within the target area after any step. What is the highest y position it reaches on this trajectory?
-
-To begin, get your puzzle input.
-
-Answer:
-
-You can also [Shareon Twitter Mastodon] this puzzle.
-
-"""
 # part 1 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
 
+def next_step(vx, vy, x, y):
+    x += vx
+    y += vy
+    vy -= 1
+    if vx > 0:
+        vx -= 1
+    elif vx < 0:
+        vx += 1
+    return vx, vy, x, y
+
+
+def get_max_y(tx, txx, ty, tyy, vx0, vy0):
+    vx = vx0
+    vy = vy0
+    x = 0
+    y = 0
+    target_acquired = False
+    target_missed = False
+    max_y = 0
+    max_x = 0
+    while target_acquired == False and target_missed == False:
+        vx, vy, x, y = next_step(vx, vy, x, y)
+        if y > max_y:
+            max_y = y
+        if x > max_x:
+            max_x = x
+        if tx <= x <= txx and ty <= y <= tyy:
+            target_acquired = True
+        if txx < x or y < ty:
+            target_missed = True
+    if target_missed:
+        return max_x, False
+    if target_acquired:
+        return max_x, max_y
+
+
+def part_1(tx, txx, ty, tyy):
+    max_vx = txx
+    min_vx = 1
+    min_vy = tyy
+    max_vy = 450
+    max_reached_y = 0
+    max_reached_x = 0
+    for i, v in enumerate(product(range(min_vx, max_vx), range(min_vy, max_vy))):
+        vx, vy = v
+        print(f"launching probe {i}", end="\r")
+        _, reached_y = get_max_y(tx, txx, ty, tyy, vx, vy)
+        if reached_y:
+            if max_reached_y < reached_y:
+                max_reached_y = reached_y
+    print("")
+    return max_reached_y
+
+
+# u.assert_equals(get_max_y(20, 30, -10, -5, 6, 9), 45)
+# u.assert_equals(part_1(20, 30, -10, -5), 45)
+# u.answer_part_1(part_1(85,145,-163,-108))
+
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def target_acquired(tx, txx, ty, tyy, vx0, vy0):
+    vx = vx0
+    vy = vy0
+    x = 0
+    y = 0
+    target_acquired = False
+    target_missed = False
+    max_y = 0
+    max_x = 0
+    while target_acquired == False and target_missed == False:
+        vx, vy, x, y = next_step(vx, vy, x, y)
+        if y > max_y:
+            max_y = y
+        if x > max_x:
+            max_x = x
+        if tx <= x <= txx and ty <= y <= tyy:
+            target_acquired = True
+        if txx < x or y < ty:
+            target_missed = True
+    return target_acquired, max_x, max_y
+
+
+def part_2(tx, txx, ty, tyy):
+    max_vx = txx + 5
+    min_vx = 1
+    min_vy = ty - 5
+    max_vy = 300
+    good_probes = 0
+    for vx in range(min_vx, max_vx):  #
+        for vy in range(min_vy, max_vy):
+            ok, _, _ = target_acquired(tx, txx, ty, tyy, vx, vy)
+            if ok:
+                good_probes += 1
+    return good_probes
+
+
+u.assert_equals(part_2(20, 30, -10, -5), 112)
+
+u.answer_part_2(part_2(85, 145, -163, -108))  # 5420 too low
