@@ -60,12 +60,15 @@ print(alu_to_python_converter("example_1", example_1))
 print(alu_to_python_converter("example_2", example_2))
 print(alu_to_python_converter("example_3", example_3))
 
+
 def example_1(*args):
     inputs = list(args)
     w, x, y, z = 0, 0, 0, 0
     x = inputs.pop(0)
     x *= -1
     return w, x, y, z
+
+
 def example_2(*args):
     inputs = list(args)
     w, x, y, z = 0, 0, 0, 0
@@ -74,6 +77,8 @@ def example_2(*args):
     z *= 3
     z = int(z == x)
     return w, x, y, z
+
+
 def example_3(*args):
     inputs = list(args)
     w, x, y, z = 0, 0, 0, 0
@@ -90,7 +95,8 @@ def example_3(*args):
     w = w % 2
     return w, x, y, z
 
-print(example_2(3,1))
+
+print(example_2(3, 1))
 print(example_3(14))
 
 

@@ -2,71 +2,42 @@ def monad(*args):
     inputs = list(args)
     w, x, y, z = 0, 0, 0, 0
     w = inputs.pop(0)
-    x *= 0
-    x += z
-    x = x % 26
-    z = int(z / 1)
-    x += 11
-    x = int(x == w)
-    x = int(x == 0)
-    y *= 0
-    y += 25
-    y *= x
-    y += 1
-    z *= y
-    y *= 0
-    y += w
-    y += 14
-    y *= x
-    z += y
+    x = 1
+    y = w + 14
+    z = y
+
     w = inputs.pop(0)
-    x *= 0
-    x += z
-    x = x % 26
-    z = int(z / 1)
+    x = z % 26
     x += 13
-    x = int(x == w)
-    x = int(x == 0)
-    y *= 0
-    y += 25
+    x = int(x != w)
+
+    y = 25
     y *= x
     y += 1
     z *= y
-    y *= 0
-    y += w
-    y += 8
-    y *= x
+
+    y = (w + 8) * x
     z += y
+
     w = inputs.pop(0)
-    x *= 0
-    x += z
-    x = x % 26
-    z = int(z / 1)
-    x += 11
-    x = int(x == w)
-    x = int(x == 0)
-    y *= 0
-    y += 25
-    y *= x
-    y += 1
+    x = (z % 26) + 11
+
+    x = int(x != w)
+
+    y = 25 * x + 1
     z *= y
-    y *= 0
-    y += w
-    y += 4
-    y *= x
+
+    y = (w + 4) * x
     z += y
+
     w = inputs.pop(0)
-    x *= 0
-    x += z
-    x = x % 26
-    z = int(z / 1)
-    x += 10
-    x = int(x == w)
-    x = int(x == 0)
-    y *= 0
-    y += 25
-    y *= x
-    y += 1
+    x = z
+
+    x = (x % 26) + 10
+
+    x = int(x != w)
+
+    y = 25 * x + 1
     z *= y
     y *= 0
     y += w
@@ -113,7 +84,6 @@ def monad(*args):
     x *= 0
     x += z
     x = x % 26
-    z = int(z / 1)
     x += 12
     x = int(x == w)
     x = int(x == 0)
@@ -254,3 +224,6 @@ def monad(*args):
     y *= x
     z += y
     return w, x, y, z
+
+
+print(monad(9, 8, 7, 9, 8, 7, 9, 8, 7, 9, 8, 7, 9, 8, 7))
