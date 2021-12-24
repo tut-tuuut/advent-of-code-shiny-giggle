@@ -63,7 +63,7 @@ for n1, n2, w in distances_edges:
     distances.add_edge(n1, n2, weight=w)
 
 u.assert_equals(nx.shortest_path_length(distances, 8, 6, weight="weight"), 10)
-u.assert_equals(nx.shortest_path_length(distances, 14, 0, weight="weight"), 8)
+u.assert_equals(nx.shortest_path_length(distances, 6, 10, weight="weight"), 10)
 
 
 COSTS = {
@@ -135,7 +135,6 @@ def part_1(initial_state):
         explored.add(current_state)
         # debug_state(current_state)
         # print(current_state)
-        # print('────────────────────────────────────────────')
         # can we pop some letters out of the branchs into the hallways?
         for room in ("A", "B", "C", "D"):
             for i, position in enumerate(ROOMS_BY_LETTER[room]):
@@ -183,7 +182,9 @@ def part_1(initial_state):
             letter = current_state[position]
             if letter == None:
                 continue
-            if all(pos in (None, letter) for pos in ROOMS_BY_LETTER[letter]):
+            if all(
+                current_state[pos] in (None, letter) for pos in ROOMS_BY_LETTER[letter]
+            ):
                 target = max(
                     pos for pos in ROOMS_BY_LETTER[letter] if current_state[pos] == None
                 )
@@ -198,45 +199,34 @@ def part_1(initial_state):
                 new_state[position] = None
                 new_state[target] = letter
                 new_state = tuple(new_state)
+                to_explore.add(new_state)
                 state_graphs.add_edge(
                     current_state,
                     new_state,
-                    weight=nx.shortest_path_length(distances, position, target)
+                    weight=nx.shortest_path_length(
+                        distances, position, target, weight="weight"
+                    )
                     * COSTS[letter],
                 )
-    for intermediary_state in nx.shortest_path(
-        state_graphs,
-        initial_state,
-        (
-            None,
-            "B",
-            "A",
-            "A",
-            "B",
-            "C",
-            "D",
-            "B",
-            "D",
-            "D",
-            "A",
-            "C",
-            "C",
-            "B",
-            "D",
-            None,
-            None,
-            None,
-            "C",
-            None,
-            None,
-            None,
-            "A",
-        ),
-    ):
-        debug_state(intermediary_state)
-    # return nx.shortest_path_length(state_graphs, initial_state, TARGET, weight="weight")
+        # print('────────────────────────────────────────────')
+    # previous = None
+    # for intermediary in nx.shortest_path(
+    #    state_graphs, initial_state, TARGET, weight="weight"
+    # ):
+    #    debug_state(intermediary)
+    #    if previous:
+    #        print(state_graphs.edges[previous, intermediary])
+    #    previous = intermediary
+    return nx.shortest_path_length(state_graphs, initial_state, TARGET, weight="weight")
 
 
-u.assert_equals(part_1(example_state), 12521)
+u.assert_equals(part_1(example_state), 44169)
+# state_with_a_D_who_can_go_home = ('A', 'B', None, 'C', 'A', 'D', 'C', 'B', 'D', 'D', 'A', None, 'C', 'B', 'D', None, 'B', 'A', 'C', None, None, None, None)
+# part_1(state_with_a_D_who_can_go_home)
 
+my_initial_state = (
+    (None,) * 7 + tuple("CDDB") + tuple("DCBA") + tuple("ABAD") + tuple("BACC")
+)
+
+u.answer_part_1(part_1(my_initial_state))
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
