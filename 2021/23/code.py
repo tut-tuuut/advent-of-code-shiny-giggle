@@ -1,3 +1,4 @@
+from networkx.algorithms.shortest_paths import weighted
 from networkx.algorithms.shortest_paths.generic import shortest_path_length
 import utils as u
 import networkx as nx
@@ -81,7 +82,14 @@ ROOMS_BY_LETTER = {
     "D": (19, 20, 21, 22),
 }
 
-TARGET = (None,) * 6 + ("A",) * 4 + ("B",) * 4 + ("C",) * 4 + ("D",) * 4
+REACHABLE_FROM_ROOM = {
+    "A": ((1, 0), (2, 3, 4, 5, 6)),
+    "B": ((2, 1, 0), (3, 4, 5, 6)),
+    "C": ((3, 2, 1, 0), (4, 5, 6)),
+    "D": ((4, 3, 2, 1, 0), (5, 6)),
+}
+
+TARGET = (None,) * 7 + ("A",) * 4 + ("B",) * 4 + ("C",) * 4 + ("D",) * 4
 
 
 example_state = (
@@ -91,11 +99,142 @@ example_state = (
 u.assert_equals(len(example_state), 15)
 u.assert_equals(example_state[7], "B")
 
+
+def debug_state(state):
+    def s(char):
+        if char is None:
+            return "."
+        else:
+            return char
+
+    print("┌───────────┐")
+    print(
+        f"│{s(state[0])}{s(state[1])} {s(state[2])} {s(state[3])} {s(state[4])} {s(state[5])}{s(state[6])}│"
+    )
+    print("└─┐       ┌─┘")
+    print(f"  │{s(state[7])}│{s(state[11])}│{s(state[15])}│{s(state[19])}│")
+    print(f"  │{s(state[8])}│{s(state[12])}│{s(state[16])}│{s(state[20])}│")
+    print(f"  │{s(state[9])}│{s(state[13])}│{s(state[17])}│{s(state[21])}│")
+    print(f"  │{s(state[10])}│{s(state[14])}│{s(state[18])}│{s(state[22])}│")
+    print("  └─┴─┴─┴─┘")
+
+
 # part 1 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
 
 def part_1(initial_state):
     state_graphs = nx.DiGraph()
     state_graphs.add_node(initial_state)
+    to_explore = set()
+    to_explore.add(initial_state)
+    explored = set()
+    while len(to_explore):
+        current_state = to_explore.pop()
+        if current_state in explored:
+            continue
+        explored.add(current_state)
+        # debug_state(current_state)
+        # print(current_state)
+        # print('────────────────────────────────────────────')
+        # can we pop some letters out of the branchs into the hallways?
+        for room in ("A", "B", "C", "D"):
+            for i, position in enumerate(ROOMS_BY_LETTER[room]):
+                if current_state[position] == None:
+                    continue
+                letter = current_state[position]
+                if letter == room and all(
+                    room == current_state[pos] for pos in ROOMS_BY_LETTER[room][i:]
+                ):
+                    # branch is filled, do not move these letters
+                    break
+                for reachable_hallways in REACHABLE_FROM_ROOM[room]:
+                    for target in reachable_hallways:
+                        if current_state[target] != None:
+                            break
+                        reachable_target = True
+                        for intermediate in nx.shortest_path(
+                            distances, position, target
+                        ):
+                            if (
+                                current_state[intermediate] != None
+                                and intermediate != position
+                            ):
+                                print(f"intermediate {intermediate} is occupied")
+                                reachable_target = False
+                                break
+                        if not reachable_target:
+                            continue
+                        new_state = list(current_state)
+                        new_state[target] = letter
+                        new_state[position] = None
+                        new_state = tuple(new_state)
+                        state_graphs.add_edge(
+                            current_state,
+                            new_state,
+                            weight=COSTS[letter]
+                            * nx.shortest_path_length(
+                                distances, target, position, weight="weight"
+                            ),
+                        )
+                        to_explore.add(new_state)
+                break  # once we moved a letter in the room, no other letter moves
+        # can we put some letters from the hallway into the correct room?
+        for position in HALLWAY:
+            letter = current_state[position]
+            if letter == None:
+                continue
+            if all(pos in (None, letter) for pos in ROOMS_BY_LETTER[letter]):
+                target = max(
+                    pos for pos in ROOMS_BY_LETTER[letter] if current_state[pos] == None
+                )
+                # check target is reachable from position, using distances
+                reachable_target = True
+                for intermediate in nx.shortest_path(distances, position, target):
+                    if current_state[intermediate] != None and intermediate != position:
+                        reachable_target = False
+                if not reachable_target:
+                    continue  # check another hallway position
+                new_state = list(current_state)
+                new_state[position] = None
+                new_state[target] = letter
+                new_state = tuple(new_state)
+                state_graphs.add_edge(
+                    current_state,
+                    new_state,
+                    weight=nx.shortest_path_length(distances, position, target)
+                    * COSTS[letter],
+                )
+    for intermediary_state in nx.shortest_path(
+        state_graphs,
+        initial_state,
+        (
+            None,
+            "B",
+            "A",
+            "A",
+            "B",
+            "C",
+            "D",
+            "B",
+            "D",
+            "D",
+            "A",
+            "C",
+            "C",
+            "B",
+            "D",
+            None,
+            None,
+            None,
+            "C",
+            None,
+            None,
+            None,
+            "A",
+        ),
+    ):
+        debug_state(intermediary_state)
+    # return nx.shortest_path_length(state_graphs, initial_state, TARGET, weight="weight")
 
 
 u.assert_equals(part_1(example_state), 12521)
