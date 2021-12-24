@@ -1,19 +1,15 @@
 def monad(*args):
     inputs = list(args)
     w, x, y, z = 0, 0, 0, 0
-    w = inputs.pop(0)
-    x = 1
-    y = w + 14
-    z = y
 
     w = inputs.pop(0)
-    x = z % 26
-    x += 13
+    z = w + 14
+
+    w = inputs.pop(0)
+    x = (z % 26) + 13
     x = int(x != w)
 
-    y = 25
-    y *= x
-    y += 1
+    y = 25 * x + 1
     z *= y
 
     y = (w + 8) * x
@@ -31,19 +27,18 @@ def monad(*args):
     z += y
 
     w = inputs.pop(0)
-    x = z
 
-    x = (x % 26) + 10
+    x = (z % 26) + 10
 
     x = int(x != w)
 
     y = 25 * x + 1
     z *= y
-    y *= 0
-    y += w
-    y += 10
-    y *= x
+
+    y = (w + 10) * x
+
     z += y
+
     w = inputs.pop(0)
     x *= 0
     x += z
@@ -110,83 +105,51 @@ def monad(*args):
     y *= x
     y += 1
     z *= y
-    y *= 0
-    y += w
-    y += 14
-    y *= x
+    y = (w + 14) * x
     z += y
+
     w = inputs.pop(0)
-    x *= 0
-    x += z
-    x = x % 26
+    x = z % 26
     z = int(z / 26)
     x += -3
-    x = int(x == w)
-    x = int(x == 0)
-    y *= 0
-    y += 25
-    y *= x
-    y += 1
+    x = int(x != w)
+    y = 25 * x + 1
     z *= y
-    y *= 0
-    y += w
-    y += 1
-    y *= x
+    y = (w + 1) * x
     z += y
+
     w = inputs.pop(0)
-    x *= 0
-    x += z
-    x = x % 26
+    x = z % 26
     z = int(z / 26)
     x += -12
-    x = int(x == w)
-    x = int(x == 0)
-    y *= 0
-    y += 25
-    y *= x
-    y += 1
+    x = int(x != w)
+    y = 25 * x + 1
     z *= y
-    y *= 0
-    y += w
-    y += 6
+    y = w + 6
     y *= x
     z += y
+
     w = inputs.pop(0)
-    x *= 0
-    x += z
-    x = x % 26
-    z = int(z / 1)
+    x = z % 26
     x += 14
-    x = int(x == w)
-    x = int(x == 0)
-    y *= 0
-    y += 25
-    y *= x
-    y += 1
+    x = int(x != w)
+    y = 25 * x + 1
     z *= y
-    y *= 0
-    y += w
-    y += 0
-    y *= x
+    y = w * x
     z += y
+
     w = inputs.pop(0)
-    x *= 0
-    x += z
-    x = x % 26
-    z = int(z / 26)
+    x = z % 26
+    z = int(z / 26)  # z retourne à zéro s'il est < 26 à ce moment-là
+
     x += -6
     x = int(x == w)
     x = int(x == 0)
-    y *= 0
-    y += 25
-    y *= x
-    y += 1
-    z *= y
-    y *= 0
-    y += w
-    y += 9
-    y *= x
-    z += y
+
+    z *= 25 * x + 1
+
+    z += (w + 9) * x
+
     w = inputs.pop(0)
     x *= 0
     x += z
@@ -204,25 +167,21 @@ def monad(*args):
     y += w
     y += 13
     y *= x
+
     z += y
+
     w = inputs.pop(0)
-    x *= 0
-    x += z
-    x = x % 26
-    z = int(z / 26)
+    x = z % 26
+
+    z = int(z / 26)  # z peut retourner à zéro à ce moment-là
+
     x += -12
-    x = int(x == w)
-    x = int(x == 0)
-    y *= 0
-    y += 25
-    y *= x
-    y += 1
-    z *= y
-    y *= 0
-    y += w
-    y += 12
-    y *= x
-    z += y
+    x = int(x != w)
+    y = 25 * x + 1
+
+    z *= y  # ça serait bien que x == w alors, sauf si z == 0 déjà
+    y = (w + 12) * x
+    z += y  # ça serait bien que x == w
     return w, x, y, z
 
 

@@ -6,40 +6,63 @@ with open(__file__ + ".input.txt", "r+") as file:
     raw_input = file.read()
 
 
-# ┌───┬───┬───┬───┬────┬───┬────┬───┬────┬───┬───┐
-# │ 0 │ 1 │   │ 2 │    │ 3 │    │ 4 │    │ 5 │ 6 │
-# └───┴───┼───┼───┼────┼───┼────┼───┼────┼───┴───┘
-#         │ 7 │   │ 9  │   │ 11 │   │ 13 │
-#         ├───┤   ├────┤   ├────┤   ├────┤
-#         │ 8 │   │ 10 │   │ 12 │   │ 14 │
-#         └───┘   └────┘   └────┘   └────┘
+# ┌───┬───┬────┬───┬────┬───┬────┬───┬────┬───┬───┐
+# │ 0 │ 1 │    │ 2 │    │ 3 │    │ 4 │    │ 5 │ 6 │
+# └───┴───┼────┼───┼────┼───┼────┼───┼────┼───┴───┘
+#         │  7 │   │ 11 │   │ 15 │   │ 19 │
+#         ├────┤   ├────┤   ├────┤   ├────┤
+#         │  8 │   │ 12 │   │ 16 │   │ 20 │
+#         ├────┤   ├────┤   ├────┤   ├────┤
+#         │  9 │   │ 13 │   │ 17 │   │ 21 │
+#         ├────┤   ├────┤   ├────┤   ├────┤
+#         │ 10 │   │ 14 │   │ 18 │   │ 22 │
+#         └────┘   └────┘   └────┘   └────┘
+#            A        B        C        D
 
 distances = nx.Graph()
-distances.add_edges_from(
-    [
-        (0, 1, {"weight": 1}),
-        (1, 2, {"weight": 2}),
-        (1, 7, {"weight": 2}),
-        (7, 2, {"weight": 2}),
-        (7, 8, {"weight": 1}),
-        (2, 9, {"weight": 2}),
-        (2, 3, {"weight": 2}),
-        (9, 3, {"weight": 2}),
-        (9, 10, {"weight": 1}),
-        (3, 11, {"weight": 2}),
-        (3, 4, {"weight": 2}),
-        (11, 4, {"weight": 2}),
-        (11, 12, {"weight": 1}),
-        (4, 5, {"weight": 2}),
-        (4, 13, {"weight": 2}),
-        (13, 5, {"weight": 2}),
-        (13, 14, {"weight": 1}),
-        (5, 6, {"weight": 1}),
-    ]
+distances_edges = (
+    # left : 1-2
+    (0, 1, 1),
+    # cross 1-2-7
+    (1, 2, 2),
+    (1, 7, 2),
+    (7, 2, 2),
+    # branch A : 7-8-9-10
+    (7, 8, 1),
+    (8, 9, 1),
+    (9, 10, 1),
+    # cross 2-11-3
+    (2, 11, 2),
+    (2, 3, 2),
+    (11, 3, 2),
+    # branch B : 11-12-13-14
+    (11, 12, 1),
+    (12, 13, 1),
+    (13, 14, 1),
+    # cross 3-4-15
+    (3, 4, 2),
+    (3, 15, 2),
+    (4, 15, 2),
+    # branch C : 15-16-17-18
+    (15, 16, 1),
+    (16, 17, 1),
+    (17, 18, 1),
+    # cross 4-5-19
+    (4, 5, 2),
+    (5, 19, 2),
+    (4, 19, 2),
+    # branch D : 19-20-21-22
+    (19, 20, 1),
+    (20, 21, 1),
+    (21, 22, 1),
+    # right : 5-6
+    (5, 6, 1),
 )
+for n1, n2, w in distances_edges:
+    distances.add_edge(n1, n2, weight=w)
 
 u.assert_equals(nx.shortest_path_length(distances, 8, 6, weight="weight"), 10)
-u.assert_equals(nx.shortest_path_length(distances, 14, 0, weight="weight"), 10)
+u.assert_equals(nx.shortest_path_length(distances, 14, 0, weight="weight"), 8)
 
 
 COSTS = {
@@ -50,55 +73,25 @@ COSTS = {
 }
 
 HALLWAY = tuple(range(7))
-ROOMS = tuple(range(7, 15))
-
-TARGET = (
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    "A",
-    "A",
-    "B",
-    "B",
-    "C",
-    "C",
-    "D",
-    "D",
-)
 
 ROOMS_BY_LETTER = {
-    "A": (7, 8),
-    "B": (9, 10),
-    "C": (11, 12),
-    "D": (13, 14),
+    "A": (7, 8, 9, 10),
+    "B": (11, 12, 13, 14),
+    "C": (15, 16, 17, 18),
+    "D": (19, 20, 21, 22),
 }
 
+TARGET = (None,) * 6 + ("A",) * 4 + ("B",) * 4 + ("C",) * 4 + ("D",) * 4
+
+
 example_state = (
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    "B",
-    "A",
-    "C",
-    "D",
-    "B",
-    "C",
-    "D",
-    "A",
+    (None,) * 7 + tuple("BDDA") + tuple("CCBD") + tuple("BBAC") + tuple("DACA")
 )
+
 u.assert_equals(len(example_state), 15)
 u.assert_equals(example_state[7], "B")
 
 # part 1 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
-
 
 def part_1(initial_state):
     state_graphs = nx.DiGraph()
