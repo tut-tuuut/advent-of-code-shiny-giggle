@@ -43,7 +43,7 @@ def get_neighbours(point, grid):
         yield (row, col + 1)
 
 
-def find_lowest_risk_path(grid):
+def find_lowest_risk_path(grid, debug=True):
     graph = nx.DiGraph()
     for row, risks in enumerate(grid):
         for col, risk in enumerate(risks):
@@ -51,20 +51,43 @@ def find_lowest_risk_path(grid):
             for neighbour in get_neighbours(point, grid):
                 graph.add_edge(neighbour, point, weight=risk)
     bottom_right = (len(grid) - 1, len(grid[0]) - 1)
-    debug_grid_and_path(
-        grid, nx.shortest_path(graph, (0, 0), bottom_right, weight="weight")
-    )
+    if debug:
+        debug_grid_and_path(
+            grid, nx.shortest_path(graph, (0, 0), bottom_right, weight="weight")
+        )
     return nx.shortest_path_length(graph, (0, 0), bottom_right, weight="weight")
 
 
 def part_1(raw_input):
     grid = [[int(char) for char in row] for row in raw_input.splitlines()]
-    # build graph
     return find_lowest_risk_path(grid)
 
 
 u.assert_equals(part_1(example), 40)
 
-u.answer_part_1(part_1(raw_input))
+# u.answer_part_1(part_1(raw_input))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def wrap(risk_level):
+    while risk_level > 9:
+        risk_level -= 9
+    return risk_level
+
+
+def part_2(raw_input, debug=True):
+    grid = [[int(char) for char in row] for row in raw_input.splitlines()]
+    new_grid = [[] for _ in range(len(grid))]
+    for addenum in range(5):
+        for row, risks in enumerate(grid):
+            new_grid[row].extend(wrap(risk + addenum) for risk in risks)
+    for addenum in range(1, 5):
+        for risks in new_grid[: len(grid)]:
+            new_grid.append([wrap(risk + addenum) for risk in risks])
+    return find_lowest_risk_path(new_grid, debug)
+
+
+u.assert_equals(part_2(example), 315)
+
+u.answer_part_2(part_2(raw_input, debug=False))
