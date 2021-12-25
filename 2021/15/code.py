@@ -43,9 +43,7 @@ def get_neighbours(point, grid):
         yield (row, col + 1)
 
 
-def part_1(raw_input):
-    grid = [[int(char) for char in row] for row in raw_input.splitlines()]
-    # build graph
+def find_lowest_risk_path(grid):
     graph = nx.DiGraph()
     for row, risks in enumerate(grid):
         for col, risk in enumerate(risks):
@@ -57,6 +55,12 @@ def part_1(raw_input):
         grid, nx.shortest_path(graph, (0, 0), bottom_right, weight="weight")
     )
     return nx.shortest_path_length(graph, (0, 0), bottom_right, weight="weight")
+
+
+def part_1(raw_input):
+    grid = [[int(char) for char in row] for row in raw_input.splitlines()]
+    # build graph
+    return find_lowest_risk_path(grid)
 
 
 u.assert_equals(part_1(example), 40)
