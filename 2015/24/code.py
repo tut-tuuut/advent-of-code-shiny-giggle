@@ -29,6 +29,7 @@ def balancing_packages_into_three(packages: tuple):
 u.assert_equals(balancing_packages_into_three(example_packages), 99)
 u.answer_part_1(balancing_packages_into_three(package_list))
 
+
 # part 2
 def balancing_packages_into_four(packages: tuple):
     total_weight = sum(packages)

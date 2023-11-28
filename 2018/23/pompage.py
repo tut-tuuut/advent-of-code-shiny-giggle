@@ -50,7 +50,6 @@ def find(done, bots, xs, ys, zs, dist, ox, oy, oz, forced_count):
     for x in range(min(xs), max(xs) + 1, dist):
         for y in range(min(ys), max(ys) + 1, dist):
             for z in range(min(zs), max(zs) + 1, dist):
-
                 # See how many bots are possible
                 count = 0
                 for bx, by, bz, bdist in bots:

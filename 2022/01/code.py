@@ -51,5 +51,6 @@ def part_2(raw_input):
     # How many Calories are those Elves carrying in total?
     return sum(sorted((sum(t) for t in data), reverse=True)[:3])
 
+
 u.assert_equals(part_2(example_input), 45000)
 u.answer_part_2(part_2(raw_input))

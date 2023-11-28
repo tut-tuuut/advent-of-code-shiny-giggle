@@ -152,7 +152,6 @@ class Army:
 
 
 def tests_groups():
-
     g1 = Group(
         "543 units each with 2286 hit points with an attack that does 34 cold damage at initiative 13",
         1,

@@ -21,6 +21,7 @@ import utils as u
 # 3. ma codebase
 # Vérifiable avec isort
 
+
 # NameError: name 's' is not defined
 def find_winner_part_1(s: str, runDuration: int) -> int:
     return max(

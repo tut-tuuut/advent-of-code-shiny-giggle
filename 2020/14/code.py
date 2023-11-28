@@ -32,7 +32,7 @@ def bits_to_integer(bits):
 u.assert_equals(bits_to_integer(bits_from_integer(25)), 25, "bits_from/to_integer")
 
 u.assert_equals(
-    bits_to_integer(bits_from_integer(2 ** 36)), 2 ** 36, "bits_from/to_integer"
+    bits_to_integer(bits_from_integer(2**36)), 2**36, "bits_from/to_integer"
 )
 
 

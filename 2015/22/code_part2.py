@@ -19,7 +19,6 @@ Situation = namedtuple(
 
 
 def find_neighbor_situations(situation: Situation):
-
     # 0. Check victory/defeat
     if situation.boss_hp <= 0:
         return []

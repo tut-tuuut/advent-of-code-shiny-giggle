@@ -25,29 +25,31 @@ u.assert_equals(convert_hexa_string_to_bits("D2FE28"), "110100101111111000101000
 
 TYPE_LITERAL_VALUE = 4
 
+
 def part_1(hex_input):
     bits = convert_hexa_string_to_bits(hex_input)
     print(bits)
-    version_number = int(bits[:3],base=2)
+    version_number = int(bits[:3], base=2)
     type_id = int(bits[3:6], base=2)
     if type_id == TYPE_LITERAL_VALUE:
         index = 6
         value_bits = []
         last_group = False
         while last_group == False:
-            group = bits[index:index+5]
+            group = bits[index : index + 5]
             value_bits.append(group[1:])
             index += 5
-            last_group = (group[0] == '0')
-        result = int(''.join(value_bits), base=2)
+            last_group = group[0] == "0"
+        result = int("".join(value_bits), base=2)
     else:
         length_type_id = bits[6]
         if length_type_id == "0":
             print("length type id 0")
-            sub_packet_length = int(bits[7:7+15],base=2)
-            sub_packets = bits[22:22+sub_packet_length]
+            sub_packet_length = int(bits[7 : 7 + 15], base=2)
+            sub_packets = bits[22 : 22 + sub_packet_length]
             print("sub packets", sub_packets)
             sub_packets_result = part_1(sub_packets)
+
 
 part_1("D2FE28")
 part_1("38006F45291200")

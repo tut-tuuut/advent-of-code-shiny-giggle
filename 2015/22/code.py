@@ -33,7 +33,6 @@ Situation = namedtuple(
 
 
 def find_neighbor_situations(situation: Situation):
-
     # debug_situation(situation)
 
     if type(situation) == str:

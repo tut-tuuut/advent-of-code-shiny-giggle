@@ -105,6 +105,8 @@ DIRECTIONS = (
     (-1, 1),  # sw
     (-1, 0),  # w
 )
+
+
 # you can compute visibilities only once: they don't change
 # when seats get occupied or freed.
 # store them in a graph to be able to use node.neighbors(), it will be useful

@@ -39,7 +39,7 @@ for i in range(6):
 
 medium_ratio = sum(ratios) / len(ratios)
 
-part2_answer = part1_answer * medium_ratio ** 10
+part2_answer = part1_answer * medium_ratio**10
 
 print(part2_answer)
 # 4666952 too high

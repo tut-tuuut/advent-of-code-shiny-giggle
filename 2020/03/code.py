@@ -19,6 +19,7 @@ example_grid = """..##.......
 
 # part 1 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
+
 # first version: iterate over rows in grid, (A)
 # ignore some of the rows if we are moving faster than 1 row at a time. (B)
 # a bit of brainfuck to find the horizontal coordinate from the row number i.

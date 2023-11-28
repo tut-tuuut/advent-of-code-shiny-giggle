@@ -31,6 +31,7 @@ u.answer_part_1(count_increased_measurements(raw_input))  # 1400
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
+
 # 0 1 2 3 4 5
 # len 6
 def count_increasing_windows(raw_input):

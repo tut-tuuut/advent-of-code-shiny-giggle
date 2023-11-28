@@ -6,6 +6,7 @@ with open(__file__ + ".input.txt", "r+") as file:
 
 numbers = set(int(row) for row in input_string.split("\n") if row)
 
+
 # part 1 -----------------------------------------------------
 def find_numbers_which_sum_to_target(numbers, target):
     for number in numbers:
@@ -14,6 +15,7 @@ def find_numbers_which_sum_to_target(numbers, target):
 
 
 u.answer_part_1(find_numbers_which_sum_to_target(numbers, 2020))
+
 
 # part 2 -----------------------------------------------------
 def find_three_numbers_which_sum_to_target(numbers, target):

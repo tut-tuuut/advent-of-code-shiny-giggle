@@ -2311,6 +2311,7 @@ def autopilot(ballX, paddleX, computer):
 
 stdscr = curses.initscr()
 
+
 # https://docs.python.org/3/howto/curses.html
 def runGame(strScreen):
     c = Computer(list(program))
