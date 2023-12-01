@@ -38,7 +38,7 @@ def pink(message):
     print(f"{PINK}{message}{NORMAL}")
 
 
-def assert_equals(tested, expected, comment=""):
+def assert_equal(tested, expected, comment=""):
     if tested == expected:
         print(f"{GREEN}(YAY){NORMAL} {tested} {comment}")
     else:
@@ -62,5 +62,5 @@ if __name__ == "__main__":
     pink("rose !")
     answer_part_1("réponse partie 1")
     answer_part_2("réponse partie 2")
-    assert_equals("réel", "attendu", "test pour voir un test échouer")
-    assert_equals("youpi", "youpi", "pour voir quand un test passe")
+    assert_equal("réel", "attendu", "test pour voir un test échouer")
+    assert_equal("youpi", "youpi", "pour voir quand un test passe")
