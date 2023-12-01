@@ -1,3 +1,4 @@
+from more_itertools import batched
 import utils
 
 with open(__file__ + ".input.txt", "r+") as file:
@@ -46,3 +47,11 @@ utils.answer_part_1(
 )
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+def find_badges_for_elves(input):
+    for a,b,c in batched(input.split(), 3):
+        print(set(a))
+        print(set(b))
+        print(set(c))
+
+find_badges_for_elves(example_input)
