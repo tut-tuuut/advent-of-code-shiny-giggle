@@ -48,10 +48,13 @@ utils.answer_part_1(
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
-def find_badges_for_elves(input):
-    for a,b,c in batched(input.split(), 3):
-        print(set(a))
-        print(set(b))
-        print(set(c))
 
-find_badges_for_elves(example_input)
+def part_2(input):
+    return sum(
+        priority(set(a).intersection(set(b), set(c)).pop())
+        for a, b, c in batched(input.split(), 3)
+    )
+
+utils.assert_equals(part_2(example_input), 70)
+
+utils.answer_part_2(part_2(raw_input))
