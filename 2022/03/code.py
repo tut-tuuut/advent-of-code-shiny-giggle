@@ -55,6 +55,7 @@ def part_2(input):
         for a, b, c in batched(input.split(), 3)
     )
 
+
 utils.assert_equals(part_2(example_input), 70)
 
 utils.answer_part_2(part_2(raw_input))
