@@ -1,3 +1,4 @@
+from math import prod
 import utils as u
 
 with open(__file__ + ".input.txt", "r+") as file:
@@ -40,3 +41,24 @@ u.assert_equal(part_1(example_input), 8)
 u.answer_part_1(part_1(raw_input))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def part_2(raw_input):
+    result_sum = 0
+    for row in raw_input.strip().split("\n"):
+        _, raw_sets = row.split(": ")
+        min_counts = {"red": 0, "blue": 0, "green": 0}
+        for raw_set in raw_sets.split("; "):
+            for digit_color in raw_set.split(", "):
+                digit, color = digit_color.split()
+                digit = int(digit)
+                # only 12 red cubes, 13 green cubes, and 14 blue cubes
+                if digit > min_counts.get(color):
+                    min_counts[color] = digit
+        result_sum += prod(min_counts.values())
+    return result_sum
+
+
+u.assert_equal(part_2(example_input), 2286)
+
+u.answer_part_2(part_2(raw_input))
