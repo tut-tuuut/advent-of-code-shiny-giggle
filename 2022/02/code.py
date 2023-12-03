@@ -46,3 +46,23 @@ u.assert_equals(score_of_given_input(example_input), 15)
 u.answer_part_1(score_of_given_input(raw_input))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+possibilities = "ABC"
+
+
+def score_of_round_2(raw_desc):
+    other_played = raw_desc[0]
+    # A for Rock, B for Paper, and C for Scissors
+    expected_output = raw_desc[2]
+    # X lose, Y draw, Z win
+    initial = possibilities.find(other_played)
+    move = {"X": -1, "Y": 0, "Z": +1}[expected_output]
+    i_play = possibilities[(initial + move) % 3]
+    return {"A": 1, "B": 2, "C": 3}[i_play] + {"X": 0, "Y": 3, "Z": 6}[expected_output]
+
+
+u.assert_equals(score_of_round_2("A Y"), 4)
+u.assert_equals(score_of_round_2("B X"), 1)
+u.assert_equals(score_of_round_2("C Z"), 7)
+
+u.answer_part_2(sum(score_of_round_2(row) for row in raw_input.split("\n")))
