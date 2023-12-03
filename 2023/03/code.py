@@ -72,4 +72,34 @@ def part_1(raw_input):
 u.assert_equal(part_1(example_input), 4361)
 
 u.answer_part_1(part_1(raw_input))
+
+
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def part_2(raw_input):
+    numbers_coordinates, symbols_coordinates = extract_coordinates(raw_input)
+    # for each star_symbol, we will store each adjacent number coordinate in a set
+    star_symbols = {
+        coords: set() for coords, symbol in symbols_coordinates.items() if symbol == "*"
+    }
+    # loop over numbers and check adjacency with * symbols
+    for coords, value in numbers_coordinates.items():
+        number_row, number_col = coords
+        for row in range(number_row - 1, number_row + 2):
+            for col in range(number_col - len(value), number_col + 2):
+                if (row, col) in star_symbols:
+                    star_symbols[(row, col)].add(coords)
+    result_sum = 0
+    for adjacent_set in star_symbols.values():
+        if len(adjacent_set) == 2:
+            product = 1
+            for x in adjacent_set:
+                product = product * int(numbers_coordinates[x])
+            result_sum += product
+    return result_sum
+
+
+u.assert_equal(part_2(example_input), 467835)
+
+u.answer_part_2(part_2(raw_input))
