@@ -19,8 +19,7 @@ example_input = """
 # part 1 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
 
-def part_1(raw_input):
-    # Find numbers and symbols in grid -----------------------
+def extract_coordinates(raw_input):
     numbers_coordinates = {}
     symbols_coordinates = {}
     for row, row_contents in enumerate(raw_input.split()):
@@ -42,6 +41,13 @@ def part_1(raw_input):
             numbers_coordinates[(row, len(row_contents) - 1)] = "".join(
                 current_number_digits
             )
+    return numbers_coordinates, symbols_coordinates
+
+
+def part_1(raw_input):
+    # Find numbers and symbols in grid -----------------------
+    numbers_coordinates, symbols_coordinates = extract_coordinates(raw_input)
+
     # print(numbers_coordinates)
     # print(symbols_coordinates)
 
@@ -50,7 +56,7 @@ def part_1(raw_input):
     for coords, value in numbers_coordinates.items():
         number_row, number_col = coords
         found = False
-        #u.pink(f"{coords} : {value}")
+        # u.pink(f"{coords} : {value}")
         for row in range(number_row - 1, number_row + 2):
             if found:
                 break
@@ -58,7 +64,7 @@ def part_1(raw_input):
                 if (row, col) in symbols_coordinates:
                     result_sum += int(value)
                     found = True
-                    #u.yellow(f"({row},{col}) : {symbols_coordinates[(row,col)]}")
+                    # u.yellow(f"({row},{col}) : {symbols_coordinates[(row,col)]}")
                     break
     return result_sum
 
