@@ -1,3 +1,4 @@
+from math import lcm
 import utils as u
 
 with open(__file__ + ".input.txt", "r+") as file:
@@ -45,10 +46,11 @@ def part_1(input):
     step = "AAA"
     nb = 0
     l = len(instructions)
-    while step != 'ZZZ':
-        step = network[step][instructions[nb%l]]
+    while step != "ZZZ":
+        step = network[step][instructions[nb % l]]
         nb += 1
     return nb
+
 
 u.assert_equal(part_1(example_input), 2)
 u.assert_equal(part_1(second_example_input), 6)
@@ -68,16 +70,37 @@ part_2_example_input = """LR
 22Z = (22B, 22B)
 XXX = (XXX, XXX)"""
 
-def part_2(raw_input):
+
+def part_2_dumb_and_slow(raw_input):
     instructions, network = parse_raw_input(raw_input)
-    step = tuple(x for x in network.keys() if x[2] == 'A')
+    step = tuple(x for x in network.keys() if x[2] == "A")
     nb = 0
     l = len(instructions)
-    while any(s[2] != 'Z' for s in step):
-        instruction = instructions[nb%l]
+    while any(s[2] != "Z" for s in step):
+        instruction = instructions[nb % l]
         step = tuple(network[k][instruction] for k in step)
         nb += 1
     return nb
 
-u.assert_equal(part_2(part_2_example_input), 6)
-u.answer_part_2(part_2(raw_input))
+
+u.assert_equal(part_2_dumb_and_slow(part_2_example_input), 6)
+
+
+def part_2_fast(raw_input):
+    instructions, network = parse_raw_input(raw_input)
+    initial_steps = tuple(x for x in network.keys() if x[2] == "A")
+    periods = dict()
+    l = len(instructions)
+    for step in initial_steps:
+        nb = 0
+        while step[2] != "Z":
+            step = network[step][instructions[nb % l]]
+            nb += 1
+        periods[step] = nb
+
+    return lcm(*periods.values())
+
+
+u.assert_equal(part_2_fast(part_2_example_input), 6)
+
+u.answer_part_2(part_2_fast(raw_input))
