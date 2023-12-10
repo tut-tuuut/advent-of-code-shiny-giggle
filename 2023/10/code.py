@@ -37,7 +37,7 @@ def parse_input(raw_input):
             return rows, s_coords
 
 
-def part_1(raw_input):
+def extract_loop(raw_input):
     N, S, E, W = "N", "S", "E", "W"
     connections = {
         "S": {N, S, E, W},
@@ -79,10 +79,32 @@ def part_1(raw_input):
         for z in find_connected_neighbours(x):
             if not z in the_loop:
                 to_test.add(z)
+    return the_loop
+
+
+def part_1(raw_input):
+    the_loop = extract_loop(raw_input)
     return int(len(the_loop) / 2)
 
 
 u.assert_equal(part_1(example_1), 4)
 u.assert_equal(part_1(example_2), 8)
 u.answer_part_1(part_1(raw_input))
+
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def part_2_excel(raw_input):
+    """attempt to format the thing in csv format to hand check connections on excel"""
+    the_loop = extract_loop(raw_input)
+    human_input = format_for_human(raw_input)
+    list_of_points = list(list(row) for row in human_input.split("\n"))
+    for i, row in enumerate(list_of_points):
+        for j, _ in enumerate(row):
+            if (i, j) not in the_loop:
+                list_of_points[i][j] = "x"
+    human_output = "\n".join(",".join(row) for row in list_of_points)
+    print(human_output)
+
+
+# part_2_excel(raw_input)
