@@ -134,9 +134,8 @@ def part_2_bigger_grid(raw_input):
         ".": set(),
     }
     # -----
+    # build a bigger loop where every point is replaced by a set of 3*3 points
     the_loop = extract_loop(raw_input)
-    human_input = format_for_human(raw_input)
-    print(human_input)
     list_of_points = tuple(raw_input.strip().split())
     tripled_map = []
     for i, row in enumerate(list_of_points):
@@ -144,7 +143,7 @@ def part_2_bigger_grid(raw_input):
         for j, p in enumerate(row):
             points = [[".", ".", "."] for _ in range(3)]
             if (i, j) in the_loop:
-                u.pink(f"{i}-{j} in the loop : {p}")
+                # u.pink(f"{i}-{j} in the loop : {p}")
                 points[1][1] = "█"
                 if N in connections[p]:
                     points[0][1] = "█"
@@ -154,27 +153,48 @@ def part_2_bigger_grid(raw_input):
                     points[1][2] = "█"
                 if W in connections[p]:
                     points[1][0] = "█"
-                print("\n".join("".join(r) for r in points))
             for a in range(3):
                 tripled_row[a].extend(points[a])
         tripled_map.extend(tripled_row)
-    print("\n".join("".join(tripled_row) for tripled_row in tripled_map))
+    # print("\n".join("".join(tripled_row) for tripled_row in tripled_map))
+    # analyze tripled_map to find every external points, starting from the edges of the map
+    to_check = set()
+    checked = set()
+    tripled_map_height = len(tripled_map)
+    tripled_map_width = len(tripled_map[0])
+    for j in range(tripled_map_width):
+        to_check.add((0, j))
+        to_check.add((tripled_map_height - 1, j))
+    for i in range(tripled_map_height):
+        to_check.add((i, 0))
+        to_check.add((i, tripled_map_width - 1))
+
+    while len(to_check):
+        i, j = to_check.pop()
+        checked.add((i, j))
+        if i < 0 or i >= tripled_map_height or j < 0 or j >= tripled_map_width:
+            continue
+        if tripled_map[i][j] == ".":
+            tripled_map[i][j] = " "
+            for r in range(i - 1, i + 2):
+                for c in range(j - 1, j + 2):
+                    if (r, c) not in checked:
+                        to_check.add((r, c))
+    # print("\n".join("".join(tripled_row) for tripled_row in tripled_map))
+
+    # now, reduce the map to find the "true" spaces inside the loop
+    reduced_map = (
+        (char for j, char in enumerate(row) if j % 3 == 1)
+        for i, row in enumerate(tripled_map)
+        if i % 3 == 1
+    )
+    output = "\n".join("".join(tripled_row) for tripled_row in reduced_map)
+    return output.count(".")
 
 
-part_2_bigger_grid(
-    """...........
-.S-------7.
-.|F-----7|.
-.||.....||.
-.||.....||.
-.|L-7.F-J|.
-.|..|.|..|.
-.L--J.L--J.
-..........."""
-)
-
-part_2_bigger_grid(
-    """FF7FSF7F7F7F7F7F---7
+u.assert_equal(
+    part_2_bigger_grid(
+        """FF7FSF7F7F7F7F7F---7
 L|LJ||||||||||||F--J
 FL-7LJLJ||||||LJL-77
 F--JF--7||LJLJ7F7FJ-
@@ -186,6 +206,8 @@ L.L7LFJ|||||FJL7||LJ
 L7JLJL-JLJLJL--JLJ.L
 
 """
+    ),
+    10,
 )
 
-part_2_bigger_grid(raw_input)
+u.answer_part_2(part_2_bigger_grid(raw_input))
