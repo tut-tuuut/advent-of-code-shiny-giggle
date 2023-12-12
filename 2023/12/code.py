@@ -27,6 +27,35 @@ POSSIBLE = 2
 IMPOSSIBLE = False
 
 
+# return a simplified version of the row,
+# using my own brain algorithm of when i play picross.
+def picross_row(symbols, digits):
+    print("calling picross row with ",symbols, digits)
+    # remove empty spaces at start and end, we don't care
+    symbols = symbols.strip('.')
+    total_space_needed = sum(digits) + len(digits) - 1
+    freedom_degrees = len(symbols) - total_space_needed
+    if freedom_degrees == 0: # huzzah EASYPEASY
+        return '.'.join("#"*d for d in digits), digits
+    if freedom_degrees >= max(digits): # no easy solution :'(
+        return symbols,digits
+    if symbols[0] == "#":
+        # we know the beginning of the row,
+        # we remove it with its digit and we try to simplify more!
+        return picross_row(symbols[1+digits[0]:], digits[1:])
+    if symbols[-1] == "#":
+        # we know the end of the row:
+        # we remove it with its digit, and we simplify more
+        return picross_row(symbols[:-1-digits[-1]], digits[:-1])
+    return symbols,digits
+
+
+u.assert_equal(picross_row(".??????.", (3,2)), ("###.##", (3,2)))
+print(picross_row("....?#?#?#?#?#?#?#?..", (1,3,1,6)))
+print(picross_row("#???..?",(3,1)))
+print(picross_row("????#", (1,2)))
+"""
+
 def is_row_possible(symbols, digits):
     groups = []
     for is_dot, group in groupby(list(symbols), lambda x: (x == ".")):
@@ -64,6 +93,7 @@ def analyze_row(row):
     bef = u.nanotime()
     symbols, digits = row.split(" ")
     digits = tuple(int(c) for c in digits.split(","))
+    symbols = picross_row(symbols, digits)
     to_check = set()
     checked = set()
     solutions = set()
@@ -135,3 +165,5 @@ def part_2(raw_input):
 
 # part_2(".??..??...?##. 1,1,3")
 # u.assert_equal(part_2(ex_1), 525152)
+
+"""
