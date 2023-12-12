@@ -1,5 +1,6 @@
 import utils as u
 from itertools import groupby
+import time
 
 with open(__file__ + ".input.txt", "r+") as file:
     raw_input = file.read()
@@ -56,6 +57,7 @@ u.assert_equal(is_row_possible("##.#.#", (2, 2, 1)), IMPOSSIBLE, "Is a wrong sol
 
 
 def analyze_row(row):
+    bef = u.nanotime()
     symbols, digits = row.split(" ")
     digits = tuple(int(c) for c in digits.split(","))
     to_check = set()
@@ -66,6 +68,8 @@ def analyze_row(row):
     while len(to_check):
         symbols = to_check.pop()
         checked.add(symbols)
+        if symbols.count("#") == sum(digits):
+            symbols = symbols.replace("?", ".")
         result = is_row_possible(symbols, digits)
         if result == SOLUTION:
             solutions.add(symbols)
@@ -74,6 +78,12 @@ def analyze_row(row):
                 new_symbol = symbols.replace("?", char, 1)
                 if not new_symbol in checked:
                     to_check.add(new_symbol)
+    aft = u.nanotime()
+    row_time = (aft - bef) / 10**6
+    if row == "????.######..#####. 1,6,5":
+        print(f"checked {len(checked)} possibilities in {row_time} ms")
+        if len(checked) == 31:
+            print(checked)
     return len(solutions)
 
 
@@ -81,7 +91,15 @@ u.assert_equal(analyze_row(".??..??...?##. 1,1,3"), 4)
 
 
 def part_1(raw_input):
-    return sum(analyze_row(row) for row in raw_input.strip().split("\n"))
+    result = 0
+    diffs = set()
+    before = u.nanotime()
+    for row in raw_input.strip().split("\n"):
+        result += analyze_row(row)
+    after = u.nanotime()
+    total_time = after - before
+    print(f"total time {total_time/10**9} s")
+    return result
 
 
 u.assert_equal(part_1(ex_1), 21)
@@ -89,3 +107,24 @@ u.assert_equal(part_1(ex_1), 21)
 u.answer_part_1(part_1(raw_input))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def expand_row(row):
+    symbols, digits = row.split(" ")
+    return f"{'?'.join(symbols for _ in range(5))} {','.join(digits for _ in range(5))}"
+
+
+def part_2(raw_input):
+    u.nanotime()
+    i = 0
+    result = 0
+    for row in raw_input.split("\n"):
+        print(f"{i}")
+        print(u.nanotime())
+        i += 1
+        expanded_row = expand_row(row)
+        result += analyze_row(expanded_row)
+    return result
+
+
+# u.assert_equal(part_2(ex_1), 525152)

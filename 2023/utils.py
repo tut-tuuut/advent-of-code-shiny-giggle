@@ -1,3 +1,5 @@
+import time
+
 RED = "\033[91m"
 GREEN = "\033[92m"
 YELLOW = "\033[93m"
@@ -51,6 +53,10 @@ def answer_part_1(content):
 
 def answer_part_2(content):
     print(f"{YELLOW}[PART 2 🌟] {content}{NORMAL}")
+
+
+def nanotime():
+    return time.clock_gettime_ns(time.CLOCK_PROCESS_CPUTIME_ID)
 
 
 if __name__ == "__main__":
