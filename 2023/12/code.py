@@ -43,6 +43,10 @@ def is_row_possible(symbols, digits):
         return IMPOSSIBLE
     if max(digits) > max(group_lengths):
         return IMPOSSIBLE
+
+    groups_of_hashes = tuple(group for group in groups if "?" not in group)
+    if any(len(hashgroup) not in digits for hashgroup in groups_of_hashes):
+        return IMPOSSIBLE
     return POSSIBLE
 
 
@@ -80,10 +84,12 @@ def analyze_row(row):
                     to_check.add(new_symbol)
     aft = u.nanotime()
     row_time = (aft - bef) / 10**6
-    if row == "????.######..#####. 1,6,5":
-        print(f"checked {len(checked)} possibilities in {row_time} ms")
-        if len(checked) == 31:
-            print(checked)
+    print(
+        f"checked {len(checked)} possibilities for {len(solutions)} solutions in {row_time} ms"
+    )
+    if len(checked) == 89:
+        print(checked)
+        print(row)
     return len(solutions)
 
 
@@ -104,7 +110,7 @@ def part_1(raw_input):
 
 u.assert_equal(part_1(ex_1), 21)
 
-u.answer_part_1(part_1(raw_input))
+# u.answer_part_1(part_1(raw_input))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
@@ -127,4 +133,5 @@ def part_2(raw_input):
     return result
 
 
+# part_2(".??..??...?##. 1,1,3")
 # u.assert_equal(part_2(ex_1), 525152)
