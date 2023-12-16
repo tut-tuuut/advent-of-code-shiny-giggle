@@ -1,4 +1,5 @@
 import utils as u
+from functools import cache
 
 with open(__file__ + ".input.txt", "r+") as file:
     raw_input = file.read()
@@ -66,11 +67,16 @@ def get_next_position_from_direction(row, col, direction):
     return row, col
 
 
-def part_1(raw_input, debug=False):
-    grid = tuple(raw_input.strip().split("\n"))
+@cache
+def get_grid(raw_input):
+    return tuple(raw_input.strip().split("\n"))
+
+
+def part_1(raw_input, debug=False, initial=(0, -1, E)):
+    grid = get_grid(raw_input)
     WIDTH = len(grid[0])
     HEIGHT = len(grid)
-    beam = [(0, -1, E)]
+    beam = [initial]
     energized = set()
     checked = set()
     while len(beam):
@@ -107,3 +113,21 @@ u.assert_equal(part_1(ex), 46)
 u.answer_part_1(part_1(raw_input))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def part_2(raw_input):
+    grid = get_grid(raw_input)
+    WIDTH = len(grid[0])
+    HEIGHT = len(grid)
+    initial_vectors = list()
+    for j in range(WIDTH):
+        initial_vectors.append((-1, j, S))
+        initial_vectors.append((HEIGHT, j, N))
+    for i in range(HEIGHT):
+        initial_vectors.append((i, -1, E))
+        initial_vectors.append((i, WIDTH, W))
+    return max(part_1(raw_input, initial=init) for init in initial_vectors)
+
+
+u.assert_equal(part_2(ex), 51)
+u.answer_part_2(part_2(raw_input))
