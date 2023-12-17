@@ -42,7 +42,7 @@ def opposite(direction):
         return W
 
 
-def part_1(raw_input):
+def part_1(raw_input, debug=False):
     grid = tuple(
         tuple(int(char) for char in row) for row in raw_input.strip().split("\n")
     )
@@ -59,10 +59,16 @@ def part_1(raw_input):
     tested_paths.append(initial_path)
     while len(tested_paths) > 0:
         tested_path = tested_paths.popleft()
-        print(tested_path)
+        print("testing a path of length", len(tested_path))
         if path_heat(tested_path) > smallest_value:
             continue
         last_step = tested_path[-1]
+        if last_step.col == last_step.row == MAX:
+            heat_value = path_heat(tested_path)
+            print("found a path! value=", heat_value)
+            if heat_value < smallest_value:
+                smallest_value = heat_value
+            continue
         forbidden_directions = [
             opposite(tested_path[-1].direction),
         ]
@@ -73,7 +79,37 @@ def part_1(raw_input):
                 == tested_path[-3].direction
             ):
                 forbidden_directions.append(tested_path[-1].direction)
+        if last_step.row > 0 and N not in forbidden_directions:
+            next_step_col = last_step.col
+            next_step_row = last_step.row - 1
+            next_step_heat = grid[next_step_row][next_step_col]
+            tested_paths.append(
+                tested_path + (Step(next_step_col, next_step_row, next_step_heat, N),)
+            )
+        if last_step.row < MAX and S not in forbidden_directions:
+            next_step_col = last_step.col
+            next_step_row = last_step.row + 1
+            next_step_heat = grid[next_step_row][next_step_col]
+            tested_paths.append(
+                tested_path + (Step(next_step_col, next_step_row, next_step_heat, S),)
+            )
+        if last_step.col > 0 and W not in forbidden_directions:
+            next_step_col = last_step.col - 1
+            next_step_row = last_step.row
+            next_step_heat = grid[next_step_row][next_step_col]
+            tested_paths.append(
+                tested_path + (Step(next_step_col, next_step_row, next_step_heat, W),)
+            )
+        if last_step.col < MAX and E not in forbidden_directions:
+            next_step_col = last_step.col + 1
+            next_step_row = last_step.row
+            next_step_heat = grid[next_step_row][next_step_col]
+            tested_paths.append(
+                tested_path + (Step(next_step_col, next_step_row, next_step_heat, E),)
+            )
+    return smallest_value
 
 
-part_1(ex)
+print(part_1(ex), debug=True)
+
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
