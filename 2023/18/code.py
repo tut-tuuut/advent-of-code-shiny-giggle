@@ -31,8 +31,8 @@ DIRECTIONS = {
 }
 
 
-def add_points(a, b):
-    return Point(a.i + b.i, a.j + b.j)
+def add_points(a, b, length=1):
+    return Point(a.i + b.i * length, a.j + b.j * length)
 
 
 def draw_grid(grid: defaultdict):
@@ -92,6 +92,24 @@ def part_1(raw_input, debug=False):
 
 
 u.assert_equal(part_1(ex), 62)
-u.answer_part_1(part_1(raw_input))
+# u.answer_part_1(part_1(raw_input))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+NB_TO_DIRECTION = (R, D, L, U)
+
+
+def part_2(raw_input, reading_like="part_2", debug=True):
+    # try "shoelace formula":
+    # https://www.themathdoctors.org/polygon-coordinates-and-areas/
+    for row in raw_input.strip().split("\n"):
+        if reading_like == "part_1":
+            direction, value, _ = row.split()
+        else:
+            direction = NB_TO_DIRECTION[int(row[-2])]
+            value = int(row[-7:-2], 16)
+            if debug:
+                print(row, direction, value)
+
+
+part_2(ex, debug=True)
