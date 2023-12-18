@@ -1,5 +1,5 @@
 import utils as u
-from collections import namedtuple, defaultdict
+from collections import namedtuple, defaultdict, deque
 
 with open(__file__ + ".input.txt", "r+") as file:
     raw_input = file.read()
@@ -43,13 +43,13 @@ def draw_grid(grid: defaultdict):
 
     return "\n".join(
         (
-            "".join(grid[Point(i, j)] for j in range(min_j - 1, max_j + 1))
-            for i in range(min_i - 1, max_i + 1)
+            "".join(grid[Point(i, j)] for j in range(min_j, max_j + 1))
+            for i in range(min_i, max_i + 1)
         )
     )
 
 
-def part_1(raw_input):
+def part_1(raw_input, debug=False):
     current_point = Point(0, 0)
     grid = defaultdict(lambda: ".")
     grid[current_point] = "#"
@@ -58,9 +58,40 @@ def part_1(raw_input):
         for _ in range(int(value)):
             current_point = add_points(current_point, DIRECTIONS[direction])
             grid[current_point] = "#"
-    print(draw_grid(grid))
+    if debug:
+        print(draw_grid(grid))
+    to_check = deque()
+    checked = set()
+    min_i = min(p.i for p in grid.keys())
+    max_i = max(p.i for p in grid.keys())
+    min_j = min(p.j for p in grid.keys())
+    max_j = max(p.j for p in grid.keys())
+    for j in range(min_j, max_j + 1):
+        to_check.append((min_i, j))
+        to_check.append((max_i, j))
+    for i in range(min_i, max_i + 1):
+        to_check.append((i, min_j))
+        to_check.append((i, max_j))
+
+    while len(to_check):
+        i, j = to_check.pop()
+        checked.add((i, j))
+        if i < min_i or i > max_i or j < min_i or j > max_j:
+            continue
+        if grid[Point(i, j)] == ".":
+            grid[Point(i, j)] = " "
+            for r in range(i - 1, i + 2):
+                for c in range(j - 1, j + 2):
+                    if (r, c) not in checked:
+                        to_check.append((r, c))
+    if debug:
+        print(draw_grid(grid))
+    else:
+        draw_grid(grid)
+    return sum(1 for val in grid.values() if val != " ")
 
 
-part_1(ex)
+u.assert_equal(part_1(ex), 62)
+u.answer_part_1(part_1(raw_input))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
