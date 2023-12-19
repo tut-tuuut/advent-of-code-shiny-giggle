@@ -1,5 +1,6 @@
 import utils as u
 from collections import namedtuple, defaultdict, deque
+from itertools import pairwise
 
 with open(__file__ + ".input.txt", "r+") as file:
     raw_input = file.read()
@@ -33,6 +34,14 @@ DIRECTIONS = {
 
 def add_points(a, b, length=1):
     return Point(a.i + b.i * length, a.j + b.j * length)
+
+
+def vec(a, b):  # vector from point a to b
+    return Point(b.i - a.i, b.j - a.j)
+
+
+def det(a, b):  # determinant between two vectors (no interest for points)
+    return a.i * b.j - b.i * a.j
 
 
 def draw_grid(grid: defaultdict):
@@ -99,17 +108,62 @@ u.assert_equal(part_1(ex), 62)
 NB_TO_DIRECTION = (R, D, L, U)
 
 
-def part_2(raw_input, reading_like="part_2", debug=True):
+def part_2(raw_input, reading_like="part_2", debug=False):
     # try "shoelace formula":
     # https://www.themathdoctors.org/polygon-coordinates-and-areas/
+    # ---- build list of points
+    points = []
+    current_point = Point(0, 0)
+    points.append(current_point)
     for row in raw_input.strip().split("\n"):
         if reading_like == "part_1":
             direction, value, _ = row.split()
+            value = int(value)
         else:
             direction = NB_TO_DIRECTION[int(row[-2])]
             value = int(row[-7:-2], 16)
-            if debug:
-                print(row, direction, value)
+        if debug:
+            print(row, direction, value)
+        new_point = add_points(current_point, DIRECTIONS[direction], value)
+        points.append(new_point)
+        current_point = new_point
+    u.assert_equal(points[0], points[-1], "path should be closed")
+    u.assert_equal(
+        len(points) - 1,
+        len(set(points)),
+        "all points should be distinct except last one",
+    )
+    if debug:
+        print(points)
+    # --- calculate base area using shoelace formula
+    double_area = abs(sum(a.i * b.j - a.j * b.i for a, b in pairwise(points)))
+    # --- add "outer" area (1/2*perimeter)
+    double_area += sum(abs(a.i - b.i + a.j - b.j) for a, b in pairwise(points))
+    # --- adjust corners (+0,25/obtus corner -0,25/closed corner)
+    determinants = []
+    for i in range(1, len(points) - 1):
+        a = points[i - 1]
+        b = points[i]
+        c = points[(i + 1) % len(points)]
+        v1 = vec(a, b)
+        v2 = vec(b, c)
+        determinants.append(det(v1, v2))
+    corner_area = 1
+    corner_area += sum(1 for d in determinants if d < 0)
+    corner_area -= sum(1 for d in determinants if d > 0)
+    quadruple_area = 2 * double_area + corner_area
+    print("quadruple area", quadruple_area, quadruple_area / 4)
+    if debug:
+        grid = defaultdict(lambda: ".")
+        for p in points:
+            grid[p] = "#"
+        print(draw_grid(grid))
+    return int(quadruple_area / 4)
 
 
-part_2(ex, debug=True)
+part_1(ex, debug=True)
+u.assert_equal(part_2(ex, debug=True, reading_like="part_1"), 62)
+u.assert_equal(part_2(raw_input, reading_like="part_1"), 70026)
+# part_2(raw_input, debug=False, reading_like="part_1")
+u.assert_equal(part_2(ex), 952408144115)
+u.answer_part_2(part_2(raw_input))
