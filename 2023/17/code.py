@@ -1,5 +1,6 @@
 import utils as u
 from collections import deque, namedtuple
+import heapq
 
 with open(__file__ + ".input.txt", "r+") as file:
     raw_input = file.read()
@@ -42,6 +43,10 @@ def opposite(direction):
         return W
 
 
+def path_priority(path):
+    return path_heat(path) / len(path)
+
+
 def part_1(raw_input, debug=False):
     grid = tuple(
         tuple(int(char) for char in row) for row in raw_input.strip().split("\n")
@@ -54,21 +59,30 @@ def part_1(raw_input, debug=False):
     smallest_value = grid[MAX][MAX] + sum(
         grid[i][i] + grid[i][i + 1] for i in range(MAX)
     )
-    initial_path = (Step(0, 0, 0, None),)  # row, column, heat, direction
-    testing_paths = deque()
+    initial_path = (0, (Step(0, 0, 0, None),))  # row, column, heat, direction
+    testing_paths = []
+    heapq.heappush(testing_paths, initial_path)
     testing_paths.append(initial_path)
     already_tested_paths = set()
     count = 0
+    dropped = 0
     while len(testing_paths) > 0:
-        tested_path = testing_paths.popleft()
+        tested_path = heapq.heappop(testing_paths)[1]
         if tested_path in already_tested_paths:
-            print("already seen!")
             continue
         already_tested_paths.add(tested_path)
         count += 1
-        print(f"testing path nb {count} - length", len(tested_path), end="\r")
+        print(
+            f"testing path nb {count} - length",
+            len(tested_path),
+            " - dropped paths: ",
+            dropped,
+            "todolist : ",
+            len(testing_paths),
+            end="\r",
+        )
         if path_heat(tested_path) > smallest_value:
-            print("\ndropped!")
+            dropped += 1
             continue
         last_step = tested_path[-1]
         if last_step.col == last_step.row == MAX:
@@ -91,30 +105,44 @@ def part_1(raw_input, debug=False):
             next_step_col = last_step.col
             next_step_row = last_step.row - 1
             next_step_heat = grid[next_step_row][next_step_col]
-            testing_paths.append(
-                tested_path + (Step(next_step_col, next_step_row, next_step_heat, N),)
+            new_testing_path = tested_path + (
+                Step(next_step_col, next_step_row, next_step_heat, N),
+            )
+            heapq.heappush(
+                testing_paths, (path_priority(new_testing_path), new_testing_path)
             )
         if last_step.row < MAX and S not in forbidden_directions:
             next_step_col = last_step.col
             next_step_row = last_step.row + 1
             next_step_heat = grid[next_step_row][next_step_col]
-            testing_paths.append(
-                tested_path + (Step(next_step_col, next_step_row, next_step_heat, S),)
+            new_testing_path = tested_path + (
+                Step(next_step_col, next_step_row, next_step_heat, S),
+            )
+            heapq.heappush(
+                testing_paths, (path_priority(new_testing_path), new_testing_path)
             )
         if last_step.col > 0 and W not in forbidden_directions:
             next_step_col = last_step.col - 1
             next_step_row = last_step.row
             next_step_heat = grid[next_step_row][next_step_col]
-            testing_paths.append(
-                tested_path + (Step(next_step_col, next_step_row, next_step_heat, W),)
+            new_testing_path = tested_path + (
+                Step(next_step_col, next_step_row, next_step_heat, W),
             )
+            heapq.heappush(
+                testing_paths, (path_priority(new_testing_path), new_testing_path)
+            )
+
         if last_step.col < MAX and E not in forbidden_directions:
             next_step_col = last_step.col + 1
             next_step_row = last_step.row
             next_step_heat = grid[next_step_row][next_step_col]
-            testing_paths.append(
-                tested_path + (Step(next_step_col, next_step_row, next_step_heat, E),)
+            new_testing_path = tested_path + (
+                Step(next_step_col, next_step_row, next_step_heat, E),
             )
+            heapq.heappush(
+                testing_paths, (path_priority(new_testing_path), new_testing_path)
+            )
+
     return smallest_value
 
 
