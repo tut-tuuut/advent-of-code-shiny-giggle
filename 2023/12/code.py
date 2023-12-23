@@ -1,6 +1,7 @@
 import utils as u
 from itertools import groupby
-import time
+import re
+from functools import cache
 
 with open(__file__ + ".input.txt", "r+") as file:
     raw_input = file.read()
@@ -30,7 +31,8 @@ IMPOSSIBLE = False
 # return a simplified version of the row,
 # using my own brain algorithm of when i play picross.
 def picross_row(symbols, digits, debug=False):
-    if debug: print("calling picross row with ", symbols, digits)
+    if debug:
+        print("calling picross row with ", symbols, digits)
     if len(digits) == 0:
         return "#", (1,)  # unique solution
     # remove empty spaces at start and end, we don't care
@@ -159,7 +161,7 @@ def part_1(raw_input):
 
 u.assert_equal(part_1(ex_1), 21)
 
-u.answer_part_1(part_1(raw_input))
+# u.answer_part_1(part_1(raw_input))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
@@ -184,3 +186,64 @@ def part_2(raw_input):
 
 # part_2(".??..??...?##. 1,1,3")
 # u.assert_equal(part_2(ex_1), 525152)
+
+REGEX = re.compile(r"[\?#]+")
+
+
+@cache
+def analyze_row_clever(symbols, digits, debug=False):
+    if len(digits) == 0:
+        return 0
+    if symbols.count("#") + symbols.count("?") < sum(digits):
+        return 0
+    if debug:
+        print("analyzing", symbols, digits)
+    symbols = symbols.strip(".")
+    solutions = 0
+    if symbols[0] == "?":
+        solutions += analyze_row_clever(symbols[1:], digits, debug)
+    pattern = re.compile("[\?#]{%d}[\.\?]{1}" % digits[0])
+    first_match = pattern.match(symbols)
+    if not first_match:
+        # beginning of string doesn't match,
+        # maybe we can tuck criteria further if no known #
+        # is at the beginning
+        if "#" in symbols[: digits[0]]:
+            # impossible: no solution for this config
+            return solutions
+        try:
+            first_dot = symbols.index(".")
+            solutions += analyze_row_clever(symbols[first_dot:], digits)
+        except ValueError:
+            pass
+        return solutions
+    if debug:
+        print("match :", first_match[0])
+        print("start and end:", first_match.start(), first_match.end())
+    solutions += 1
+    solutions += analyze_row_clever(symbols[first_match.end() :], digits[1:])
+    return solutions
+
+
+print("-----part2-----")
+
+u.assert_equal(analyze_row_clever("?#...###", (1, 3)), 1)
+
+u.assert_equal(analyze_row_clever("???.###", (1, 1, 3)), 1)
+u.assert_equal(analyze_row_clever(".??..??...?##.", (1, 1, 3)), 4)
+u.assert_equal(analyze_row_clever("?#?#?#?#?#?#?#?", (1, 3, 1, 6)), 1)
+u.assert_equal(analyze_row_clever("????.#...#...", (4, 1, 1)), 1)
+u.assert_equal(analyze_row_clever("????.######..#####.", (1, 6, 5)), 4)
+u.assert_equal(analyze_row_clever("?###????????", (3, 2, 1)), 10)  # 10 arrangements
+
+
+def first_part_clever(raw_input):
+    result = 0
+    for row in raw_input.strip().split("\n"):
+        symbols, digits = row.split(" ")
+        digits = tuple(int(c) for c in digits.split(","))
+        result += analyze_row_clever(symbols, digits)
+    return result
+
+
+# u.assert_equal(first_part_clever(ex_1),21)
