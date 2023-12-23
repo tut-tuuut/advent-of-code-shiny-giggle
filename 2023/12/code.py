@@ -29,8 +29,8 @@ IMPOSSIBLE = False
 
 # return a simplified version of the row,
 # using my own brain algorithm of when i play picross.
-def picross_row(symbols, digits):
-    print("calling picross row with ", symbols, digits)
+def picross_row(symbols, digits, debug=False):
+    if debug: print("calling picross row with ", symbols, digits)
     if len(digits) == 0:
         return "#", (1,)  # unique solution
     # remove empty spaces at start and end, we don't care
@@ -111,7 +111,7 @@ u.assert_equal(is_row_possible("##.#.#", (2, 1, 1)), SOLUTION, "Is a solution")
 u.assert_equal(is_row_possible("##.#.#", (2, 2, 1)), IMPOSSIBLE, "Is a wrong solution")
 
 
-def analyze_row(row):
+def analyze_row(row, debug=False):
     bef = u.nanotime()
     symbols, digits = row.split(" ")
     digits = tuple(int(c) for c in digits.split(","))
@@ -136,12 +136,10 @@ def analyze_row(row):
                     to_check.add(new_symbol)
     aft = u.nanotime()
     row_time = (aft - bef) / 10**6
-    print(
-        f"checked {len(checked)} possibilities for {len(solutions)} solutions in {row_time} ms"
-    )
-    if len(checked) == 89:
-        print(checked)
-        print(row)
+    if debug:
+        print(
+            f"checked {len(checked)} possibilities for {len(solutions)} solutions in {row_time} ms"
+        )
     return len(solutions)
 
 
