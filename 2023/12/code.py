@@ -187,13 +187,15 @@ def part_2(raw_input):
 # part_2(".??..??...?##. 1,1,3")
 # u.assert_equal(part_2(ex_1), 525152)
 
-REGEX = re.compile(r"[\?#]+")
+DOTS = re.compile("(\.{1,})")
 
 
 @cache
 def analyze_row_clever(symbols, digits, debug=False):
     if debug:
         print("analyzing", symbols, digits)
+
+    symbols = re.sub(DOTS, ".", symbols)
 
     if len(digits) == 0:
         if symbols.count("#") == 0:
@@ -248,4 +250,19 @@ def first_part_clever(raw_input):
     return result
 
 
-# u.assert_equal(first_part_clever(ex_1),21)
+def second_part_clever(raw_input):
+    result = 0
+    for row in raw_input.strip().split("\n"):
+        row = expand_row(row)
+        symbols, digits = row.split(" ")
+        digits = tuple(int(c) for c in digits.split(","))
+        result += analyze_row_clever(symbols, digits)
+    return result
+
+
+u.assert_equal(first_part_clever(ex_1), 21)
+u.assert_equal(first_part_clever(raw_input), 7599)
+
+u.assert_equal(second_part_clever(ex_1), 525152)
+
+u.answer_part_2(second_part_clever(raw_input))
