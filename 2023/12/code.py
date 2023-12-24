@@ -192,42 +192,44 @@ REGEX = re.compile(r"[\?#]+")
 
 @cache
 def analyze_row_clever(symbols, digits, debug=False):
-    if len(digits) == 0:
-        return 0
-    if symbols.count("#") + symbols.count("?") < sum(digits):
-        return 0
     if debug:
         print("analyzing", symbols, digits)
+
+    if len(digits) == 0:
+        if symbols.count("#") == 0:
+            return 1
+        else:
+            return 0
+
+    if symbols.count("#") + symbols.count("?") < sum(digits):
+        return 0
+
     symbols = symbols.strip(".")
-    solutions = 0
-    if symbols[0] == "?":
-        solutions += analyze_row_clever(symbols[1:], digits, debug)
-    pattern = re.compile("[\?#]{%d}[\.\?]{1}" % digits[0])
-    first_match = pattern.match(symbols)
-    if not first_match:
-        # beginning of string doesn't match,
-        # maybe we can tuck criteria further if no known #
-        # is at the beginning
-        if "#" in symbols[: digits[0]]:
-            # impossible: no solution for this config
-            return solutions
-        try:
-            first_dot = symbols.index(".")
-            solutions += analyze_row_clever(symbols[first_dot:], digits)
-        except ValueError:
-            pass
-        return solutions
+
+    pattern = re.compile("([?#]{%d})([?.]|$)" % digits[0])
+    if debug:
+        print(pattern)
+    first_match = pattern.search(symbols)
+    if first_match is None:
+        return 0
     if debug:
         print("match :", first_match[0])
         print("start and end:", first_match.start(), first_match.end())
-    solutions += 1
-    solutions += analyze_row_clever(symbols[first_match.end() :], digits[1:])
-    return solutions
+    if symbols[: first_match.start()].count("#") > 0:
+        return 0
+    solutions = analyze_row_clever(symbols[first_match.end() :], digits[1:])
+    if symbols[first_match.start()] == "?":
+        other_solutions = analyze_row_clever(
+            symbols[first_match.start() + 1 :], digits, debug
+        )
+    else:
+        other_solutions = 0
+    return solutions + other_solutions
 
 
 print("-----part2-----")
 
-u.assert_equal(analyze_row_clever("?#...###", (1, 3)), 1)
+u.assert_equal(analyze_row_clever("?#...###", (1, 3), True), 1)
 
 u.assert_equal(analyze_row_clever("???.###", (1, 1, 3)), 1)
 u.assert_equal(analyze_row_clever(".??..??...?##.", (1, 1, 3)), 4)
