@@ -12,9 +12,10 @@ example = """3   4
 3   9
 3   3"""
 
+
 def extract_lists_from_raw_input(raw_input):
     llist = []
-    rlist  = []
+    rlist = []
     for row in raw_input.splitlines():
         if not row:
             continue
@@ -23,14 +24,20 @@ def extract_lists_from_raw_input(raw_input):
         rlist.append(int(right))
     return llist, rlist
 
+
 def distance_between_two_lists(raw_input):
     left, right = extract_lists_from_raw_input(raw_input)
     left = sorted(left)
     right = sorted(right)
-    return sum(abs(l-r) for l, r in zip(left, right))
+    return sum(abs(lid - rid) for lid, rid in zip(left, right))
+
 
 u.assert_equal(distance_between_two_lists(example), 11)
 
 u.answer_part_1(distance_between_two_lists(raw_input))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def similarity_score(raw_input):
+    left, right = extract_lists_from_raw_input(raw_input)
