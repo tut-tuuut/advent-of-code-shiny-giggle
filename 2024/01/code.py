@@ -41,3 +41,10 @@ u.answer_part_1(distance_between_two_lists(raw_input))
 
 def similarity_score(raw_input):
     left, right = extract_lists_from_raw_input(raw_input)
+    right = tuple(sorted(right))
+    return sum(left_el * right.count(left_el) for left_el in left)
+
+
+u.assert_equal(similarity_score(example), 31)
+
+u.answer_part_2(similarity_score(raw_input))
