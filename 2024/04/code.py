@@ -37,7 +37,6 @@ def part_1(raw_str, needle="XMAS"):
     xmascount += sum(row.count(needle) for row in arr)
     # horiz rtl
     xmascount += sum(row.count(eldeen) for row in arr)
-    print(xmascount, "horizontals")
     # vertical bottom -> top
     for i, row in enumerate(arr):
         for j, char in enumerate(row):
@@ -49,7 +48,9 @@ def part_1(raw_str, needle="XMAS"):
             except IndexError:
                 pass
             try:
-                if all(letter == arr[i - x][j] for x, letter in enumerate(needle)):
+                if i >= 3 and all(
+                    letter == arr[i - x][j] for x, letter in enumerate(needle)
+                ):
                     xmascount += 1
             except IndexError:
                 pass
@@ -65,17 +66,16 @@ def part_1(raw_str, needle="XMAS"):
                         for x, letter in enumerate(needle)
                     ):
                         xmascount += 1
-                except IndexError as e:
+                except IndexError:
                     pass
-
     return xmascount
 
 
 u.assert_equal(part_1(example), 18)
+u.assert_equal(part_1(ahr), 2)
 
 u.answer_part_1(part_1(raw_input))
 
-u.assert_equal(part_1(ahr), 2)
 # 2556 too high
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
