@@ -1,5 +1,6 @@
 import itertools
 import utils as u
+
 with open(__file__ + ".input.txt", "r+") as file:
     raw_input = file.read()
 
@@ -16,11 +17,14 @@ example = """190: 10 19
 292: 11 6 16 20
 """
 
-def op_add(x,y):
-    return x+y
 
-def op_multiply(x,y):
-    return x*y
+def op_add(x, y):
+    return x + y
+
+
+def op_multiply(x, y):
+    return x * y
+
 
 def extract_lines(raw_str):
     for line in raw_str.splitlines():
@@ -29,17 +33,18 @@ def extract_lines(raw_str):
         yield int(result_str), arguments_int
 
 
-def part_1(raw_str, operators = (op_add, op_multiply)):
+def part_1(raw_str, operators=(op_add, op_multiply)):
     calibration_result = 0
     for expected_result, operands in extract_lines(raw_str):
-        for op_list in itertools.product(operators, repeat=len(operands)-1):
+        for op_list in itertools.product(operators, repeat=len(operands) - 1):
             val = operands[0]
-            for element,operator in zip(operands[1:],op_list):
-                val = operator(val,element)
+            for element, operator in zip(operands[1:], op_list):
+                val = operator(val, element)
             if val == expected_result:
                 calibration_result += expected_result
                 break
     return calibration_result
+
 
 u.assert_equal(part_1(example), 3749)
 
@@ -47,12 +52,15 @@ u.answer_part_1(part_1(raw_input))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
 
-def op_concatenate(x,y):
+
+def op_concatenate(x, y):
     return int(f"{x}{y}")
+
 
 def part_2(raw_str):
     operators = (op_add, op_multiply, op_concatenate)
     return part_1(raw_str, operators)
+
 
 u.assert_equal(part_2(example), 11387)
 
