@@ -1,0 +1,4 @@
+[project]
+name = "ahraoc2k24"
+version = "0.1.0"
+description = "Advent of Code AHR"
