@@ -60,7 +60,7 @@ u.answer_part_1(part_1(raw_input))
 def draw(robots, name, width=101, height=103):
     img = Image.new("RGB", (width, height))
     for rob in robots:
-        img.putpixel((rob.x, rob.y), (70,255,50))
+        img.putpixel((rob.x, rob.y), (70, 255, 50))
     img.save(name)
 
 
@@ -75,5 +75,6 @@ def part_2(raw_str, width=101, height=103, start=100, end=200):
             y = (y + sec * vy) % height
             robots.append(Robot(x, y, vx, vy))
         draw(robots, f"{sec}.png")
+
 
 part_2(raw_input, start=3000, end=7000)
