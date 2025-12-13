@@ -36,3 +36,34 @@ u.assert_equal(part_1(example), 357)
 u.answer_part_1(part_1(raw_input))
 
 # part 2 -'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,__,.-'*'-.,_
+
+
+def joltage_recur(given_str, remaining):
+    if remaining <= 0:
+        return []
+    for first_digit in reversed(range(1, 10)):
+        if remaining > 1:
+            idx = given_str[: -(remaining - 1)].find(str(first_digit))
+        else:
+            idx = given_str.find(str(first_digit))
+        if idx >= 0:
+            other_digits = joltage_recur(given_str[idx + 1 :], remaining - 1)
+            return [first_digit, *other_digits]
+
+
+u.assert_equal(joltage_recur("987654321111111", 2), [9, 8])
+u.assert_equal(joltage_recur("811111111111119", 2), [8, 9])
+u.assert_equal(joltage_recur("234234234234278", 2), [7, 8])
+u.assert_equal(joltage_recur("818181911112111", 2), [9, 2])
+
+
+def part_2(given_input):
+    return sum(
+        int("".join(str(digit) for digit in joltage_recur(row, 12)))
+        for row in given_input.splitlines()
+    )
+
+
+u.assert_equal(part_2(example), 3121910778619)
+
+u.answer_part_2(part_2(raw_input))
